@@ -157,7 +157,10 @@ void UQuickEditorService::_InitLevelEditMenu()
             FText::GetEmpty(),
             FNewMenuDelegate::CreateLambda([](FMenuBuilder& InBuilder, const FMenuNode& InNode)
             {
-	            FBuildTools::_ExtendMenu(InBuilder, InNode);
+				for (auto& ChildMenu : InNode.ChildMenus)
+				{
+					FBuildTools::_ExtendMenu(InBuilder, ChildMenu);
+				}
             }, Node));
 	};
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");

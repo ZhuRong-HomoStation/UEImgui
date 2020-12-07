@@ -30,15 +30,14 @@ TWeakPtr<SImguiWidgetRenderProxy> CurrentDetailWidget;
 int32 UEImguiDraw::MakeImgui(
 	FSlateWindowElementList& ElementList,
 	uint32 InLayer,
-	const FSlateRect& MyCullingRect,
-	const FSlateRenderTransform& ImguiToWidget,
+	const FSlateRenderTransform& ImguiToRender,
 	ImDrawData* DrawData)
 {
 	if (DrawData->DisplaySize.x <= 0.0f || DrawData->DisplaySize.y <= 0.0f)
 	{
 		return InLayer + 1;
 	}
-	
+
 	for (int i = 0; i < DrawData->CmdListsCount; ++i)
 	{
 		const ImDrawList* CmdList = DrawData->CmdLists[i];
@@ -54,7 +53,7 @@ int32 UEImguiDraw::MakeImgui(
 			SlateVertex.TexCoords[1] = ImGuiVertex.uv.y;
 			SlateVertex.TexCoords[2] = SlateVertex.TexCoords[3] = 1.f;
 
-			SlateVertex.Position = ImguiToWidget.TransformPoint(FVector2D(ImGuiVertex.pos.x,ImGuiVertex.pos.y));
+			SlateVertex.Position = ImguiToRender.TransformPoint(FVector2D(ImGuiVertex.pos.x,ImGuiVertex.pos.y));
 			
 			SlateVertex.Color = UnpackColor(ImGuiVertex.col);
 		}
@@ -62,14 +61,6 @@ int32 UEImguiDraw::MakeImgui(
 		for (int CmdIndex = 0; CmdIndex < CmdList->CmdBuffer.Size; ++CmdIndex)
 		{
 			const ImDrawCmd* Cmd = &CmdList->CmdBuffer[CmdIndex];
-			
-			FSlateRect ClippingRect = FSlateRect(
-                Cmd->ClipRect.x + ImguiToWidget.GetTranslation().X,
-                Cmd->ClipRect.y + ImguiToWidget.GetTranslation().Y,
-                Cmd->ClipRect.z + ImguiToWidget.GetTranslation().X,
-                Cmd->ClipRect.w + ImguiToWidget.GetTranslation().Y).IntersectionWith(MyCullingRect);
-
-			ElementList.PushClip(FSlateClippingZone{ ClippingRect });
 
 			// copy indices
 			Indices.SetNumUninitialized(Cmd->ElemCount);
@@ -78,6 +69,10 @@ int32 UEImguiDraw::MakeImgui(
 				Indices[Idx] = CmdList->IdxBuffer[Cmd->IdxOffset + Idx];
 			}
 
+			FSlateRect ClipRect(Cmd->ClipRect.x, Cmd->ClipRect.y, Cmd->ClipRect.z, Cmd->ClipRect.w);
+			ClipRect.OffsetBy(ImguiToRender.GetTranslation());
+
+			ElementList.PushClip(FSlateClippingZone(ClipRect));
 			auto Handle = UImguiResourceManager::Get().FindHandle(Cmd->TextureId);
 			check(Handle.IsValid());
 			FSlateDrawElement::MakeCustomVerts(ElementList, InLayer, Handle
@@ -91,9 +86,9 @@ int32 UEImguiDraw::MakeImgui(
 
 int32 UEImguiDraw::MakeImgui(
 	FSlateWindowElementList& ElementList,
-	FPlatformTypes::uint32 InLayer,
-	const FTransform2D& ImguiToWidget,
-	const TArray<ImDrawList*>& AllDrawList)
+	uint32 InLayer,
+	const FSlateRenderTransform& ImguiToRender,
+	TArray<ImDrawList*>& AllDrawList)
 {
 	if (AllDrawList.Num() == 0) return InLayer + 1;
 	
@@ -110,7 +105,7 @@ int32 UEImguiDraw::MakeImgui(
 			SlateVertex.TexCoords[1] = ImGuiVertex.uv.y;
 			SlateVertex.TexCoords[2] = SlateVertex.TexCoords[3] = 1.f;
 
-			SlateVertex.Position = ImguiToWidget.TransformPoint(FVector2D(ImGuiVertex.pos.x,ImGuiVertex.pos.y));
+			SlateVertex.Position = ImguiToRender.TransformPoint(FVector2D(ImGuiVertex.pos.x,ImGuiVertex.pos.y));
 			
 			SlateVertex.Color = UnpackColor(ImGuiVertex.col);
 		}
@@ -126,10 +121,18 @@ int32 UEImguiDraw::MakeImgui(
 				Indices[Idx] = CmdList->IdxBuffer[Cmd->IdxOffset + Idx];
 			}
 
+			FVector2D Begin(Cmd->ClipRect.x, Cmd->ClipRect.y);
+			FVector2D End(Cmd->ClipRect.z, Cmd->ClipRect.w);
+			
+			Begin = ImguiToRender.TransformPoint(Begin);
+			End = ImguiToRender.TransformPoint(End);
+			
+			ElementList.PushClip(FSlateClippingZone(FSlateRect(Begin, End)));
 			auto Handle = UImguiResourceManager::Get().FindHandle(Cmd->TextureId);
 			check(Handle.IsValid());
 			FSlateDrawElement::MakeCustomVerts(ElementList, InLayer, Handle
                 , Vertices, Indices, nullptr, 0, 0);
+			ElementList.PopClip();
 		}
 	}
 

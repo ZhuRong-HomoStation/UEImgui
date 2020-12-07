@@ -159,16 +159,17 @@ int32 SImguiWidget::OnPaint(
 	// render
 	ImGui::Render();
 
-	// compute transform
-	const FSlateRenderTransform& WidgetToScreen = AllottedGeometry.GetAccumulatedRenderTransform();
-
 	// draw to widget 
 	ImDrawData* DrawData = ImGui::GetDrawData();
 
 	// revert context 
 	ImGui::SetCurrentContext(OldContext);
 
-	return UEImguiDraw::MakeImgui(OutDrawElements, LayerId, MyCullingRect, WidgetToScreen, DrawData);
+	return UEImguiDraw::MakeImgui(
+		OutDrawElements,
+		LayerId,
+		AllottedGeometry.GetAccumulatedRenderTransform(),
+		DrawData);
 }
 
 FVector2D SImguiWidget::ComputeDesiredSize(float LayoutScaleMultiplier) const

@@ -81,40 +81,40 @@ bool SImguiWindow::SupportsKeyboardFocus() const
 	return true;
 }
 
-void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
-{
-	// find window 
-	UImguiContext* Context = BoundContext.Get();
-	if (!Context) return;
-	ImGuiWindow* Wnd = Context->GetContext()->NavWindow;
-	if (!Wnd) return;
+// void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
+// {
+// 	// find window 
+// 	UImguiContext* Context = BoundContext.Get();
+// 	if (!Context) return;
+// 	ImGuiWindow* Wnd = Context->GetContext()->NavWindow;
+// 	if (!Wnd) return;
+//
+// 	// change context and change focus 
+// 	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
+// 	Context->ApplyContext();
+// 	if (WndID.Contains(Wnd->ID))
+// 	{
+// 		ImGui::FocusWindow(nullptr);
+// 	}
+// 	ImGui::SetCurrentContext(CurCtx);
+// }
 
-	// change context and change focus 
-	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
-	Context->ApplyContext();
-	if (WndID.Contains(Wnd->ID))
-	{
-		ImGui::FocusWindow(nullptr);
-	}
-	ImGui::SetCurrentContext(CurCtx);
-}
-
-FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
-{
-	// search top level window
-	UImguiContext* Context = BoundContext.Get();
-	if (!Context) return FReply::Unhandled();
-	ImGuiWindow* TopWnd = (ImGuiWindow*)Context->GetContext()->WindowsById.GetVoidPtr(TopWndID);
-	if (!TopWnd) return FReply::Unhandled();
-
-	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
-	Context->ApplyContext();
-
-	ImGui::FocusWindow(TopWnd);
-	
-	ImGui::SetCurrentContext(CurCtx);
-	return FReply::Handled();
-}
+// FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
+// {
+// 	// search top level window
+// 	UImguiContext* Context = BoundContext.Get();
+// 	if (!Context) return FReply::Unhandled();
+// 	ImGuiWindow* TopWnd = (ImGuiWindow*)Context->GetContext()->WindowsById.GetVoidPtr(TopWndID);
+// 	if (!TopWnd) return FReply::Unhandled();
+//
+// 	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
+// 	Context->ApplyContext();
+//
+// 	ImGui::FocusWindow(TopWnd);
+// 	
+// 	ImGui::SetCurrentContext(CurCtx);
+// 	return FReply::Handled();
+// }
 
 FCursorReply SImguiWindow::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
 {
