@@ -28,6 +28,7 @@ public class UEImguiEditor : ModuleRules
 				"LevelEditor",
 				"UEImgui",
 				"EditorSubsystem",
+				"UnrealEd",
 			});
 	}
 }

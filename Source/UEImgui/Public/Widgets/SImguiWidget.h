@@ -75,7 +75,7 @@ public:
 		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 		SLATE_ARGUMENT(bool, UseImguiWidgetHeight)
 		SLATE_ARGUMENT(bool, UseImguiWidgetWidth)
-		// for auto sizing windows 
+		// for auto sizing widgets like detail 
 		SLATE_ARGUMENT(bool, UseImguiWndContentSize)
 	SLATE_END_ARGS()
 
@@ -120,7 +120,7 @@ public:
 	    SLATE_ARGUMENT(bool, UseImguiWidgetWidth)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetSize)
-	    // for auto sizing windows 
+		// for auto sizing widgets like detail 
 	    SLATE_ARGUMENT(bool, UseImguiWndContentSize)
 	SLATE_END_ARGS()
 
@@ -148,10 +148,10 @@ protected:
 private:
 	ImGuiID				TopWndID;
 	TArray<ImGuiID>		WndID;
-	bool			bUseImguiWidgetHeight;
-	bool			bUseImguiWidgetWidth;
-	bool			bUseImguiWndContentSize;
-	bool			bAutoSetWidgetPos;
-	bool			bAutoSetWidgetSize;
-	FOnImguiDraw	OnDraw;
+	bool				bUseImguiWidgetHeight;
+	bool				bUseImguiWidgetWidth;
+	bool				bUseImguiWndContentSize;
+	bool				bAutoSetWidgetPos;
+	bool				bAutoSetWidgetSize;
+	FOnImguiDraw		OnDraw;
 };

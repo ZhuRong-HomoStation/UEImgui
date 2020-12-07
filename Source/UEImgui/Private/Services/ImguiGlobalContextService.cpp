@@ -198,6 +198,9 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 	
 	// draw global windows 
 	_DrawGlobalImguiWnds();
+	
+	// clean up render proxy 
+	_CleanUpRenderProxy();
 }
 
 void UImguiGlobalContextService::_DrawGlobalImguiWnds()
@@ -227,9 +230,6 @@ void UImguiGlobalContextService::_DrawGlobalImguiWnds()
 void UImguiGlobalContextService::_DispatchWindows()
 {
 	ImGuiContext* Ctx = GlobalContext->GetContext();
-
-	// clean up render proxy 
-	_CleanUpRenderProxy();
 	
 	// child windows exclude Menu, ToolTip and Popup  
 	TArray<ImGuiWindow*, TInlineAllocator<100>> ChildWndArr;
@@ -398,7 +398,7 @@ TWeakPtr<SImguiWidgetRenderProxy> UImguiGlobalContextService::_FineRenderProxy(I
 {
 	for (TWeakPtr<SImguiWidgetRenderProxy> Proxy : AllRenderProxy)
 	{
-		if (!Proxy.IsValid()) continue;;
+		if (!Proxy.IsValid()) continue;
 		TSharedPtr<SImguiWidgetRenderProxy> ProxySp = Proxy.Pin();
 		if (ProxySp->GetTopWnd() == InWindow->ID)
 		{
@@ -446,7 +446,6 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 			{
 				auto Key = ImguiUnrealWindows.FindKey(StaticCastSharedRef<SImguiWindow>(InWnd));
 				ImGuiWindow* Wnd = (ImGuiWindow*)GlobalContext->GetContext()->WindowsById.GetVoidPtr(*Key);
-				Wnd->WasActive = false;
 				ImguiUnrealWindows.Remove(*Key);
 			}));
 

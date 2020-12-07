@@ -8,6 +8,7 @@
 - [ ] 统一Widget，使用更鲁棒的坐标转换
 - [ ] 添加UImguiDetailCustomization，支持Multi object editing 
 - [ ] 添加Popup和Tooltip窗口校正，防止在多显示器情况下的跨屏显示
+- [ ] 添加Unreal FString类型的输入框支持，并支持输入法输入
 
 **慢慢写**
 - [ ] 添加UE的类型的IMGUI支持
