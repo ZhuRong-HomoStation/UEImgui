@@ -34,12 +34,12 @@ void FUEImguiEditor::_InitDetailExtension()
 	if (!AActor::StaticClass()->FindPropertyByName(TEXT("ImguiDummy")))
 	{
 		FStructProperty* DummyProperty = new FStructProperty(AActor::StaticClass()
-            , TEXT("EventBinderDummy"), EObjectFlags::RF_NoFlags);
+            , TEXT("ImguiDummy"), EObjectFlags::RF_NoFlags);
 		DummyProperty->Struct = FImguiDummy::StaticStruct();
 		DummyProperty->PropertyFlags |= EPropertyFlags::CPF_Transient;
 		DummyProperty->PropertyFlags |= EPropertyFlags::CPF_EditConst;
 		DummyProperty->PropertyFlags |= EPropertyFlags::CPF_Edit;
-		DummyProperty->SetMetaData(TEXT("Category"), TEXT("EventBinder"));
+		DummyProperty->SetMetaData(TEXT("Category"), TEXT("Imgui"));
 		AActor::StaticClass()->AddCppProperty(DummyProperty);
 	}
 	

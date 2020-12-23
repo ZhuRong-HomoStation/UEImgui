@@ -26,7 +26,6 @@ public class Imgui : ModuleRules
 			new string[]
 			{
 				"Core",
-				"Imgui" ,
 			});
 			
 		

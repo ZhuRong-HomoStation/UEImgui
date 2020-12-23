@@ -24,11 +24,6 @@
 			"Name": "UEImguiEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "QuickEditor",
-			"Type": "Editor",
-			"LoadingPhase": "Default"
 		}
 	]
 }
