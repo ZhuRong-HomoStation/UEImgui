@@ -19,7 +19,9 @@ public class UEImgui : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+#if UE_4_26_OR_LATER
 				"DeveloperSettings",
+#endif
 				"CoreUObject",
 				"Engine",
 				"Slate",
