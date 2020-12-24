@@ -103,7 +103,7 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
 	RenderProxy->SetTopWnd(WndID);
 
 	// add window 
-	UImguiGlobalContextService::Get().AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
+	UImguiGlobalContextService::Get().AddGlobalWindow(DetailName.ToString(), FDrawGlobalImgui::CreateLambda(
         [DetailName, RenderProxy, AllCustomization, AllObjs]
         {
 			if (RenderProxy.IsUnique()) return false;
@@ -178,7 +178,7 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 	RenderProxy->SetTopWnd(WndID);
 
 	// add window 
-	UImguiGlobalContextService::Get().AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
+	UImguiGlobalContextService::Get().AddGlobalWindow(DetailName.ToString(), FDrawGlobalImgui::CreateLambda(
 		[Obj, OnGUIFunc, DetailName, RenderProxy, AllCustomization]
         {
 			if (RenderProxy.IsUnique()) return false;

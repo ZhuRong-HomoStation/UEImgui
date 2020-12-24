@@ -32,5 +32,9 @@ public:
 	// Style 
 	UPROPERTY(Config)
 	FImguiStyle				ImguiStyle;
+
+	// Font 
+	UPROPERTY(EditAnywhere, Config)
+	FString					FontPath;	
 };
 

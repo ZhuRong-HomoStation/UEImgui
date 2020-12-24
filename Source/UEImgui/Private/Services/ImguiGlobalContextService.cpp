@@ -17,7 +17,11 @@ bool FImguiGlobalInputHook::HandleKeyDownEvent(FSlateApplication& SlateApp, cons
 {
 	// for (UImguiInputAdapter* Adapter : TargetAdapters)
 	// {
-	// 	Adapter->OnKeyDown(InKeyEvent);
+	// 	if (!Adapter->GetContext()) continue;
+	// 	if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
+	// 	{
+	// 		Adapter->OnKeyDown(InKeyEvent);
+	// 	}
 	// }
 	return false;
 }
@@ -26,7 +30,11 @@ bool FImguiGlobalInputHook::HandleKeyUpEvent(FSlateApplication& SlateApp, const 
 {
 	// for (UImguiInputAdapter* Adapter : TargetAdapters)
 	// {
-	// 	Adapter->OnKeyUp(InKeyEvent);
+	// 	if (!Adapter->GetContext()) continue;
+	// 	if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
+	// 	{
+	// 		Adapter->OnKeyUp(InKeyEvent);
+	// 	}
 	// }
 	return false;
 }
@@ -56,19 +64,27 @@ bool FImguiGlobalInputHook::HandleMouseMoveEvent(FSlateApplication& SlateApp, co
 
 bool FImguiGlobalInputHook::HandleMouseButtonDownEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
 {
-	// for (UImguiInputAdapter* Adapter : TargetAdapters)
-	// {
-	// 	Adapter->OnMouseButtonDown(MouseEvent);
-	// }
+	for (UImguiInputAdapter* Adapter : TargetAdapters)
+	{
+		if (!Adapter->GetContext()) continue;
+		if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
+		{
+			Adapter->OnMouseButtonDown(MouseEvent);
+		}
+	}
 	return false;
 }
 
 bool FImguiGlobalInputHook::HandleMouseButtonUpEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
 {
-	// for (UImguiInputAdapter* Adapter : TargetAdapters)
-	// {
-	// 	Adapter->OnMouseButtonUp(MouseEvent);
-	// }
+	for (UImguiInputAdapter* Adapter : TargetAdapters)
+	{
+		if (!Adapter->GetContext()) continue;
+		if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
+		{
+			Adapter->OnMouseButtonUp(MouseEvent);
+		}
+	}
 	return false;
 }
 
@@ -179,7 +195,7 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 
 	// please make sure imgui background context always global context
 	check(ImGui::GetCurrentContext() == GlobalContext->GetContext());
-	
+
 	// render 
 	ImGui::Render();
 	
@@ -196,33 +212,29 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 	// begin a new frame to capture global imgui draw 
 	ImGui::NewFrame();
 	
-	// draw global windows 
-	_DrawGlobalImguiWnds();
-	
 	// clean up render proxy 
 	_CleanUpRenderProxy();
+
+	// draw global windows 
+	_DrawGlobalImguiWnds();
 }
 
 void UImguiGlobalContextService::_DrawGlobalImguiWnds()
 {
-	for (int32 i = 0; i < AllDrawCallBack.Num();)
+	for (auto It = AllDrawCallBack.CreateIterator(); It; ++It)
 	{
-		auto& Delegate = AllDrawCallBack[i];
+		auto& Delegate = It.Value();
 		if (Delegate.IsBound())
 		{
 			bool bIsWndAlive = Delegate.Execute();
 			if (!bIsWndAlive)
 			{
-				AllDrawCallBack.RemoveAtSwap(i);				
-			}
-			else
-			{
-				++i;
+				It.RemoveCurrent();				
 			}
 		}
 		else
 		{
-			AllDrawCallBack.RemoveAtSwap(i);
+			It.RemoveCurrent();
 		}
 	}
 }
@@ -292,7 +304,7 @@ void UImguiGlobalContextService::_DispatchWindows()
 	// build windows 
 	for (ImGuiWindow* Wnd : TopSideWndArr)
 	{
-		TWeakPtr<SImguiWidgetRenderProxy> Proxy = _FineRenderProxy(Wnd);
+		TWeakPtr<SImguiWidgetRenderProxy> Proxy = _FindRenderProxy(Wnd);
 		if (Proxy.IsValid())
 		{
 			TSharedPtr<SImguiWidgetRenderProxy> ProxySP = Proxy.Pin();
@@ -312,7 +324,8 @@ void UImguiGlobalContextService::_DispatchWindows()
 		{
 			// find window 
 			TSharedPtr<SImguiWindow> ImguiWindow = _FindUnrealWindow(Wnd);
-
+			if (!ImguiWindow) continue;
+			
 			// set window info
 			ImguiWindow->MoveWindowTo({ Wnd->Pos.x, Wnd->Pos.y });
 			ImguiWindow->SetTitle(FText::FromString(Wnd->Name));
@@ -394,7 +407,7 @@ bool UImguiGlobalContextService::_IsChildOfPopupWnd(ImGuiWindow* InWnd)
 		: false;
 }
 
-TWeakPtr<SImguiWidgetRenderProxy> UImguiGlobalContextService::_FineRenderProxy(ImGuiWindow* InWindow)
+TWeakPtr<SImguiWidgetRenderProxy> UImguiGlobalContextService::_FindRenderProxy(ImGuiWindow* InWindow)
 {
 	for (TWeakPtr<SImguiWidgetRenderProxy> Proxy : AllRenderProxy)
 	{
@@ -446,7 +459,7 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 			{
 				auto Key = ImguiUnrealWindows.FindKey(StaticCastSharedRef<SImguiWindow>(InWnd));
 				ImGuiWindow* Wnd = (ImGuiWindow*)GlobalContext->GetContext()->WindowsById.GetVoidPtr(*Key);
-				ImguiUnrealWindows.Remove(*Key);
+				AllDrawCallBack.Remove(Wnd->Name);
 			}));
 
 		if (InWindow->Flags & ImGuiWindowFlags_Modal)
@@ -465,7 +478,15 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 	else
 	{
 		ImguiWindow = *FoundWnd;
-		ImguiWindow->ShowWindow();
+		if (ImguiWindow->GetNativeWindow().IsValid())
+		{
+			ImguiWindow->ShowWindow();
+		}
+		else
+		{
+			ImguiUnrealWindows.Remove(InWindow->ID);
+			return nullptr;
+		}
 	}
 
 	// set up adapter 
