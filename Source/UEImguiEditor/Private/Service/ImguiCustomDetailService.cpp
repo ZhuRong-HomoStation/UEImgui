@@ -1,5 +1,7 @@
 ﻿#include "ImguiCustomDetailService.h"
 
+
+#include "GenericPlatform/ITextInputMethodSystem.h"
 #include "Services/ImguiDetailCustomization.h"
 
 TArray<UImguiDetailCustomization*> UImguiCustomDetailService::GetAllDetailCustomizationOfClass(UClass* InClass)
@@ -23,4 +25,6 @@ void UImguiCustomDetailService::Initialize(FSubsystemCollectionBase& Collection)
 
 void UImguiCustomDetailService::Deinitialize()
 {
+	// TODO: InputText 
+//	FSlateApplication::Get().GetTextInputMethodSystem()->ActivateContext()
 }

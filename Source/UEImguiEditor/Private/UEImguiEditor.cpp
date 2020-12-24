@@ -39,7 +39,7 @@ void FUEImguiEditor::_InitDetailExtension()
 		DummyProperty->PropertyFlags |= EPropertyFlags::CPF_Transient;
 		DummyProperty->PropertyFlags |= EPropertyFlags::CPF_EditConst;
 		DummyProperty->PropertyFlags |= EPropertyFlags::CPF_Edit;
-		DummyProperty->SetMetaData(TEXT("Category"), TEXT("EventBinder"));
+		DummyProperty->SetMetaData(TEXT("Category"), TEXT("Imgui"));
 		AActor::StaticClass()->AddCppProperty(DummyProperty);
 	}
 	

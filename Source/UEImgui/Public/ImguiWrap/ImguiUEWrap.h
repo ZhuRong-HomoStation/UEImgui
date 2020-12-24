@@ -58,6 +58,9 @@ namespace ImGui
 	UEIMGUI_API void BeginDetail();		// Begin detail for detail customization 
 	UEIMGUI_API void EndDetail();		// End detail for detail customization
 
+	UEIMGUI_API void UEText(const FString& InString);
+	UEIMGUI_API bool UEInputText(const char* label, FString& InString);
+	UEIMGUI_API bool UEInputTextMultiline(const char* label, FString& InString, const FVector2D& InSize);	
 }
 
 // Imgui type convert

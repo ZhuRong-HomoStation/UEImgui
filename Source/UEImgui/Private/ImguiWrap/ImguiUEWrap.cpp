@@ -241,6 +241,11 @@ void ImGui::EndDetail()
 	ImGui::End();
 }
 
+void ImGui::UEText(const FString& InString)
+{
+	ImGui::Text(TCHAR_TO_UTF8(*InString));
+}
+
 bool ImGui::ShowUEStyleSelector(const char* Label)
 {
 	static int StyleIdx = 4;
