@@ -28,6 +28,7 @@ public class UEImgui : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"ApplicationCore" ,
+				"MainFrame"
 			});
 	}
 }

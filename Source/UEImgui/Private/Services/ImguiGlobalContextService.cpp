@@ -6,6 +6,7 @@
 #include "Widgets/SImguiWindow.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiUEWrap.h"
+#include "Interfaces/IMainFrameModule.h"
 #include "Widgets/SToolTip.h"
 #include "Widgets/Images/SImage.h"
 
@@ -472,7 +473,18 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 		}
 		else
 		{
-			FSlateApplication::Get().AddWindow(ImguiWindow.ToSharedRef());
+
+			if (FModuleManager::Get().IsModuleLoaded("MainFrame"))
+			{
+				IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
+				const TSharedPtr<SWindow> MainFrameWindow = MainFrame.GetParentWindow();
+				FSlateApplication::Get().AddWindowAsNativeChild(ImguiWindow.ToSharedRef(), MainFrameWindow.ToSharedRef());
+			}
+			else
+			{
+				FSlateApplication::Get().AddWindow(ImguiWindow.ToSharedRef());
+			}
+
 		}
 	}
 	else
