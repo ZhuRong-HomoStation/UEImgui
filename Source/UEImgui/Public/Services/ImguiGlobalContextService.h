@@ -56,7 +56,7 @@ public:
 
 	bool TimeToDraw();
 
-	void AddGlobalWindow(const FDrawGlobalImgui& InDrawEvent) { AllDrawCallBack.Add(InDrawEvent); }
+	void AddGlobalWindow(const FString& WndName, const FDrawGlobalImgui& InDrawEvent) { AllDrawCallBack.Add(WndName, InDrawEvent); }
 
 	void AddRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy);
 	void RemoveRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy) { AllRenderProxy.Remove(InRenderProxy); }
@@ -81,7 +81,7 @@ private:
 	bool _IsInnerChild(ImGuiWindow* InWnd);
 	bool _IsChildOfPopupWnd(ImGuiWindow* InWnd);
 
-	TWeakPtr<SImguiWidgetRenderProxy> _FineRenderProxy(ImGuiWindow* InWindow);
+	TWeakPtr<SImguiWidgetRenderProxy> _FindRenderProxy(ImGuiWindow* InWindow);
 	void _CleanUpRenderProxy();
 private:
 	UPROPERTY()
@@ -94,7 +94,7 @@ private:
 	TArray<TWeakPtr<SImguiWidgetRenderProxy>>	AllRenderProxy;
 
 	// draw call, for quick create imgui windows 
-	TArray<FDrawGlobalImgui>			AllDrawCallBack;
+	TMap<FString ,FDrawGlobalImgui>			AllDrawCallBack;
 
 	// input hook, used to capture mouse input when resizing windows 
 	TSharedPtr<FImguiGlobalInputHook>	GlobalInputHook;

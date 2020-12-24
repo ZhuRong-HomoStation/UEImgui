@@ -14,7 +14,7 @@ public:
 	virtual bool SupportSingleObjectEditing() { return false; }
 
 	UFUNCTION()
-	virtual bool SupportMultiObjectEditing() { return true; }
+	virtual bool SupportMultiObjectEditing() { return false; }
 	
 	UFUNCTION()
 	virtual void OnEditSingleObject(UObject* InObject) { }
