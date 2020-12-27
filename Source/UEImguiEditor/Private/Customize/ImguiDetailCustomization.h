@@ -13,6 +13,6 @@ protected:
 	// End IDetailCustomization API
 
 private:
-	void _DrawMultObj(FName DetailName, const TArray<UObject*>& InObjs, IDetailChildrenBuilder& ChildBuilder);
+	void _DrawMultObj(FName DetailName, const TArray<UObject*>& InObjs, IDetailChildrenBuilder& ChildBuilder, UClass* LowestClass);
 	void _DrawSingleObj(FName DetailName, const TArray<UObject*>& InObjs, IDetailChildrenBuilder& ChildBuilder);
 };

@@ -25,6 +25,9 @@ void FImguiDetailCustomization::CustomizeChildren(
 	IDetailChildrenBuilder& ChildBuilder,
 	IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
+	// not time
+	if (!UImguiGlobalContextService::Get().TimeToDraw()) return;
+	
 	// get detail name 
 	FName DetailName = ChildBuilder.GetParentCategory().GetParentLayout().GetDetailsView()->GetIdentifier();
 
@@ -39,22 +42,21 @@ void FImguiDetailCustomization::CustomizeChildren(
 	}
 	else
 	{
-		UClass* CurrentClass = Objs[0]->GetClass();
+		UClass* LowestClass = Objs[0]->GetClass();
 		for (UObject* Obj : Objs)
 		{
-			if (Obj->GetClass() != CurrentClass)
+			while (!Obj->GetClass()->IsChildOf(LowestClass))
 			{
-				return;
-				break;
+				LowestClass = LowestClass->GetSuperClass();
 			}
 		}
-		_DrawMultObj(DetailName, Objs, ChildBuilder);
+		_DrawMultObj(DetailName, Objs, ChildBuilder, LowestClass);
 	}
 	
 }
 
 void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObject*>& InObjs,
-	IDetailChildrenBuilder& ChildBuilder)
+	IDetailChildrenBuilder& ChildBuilder, UClass* LowestClass)
 {
 	// cast weak ptr
 	TArray<TWeakObjectPtr<UObject>> AllObjs;
@@ -66,7 +68,7 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
 	
 	// find detail customization
 	TArray<UImguiDetailCustomization*> AllCustomization = UImguiCustomDetailService::Get()
-    .GetAllDetailCustomizationOfClass(InObjs[0]->GetClass());
+    .GetAllDetailCustomizationOfClass(LowestClass);
 
 	// cull not support multi object items 
 	for (int32 i = 0; i < AllCustomization.Num();)
@@ -86,8 +88,8 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
 	// edit category  
 	IDetailCategoryBuilder& CategoryBuilder = ChildBuilder.GetParentCategory().GetParentLayout()
         .EditCategory(
-        FName(InObjs[0]->GetClass()->GetName() + TEXT("Imgui")),
-        FText::GetEmpty(),
+        FName(LowestClass->GetName() + TEXT("Imgui")),
+        FText::FromString(LowestClass->GetName() + TEXT("Imgui")),
         ECategoryPriority::Important);
 
 	// set widget
@@ -184,10 +186,19 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 			if (RenderProxy.IsUnique()) return false;
             UObject* GotObj = Obj.Get();
             if (!GotObj) return false;
-            FFrame Stack(GotObj, OnGUIFunc, nullptr);
+
+			// set up detail info 
             ImGui::SetCurrentDetail(DetailName);
             ImGui::SetCurrentDetailWidget(RenderProxy);
-            OnGUIFunc->Invoke(GotObj, Stack, nullptr);
+
+			// call on gui 
+			if (OnGUIFunc)
+			{
+				FFrame Stack(GotObj, OnGUIFunc, nullptr);
+				OnGUIFunc->Invoke(GotObj, Stack, nullptr);
+			}
+
+			// call customization 
 			for (UImguiDetailCustomization* Customization : AllCustomization)
 			{
 				Customization->OnEditSingleObject(GotObj);
