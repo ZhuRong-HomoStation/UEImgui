@@ -2,7 +2,7 @@
 
 在UE4中使用Imgui
 
-**Example**: 将根目录下的[Example](./Example/)拷贝至任意Module下(需要引用Imgui和UEImgui模块)即可看到示例效果
+**Example**: 将根目录下的[Examples](./Examples/)拷贝至任意Module下(需要引用Imgui和UEImgui模块)即可看到示例效果
 
 **TODO**: 
 - [ ] Color/Vector/Transform等基础类型的Editor支持
