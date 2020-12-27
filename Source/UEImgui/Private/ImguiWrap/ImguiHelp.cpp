@@ -49,10 +49,13 @@ int32 UEImguiDraw::MakeImgui(
 				Indices[Idx] = CmdList->IdxBuffer[Cmd->IdxOffset + Idx];
 			}
 
-			FSlateRect ClipRect(Cmd->ClipRect.x, Cmd->ClipRect.y, Cmd->ClipRect.z, Cmd->ClipRect.w);
-			ClipRect.OffsetBy(ImguiToRender.GetTranslation());
-
-			ElementList.PushClip(FSlateClippingZone(ClipRect));
+			FVector2D Begin(Cmd->ClipRect.x, Cmd->ClipRect.y);
+			FVector2D End(Cmd->ClipRect.z, Cmd->ClipRect.w);
+			
+			Begin = ImguiToRender.TransformPoint(Begin);
+			End = ImguiToRender.TransformPoint(End);
+			
+			ElementList.PushClip(FSlateClippingZone(FSlateRect(Begin, End)));
 			auto Handle = UImguiResourceManager::Get().FindHandle(Cmd->TextureId);
 			check(Handle.IsValid());
 			FSlateDrawElement::MakeCustomVerts(ElementList, InLayer, Handle
