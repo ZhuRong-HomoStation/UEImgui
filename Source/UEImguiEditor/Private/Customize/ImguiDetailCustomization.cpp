@@ -96,8 +96,8 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
     .WholeRowWidget
     [
         SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
-        .UseImguiWidgetWidth(false)
-        .UseImguiWndContentSize(true)
+        .HSizingRule(EImguiSizingRule::UESize)
+        .VSizingRule(EImguiSizingRule::ImContentSize)
     ];
 	ImGuiID WndID = ImHashStr(TCHAR_TO_UTF8(*DetailName.ToString()));
 	RenderProxy->SetTopWnd(WndID);
@@ -170,9 +170,9 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 	CategoryBuilder.AddCustomRow(FText::FromString(TEXT("Imgui")), false)
     .WholeRowWidget
     [
-        SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
-        .UseImguiWidgetWidth(false)
-        .UseImguiWndContentSize(true)
+    SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
+    .HSizingRule(EImguiSizingRule::UESize)
+    .VSizingRule(EImguiSizingRule::ImContentSize)
     ];
 	ImGuiID WndID = ImHashStr(TCHAR_TO_UTF8(*DetailName.ToString()));
 	RenderProxy->SetTopWnd(WndID);

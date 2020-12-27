@@ -8,6 +8,26 @@ class UImguiInputAdapter;
 
 DECLARE_DELEGATE(FOnImguiDraw);
 
+enum class EImguiSizingRule
+{
+	// Desired size is zero, and we won't control imgui wnd size 
+	NoSizing ,
+
+	// Desired size is zero, and we use UE Widget size as imgui wnd size 
+	UESize ,
+
+	// Desired is imgui wnd size
+	ImSize ,
+
+	// Desired is imgui size, and we will use wnd content size
+	ImContentSize ,
+};
+
+enum class EImguiPosRule
+{
+	
+};
+
 // base class, implement input forward 
 class UEIMGUI_API SImguiWidgetBase : public SLeafWidget, public FGCObject
 {
@@ -66,17 +86,14 @@ public:
 	SLATE_BEGIN_ARGS(SImguiWidget)
         : _InContext(nullptr)
         , _InAdapter(nullptr)
-		, _UseImguiWidgetHeight(true)
-		, _UseImguiWidgetWidth(true)
-		, _UseImguiWndContentSize(false)
+		, _HSizingRule(EImguiSizingRule::NoSizing)
+		, _VSizingRule(EImguiSizingRule::NoSizing)
 	{}
 		SLATE_EVENT(FOnImguiDraw, OnDraw)
 		SLATE_ARGUMENT(UImguiContext*, InContext)
 		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
-		SLATE_ARGUMENT(bool, UseImguiWidgetHeight)
-		SLATE_ARGUMENT(bool, UseImguiWidgetWidth)
-		// for auto sizing widgets like detail 
-		SLATE_ARGUMENT(bool, UseImguiWndContentSize)
+		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
+		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -94,10 +111,9 @@ protected:
 	virtual FVector2D ComputeDesiredSize(float LayoutScaleMultiplier) const override;
 	// ~End SWidget API
 private:
-	bool			bUseImguiWidgetHeight;
-	bool			bUseImguiWidgetWidth;
-	bool			bUseImguiWndContentSize;
-	FOnImguiDraw	OnDraw;
+	EImguiSizingRule	HSizingRule;
+	EImguiSizingRule	VSizingRule;	
+	FOnImguiDraw		OnDraw;
 };
 
 // imgui draw proxy widget, only do input forward and draw, always used for global context 
@@ -107,21 +123,16 @@ class UEIMGUI_API SImguiWidgetRenderProxy : public SImguiWidgetBase
 public:
 	SLATE_BEGIN_ARGS(SImguiWidgetRenderProxy)
             : _InContext(nullptr)
-            , _InAdapter(nullptr)
-            , _UseImguiWidgetHeight(true)
-            , _UseImguiWidgetWidth(true)
+			, _InAdapter(nullptr)
+			, _HSizingRule(EImguiSizingRule::NoSizing)
+			, _VSizingRule(EImguiSizingRule::NoSizing)
 			, _AutoSetWidgetPos(true)
-			, _AutoSetWidgetSize(true)
-            , _UseImguiWndContentSize(false)
 	{}
 	    SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
-	    SLATE_ARGUMENT(bool, UseImguiWidgetHeight)
-	    SLATE_ARGUMENT(bool, UseImguiWidgetWidth)
+		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
+		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
-	    SLATE_ARGUMENT(bool, AutoSetWidgetSize)
-		// for auto sizing widgets like detail 
-	    SLATE_ARGUMENT(bool, UseImguiWndContentSize)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -148,10 +159,7 @@ protected:
 private:
 	ImGuiID				TopWndID;
 	TArray<ImGuiID>		WndID;
-	bool				bUseImguiWidgetHeight;
-	bool				bUseImguiWidgetWidth;
-	bool				bUseImguiWndContentSize;
+	EImguiSizingRule	HSizingRule;
+	EImguiSizingRule	VSizingRule;
 	bool				bAutoSetWidgetPos;
-	bool				bAutoSetWidgetSize;
-	FOnImguiDraw		OnDraw;
 };

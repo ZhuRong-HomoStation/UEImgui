@@ -2,6 +2,7 @@
 #include "imgui_internal.h"
 #include "Framework/Application/IInputProcessor.h"
 #include "ImguiWrap/ImguiContext.h"
+#include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "Widgets/SImguiWindow.h"
 #include "ImguiWrap/ImguiResourceManager.h"
@@ -192,11 +193,15 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 		ImGui::NewFrame();
 		return;
 	}
-	GlobalContext->ApplyContext();
-
 	// please make sure imgui background context always global context
 	check(ImGui::GetCurrentContext() == GlobalContext->GetContext());
 
+	// set up context info
+	GlobalContext->GetIO()->DeltaTime = DeltaTime;
+	
+	// apply context 
+	GlobalContext->ApplyContext();
+	
 	// render 
 	ImGui::Render();
 	
@@ -269,25 +274,25 @@ void UImguiGlobalContextService::_DispatchWindows()
 			continue;
 		}
 		
-		if (_IsMenu(Wnd))
+		if (UEImguiHelp::IsMenu(Wnd))
 		{
-			if (!_IsInnerChild(Wnd))
+			if (!UEImguiHelp::IsInnerChild(Wnd))
 			{
 				TopSideWndArr.Add(Wnd);
 				continue;
 			}
 		}
-		if (_IsToolTip(Wnd))
+		if (UEImguiHelp::IsToolTip(Wnd))
 		{
-			if (!_IsInnerChild(Wnd))
+			if (!UEImguiHelp::IsInnerChild(Wnd))
 			{
 				TopSideWndArr.Add(Wnd);
 				continue;
 			}
 		}
-		if (_IsPopup(Wnd))
+		if (UEImguiHelp::IsPopup(Wnd))
 		{
-			if (!_IsInnerChild(Wnd))
+			if (!UEImguiHelp::IsInnerChild(Wnd))
 			{
 				TopSideWndArr.Add(Wnd);
 				continue;
@@ -315,7 +320,7 @@ void UImguiGlobalContextService::_DispatchWindows()
 			IDArr.Add(Wnd->ID);
 			for (ImGuiWindow* Child : ChildWndArr)
 			{
-				if (_IsClosestParent(Child, Wnd))
+				if (UEImguiHelp::IsClosestParent(Child, Wnd))
 				{
 					IDArr.Add(Child->ID);
 				}
@@ -339,73 +344,13 @@ void UImguiGlobalContextService::_DispatchWindows()
 			IDArr.Add(Wnd->ID);
 			for (ImGuiWindow* Child : ChildWndArr)
 			{
-				if (_IsClosestParent(Child, Wnd))
+				if (UEImguiHelp::IsClosestParent(Child, Wnd))
 				{
 					IDArr.Add(Child->ID);
 				}
 			}
 		}
 	}
-}
-
-bool UImguiGlobalContextService::_IsParent(ImGuiWindow* InChild, ImGuiWindow* InParent)
-{
-	while (InChild->ParentWindow)
-	{
-		if (InChild->ParentWindow == InParent) return true;
-		InChild = InChild->ParentWindow;
-	}
-	return false;
-}
-
-bool UImguiGlobalContextService::_IsClosestParent(ImGuiWindow* InChild, ImGuiWindow* InParent)
-{
-	while (InChild->ParentWindow)
-	{
-		if (InChild->ParentWindow == InParent) return true;
-		if (_IsPopup(InChild->ParentWindow) || _IsMenu(InChild->ParentWindow) || _IsToolTip(InChild->ParentWindow)) return false;
-		InChild = InChild->ParentWindow;
-	}
-	return false;
-}
-
-bool UImguiGlobalContextService::_IsToolTip(ImGuiWindow* InWnd)
-{
-	return FCStringAnsi::Strncmp(InWnd->Name, "##ToolTip", 9) == 0;
-}
-
-bool UImguiGlobalContextService::_IsMenu(ImGuiWindow* InWnd)
-{
-	return FCStringAnsi::Strncmp(InWnd->Name, "##Menu", 6) == 0;
-}
-
-bool UImguiGlobalContextService::_IsPopup(ImGuiWindow* InWnd)
-{
-	return
-		FCStringAnsi::Strncmp(InWnd->Name, "##Popup", 7) == 0 ||
-		FCStringAnsi::Strncmp(InWnd->Name, "##Combo", 7) == 0;
-}
-
-bool UImguiGlobalContextService::_IsInnerChild(ImGuiWindow* InWnd)
-{
-	char* Pos = FCStringAnsi::Strchr(InWnd->Name, '/');
-	if (!Pos) return false;
-	Pos = FCStringAnsi::Strchr(Pos, '_');
-	if (!Pos) return false;
-	++Pos;
-	while (*Pos)
-	{
-		if (!(*Pos >= '0' && *Pos <= '9') && !(*Pos >= 'A' && *Pos <= 'F')) return false;
-		++Pos;
-	}
-	return true;
-}
-
-bool UImguiGlobalContextService::_IsChildOfPopupWnd(ImGuiWindow* InWnd)
-{
-	return InWnd->ParentWindow ?
-		_IsMenu(InWnd->ParentWindow) || _IsToolTip(InWnd->ParentWindow) || _IsPopup(InWnd->ParentWindow)
-		: false;
 }
 
 TWeakPtr<SImguiWidgetRenderProxy> UImguiGlobalContextService::_FindRenderProxy(ImGuiWindow* InWindow)
@@ -445,9 +390,9 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 	// create a new window 
 	if (!FoundWnd)
 	{
-		bool bIsMenu = _IsMenu(InWindow);
-		bool bIsToolTip = _IsToolTip(InWindow);
-		bool bIsPopUp = _IsPopup(InWindow);
+		bool bIsMenu = UEImguiHelp::IsMenu(InWindow);
+		bool bIsToolTip = UEImguiHelp::IsToolTip(InWindow);
+		bool bIsPopUp = UEImguiHelp::IsPopup(InWindow);
 		SAssignNew(ImguiWindow, SImguiWindow)
 			.Context(GlobalContext)
 			.IsMenu(bIsMenu)
@@ -473,7 +418,6 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 		}
 		else
 		{
-
 			if (FModuleManager::Get().IsModuleLoaded("MainFrame"))
 			{
 				IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");

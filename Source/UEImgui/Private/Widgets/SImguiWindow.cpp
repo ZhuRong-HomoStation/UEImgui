@@ -1,5 +1,6 @@
 ﻿#include "Widgets/SImguiWindow.h"
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 
 void SImguiWindow::Construct(const FArguments& InArgs)
@@ -160,10 +161,15 @@ int32 SImguiWindow::OnPaint(
 	{	
 		AllDrawList.Add(static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(ID))->DrawList);
 	}
+
+	// collect render trans 
+	ImGuiWindow* TopWnd = static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(TopWndID));
+	if (!TopWnd) return LayerId;
+	FSlateRenderTransform ImguiRenderTrans(FVector2D(-TopWnd->Pos.x, -TopWnd->Pos.y));
 	
 	return UEImguiDraw::MakeImgui(
 		OutDrawElements,
 		LayerId,
-		GetCachedGeometry().GetAccumulatedRenderTransform().Inverse(),
+		ImguiRenderTrans,
 		AllDrawList);
 }

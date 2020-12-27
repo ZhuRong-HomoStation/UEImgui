@@ -4,6 +4,7 @@
 #include "Logging.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiContext.h"
+#include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Widgets/Input/SEditableText.h"
@@ -123,9 +124,8 @@ FCursorReply SImguiWidgetBase::OnCursorQuery(const FGeometry& MyGeometry, const 
 
 void SImguiWidget::Construct(const FArguments& InArgs)
 {
-	bUseImguiWidgetWidth = InArgs._UseImguiWidgetWidth;
-	bUseImguiWidgetHeight = InArgs._UseImguiWidgetHeight;
-	bUseImguiWndContentSize = InArgs._UseImguiWndContentSize;
+	HSizingRule = InArgs._HSizingRule;
+	VSizingRule = InArgs._VSizingRule;
 	OnDraw = InArgs._OnDraw;
 	
 	// construct parent 
@@ -182,12 +182,29 @@ FVector2D SImguiWidget::ComputeDesiredSize(float LayoutScaleMultiplier) const
 		ImGuiWindow* Wnd = Ctx->Windows[i];
 		if (Wnd && Wnd->WasActive)
 		{
-			if (bUseImguiWidgetWidth) Size.X = FMath::Max(Wnd->Pos.x +
-				bUseImguiWndContentSize ?
-				Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2 : Wnd->Size.x, Size.X);
-			if (bUseImguiWidgetHeight) Size.Y = FMath::Max(Wnd->Pos.y +
-				bUseImguiWndContentSize ?
-				Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2 : Wnd->Size.y, Size.Y);
+			// HSizing 
+			switch (HSizingRule)
+			{
+			case EImguiSizingRule::ImSize:
+				Size.X = FMath::Max(Size.X, Wnd->Pos.x + Wnd->Size.x);
+				break;
+			case EImguiSizingRule::ImContentSize:
+				Size.X = FMath::Max(Size.X, Wnd->Pos.x + Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2);
+				break;
+			default: ;
+			}
+
+			// VSizing
+			switch (VSizingRule)
+			{
+			case EImguiSizingRule::ImSize:
+				Size.Y = FMath::Max(Size.Y, Wnd->Pos.y + Wnd->Size.y);
+				break;
+			case EImguiSizingRule::ImContentSize:
+				Size.Y = FMath::Max(Size.Y, Wnd->Pos.y + Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2);
+				break;
+			default: ;
+			}
 		}
 	}
 	
@@ -196,11 +213,9 @@ FVector2D SImguiWidget::ComputeDesiredSize(float LayoutScaleMultiplier) const
 
 void SImguiWidgetRenderProxy::Construct(const FArguments& InArgs)
 {
-	bUseImguiWidgetWidth = InArgs._UseImguiWidgetWidth;
-	bUseImguiWidgetHeight = InArgs._UseImguiWidgetHeight;
-	bUseImguiWndContentSize = InArgs._UseImguiWndContentSize;
+	HSizingRule = InArgs._HSizingRule;
+	VSizingRule = InArgs._VSizingRule;
 	bAutoSetWidgetPos = InArgs._AutoSetWidgetPos;
-	bAutoSetWidgetSize = InArgs._AutoSetWidgetSize;
 	
 	// construct parent 
 	Super::Construct(
@@ -237,17 +252,23 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	{
 		Wnd->Pos = { AccumulatedTran.GetTranslation().X, AccumulatedTran.GetTranslation().Y };
 	}
-
-	if (bAutoSetWidgetSize)
+	else
 	{
-		if (!bUseImguiWidgetHeight)
-		{
-			Wnd->Size.y = AllottedGeometry.GetAbsoluteSize().Y;
-		}
-		if (!bUseImguiWidgetWidth)
-		{
-			Wnd->Size.x = AllottedGeometry.GetAbsoluteSize().X;			
-		}
+		AccumulatedTran.SetTranslation(FVector2D(Wnd->Pos.x, Wnd->Pos.y));
+	}
+
+	switch (HSizingRule)
+	{
+	case EImguiSizingRule::UESize:
+		Wnd->Size.x = AllottedGeometry.GetAbsoluteSize().X;			
+		break;
+	}
+
+	switch (VSizingRule)
+	{
+	case EImguiSizingRule::UESize:
+		Wnd->Size.y = AllottedGeometry.GetAbsoluteSize().Y;
+		break;
 	}
 	
 	static TArray<ImDrawList*> AllDrawList;
@@ -276,12 +297,29 @@ FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
 	for (ImGuiID ID : WndID)
 	{
 		ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(ID);
-		if (bUseImguiWidgetWidth) NewDesiredSize.X = FMath::Max(Wnd->Pos.x +
-                bUseImguiWndContentSize ?
-                Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2 : Wnd->Size.x, NewDesiredSize.X);
-		if (bUseImguiWidgetHeight) NewDesiredSize.Y = FMath::Max(Wnd->Pos.y +
-                bUseImguiWndContentSize ?
-                Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2 : Wnd->Size.y, NewDesiredSize.Y);
+		// HSizing 
+			switch (HSizingRule)
+			{
+			case EImguiSizingRule::ImSize:
+				NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->Size.x);
+				break;
+			case EImguiSizingRule::ImContentSize:
+				NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2);
+				break;
+			default: ;
+			}
+
+			// VSizing
+			switch (VSizingRule)
+			{
+			case EImguiSizingRule::ImSize:
+				NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->Size.y);
+				break;
+			case EImguiSizingRule::ImContentSize:
+				NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2);
+				break;
+			default: ;
+			}
 	}
 
 	return NewDesiredSize;

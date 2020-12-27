@@ -16,6 +16,7 @@ struct ImDrawData;
 
 DECLARE_DELEGATE_RetVal(bool, FDrawGlobalImgui)
 
+// hook global input when we need 
 class FImguiGlobalInputHook : public IInputProcessor, public FGCObject
 {
 public:
@@ -73,14 +74,6 @@ private:
 	TSharedPtr<SImguiWindow> _FindUnrealWindow(ImGuiWindow* InWindow);
 	void _DispatchWindows();
 
-	bool _IsParent(ImGuiWindow* InChild, ImGuiWindow* InParent);
-	bool _IsClosestParent(ImGuiWindow* InChild, ImGuiWindow* InParent);
-	bool _IsToolTip(ImGuiWindow* InWnd);
-	bool _IsMenu(ImGuiWindow* InWnd);
-	bool _IsPopup(ImGuiWindow* InWnd);
-	bool _IsInnerChild(ImGuiWindow* InWnd);
-	bool _IsChildOfPopupWnd(ImGuiWindow* InWnd);
-
 	TWeakPtr<SImguiWidgetRenderProxy> _FindRenderProxy(ImGuiWindow* InWindow);
 	void _CleanUpRenderProxy();
 private:
@@ -97,7 +90,7 @@ private:
 	TMap<FString ,FDrawGlobalImgui>			AllDrawCallBack;
 
 	// input hook, used to capture mouse input when resizing windows 
-	TSharedPtr<FImguiGlobalInputHook>	GlobalInputHook;
+	TSharedPtr<FImguiGlobalInputHook>		GlobalInputHook;
 
 	// imgui windows map to unreal windows 
 	TMap<ImGuiID, TSharedPtr<SImguiWindow>>	ImguiUnrealWindows;
