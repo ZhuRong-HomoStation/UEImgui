@@ -28,7 +28,15 @@ public class UEImgui : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"ApplicationCore" ,
-				"MainFrame"
 			});
+
+		if (Target.Type == TargetType.Editor)
+		{
+			PrivateDependencyModuleNames.AddRange(
+				new string[]
+				{
+					"MainFrame"	
+				});
+		}
 	}
 }

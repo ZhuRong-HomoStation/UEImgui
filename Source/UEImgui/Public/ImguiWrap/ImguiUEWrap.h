@@ -18,41 +18,18 @@ namespace ImGui
 	UEIMGUI_API void StyleColorConfig(ImGuiStyle* dst = nullptr);	// Config style
 	UEIMGUI_API bool ShowUEStyleSelector(const char* Label);		// Unreal style editor 
 	UEIMGUI_API void ShowUEStyleEditor();							// Unreal style editor 
-	
+
 	UEIMGUI_API void SetCurrentDetail(FName InDetailName);			// internal: used by detail customization 
 	UEIMGUI_API void SetCurrentDetailWidget(TWeakPtr<SImguiWidgetRenderProxy> InDetailWidget);	// internal: used by detail customization
 	UEIMGUI_API FName GetCurrentDetail();	// Get current detail name 
 	UEIMGUI_API void BeginDetail();		// Begin detail for detail customization 
 	UEIMGUI_API void EndDetail();		// End detail for detail customization
 
-	UEIMGUI_API void UEText(const FString& InString);
-	UEIMGUI_API bool UEInputText(const char* label, FString& InString);
-	UEIMGUI_API bool UEInputTextMultiline(const char* label, FString& InString, const FVector2D& InSize);	
-}
+	UEIMGUI_API void Text(const FString& InString);
 
-// Imgui type convert
-namespace ImGui
-{
-#define FORCE_CAST_UE(TUE, TImgui)\
-FORCEINLINE const TUE& UEType(const TImgui& InVar) { return *(const TUE*)(&InVar); } \
-FORCEINLINE TUE& UEType(TImgui& InVar) { return *(TUE*)(&InVar); } 
-#define FORCE_CAST_IM(TUE, TImgui)\
-FORCEINLINE const TImgui& ImType(const TUE& InVar) { return *(const TImgui*)(&InVar); } \
-FORCEINLINE TImgui& ImType(TUE& InVar) { return *(TImgui*)(&InVar); } 
-#define FORCE_CAST_ITEM(TUE, TImgui) \
-	FORCE_CAST_UE(TUE, TImgui)\
-	FORCE_CAST_IM(TUE, TImgui)
-
-	template<typename TUE,typename TImgui> TUE UEType(TImgui) { static_assert("not support type"); }
-	template<typename TUE,typename TImgui> TImgui ImType(TUE) { static_assert("not support type"); }
-
-	FORCE_CAST_ITEM(FLinearColor, ImVec4)
-	FORCE_CAST_ITEM(FVector2D, ImVec2)
-	FORCE_CAST_IM(FVector4, ImVec4)
-
-	#undef FORCE_CAST_ITEM
-#undef FORCE_CAST_UE
-#undef FORCE_CAST_IM
+	UEIMGUI_API bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+	UEIMGUI_API bool InputTextMultiline(const char* label, std::string* str, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+	UEIMGUI_API bool InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 }
 
 // Imgui setting wrap 

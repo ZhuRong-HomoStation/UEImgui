@@ -7,9 +7,12 @@
 #include "Widgets/SImguiWindow.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiUEWrap.h"
-#include "Interfaces/IMainFrameModule.h"
 #include "Widgets/SToolTip.h"
 #include "Widgets/Images/SImage.h"
+
+#if WITH_EDITOR
+#include "Interfaces/IMainFrameModule.h"
+#endif 
 
 void FImguiGlobalInputHook::Tick(const float DeltaTime, FSlateApplication& SlateApp, TSharedRef<ICursor> Cursor)
 {
@@ -418,6 +421,7 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 		}
 		else
 		{
+#if WITH_EDITOR
 			if (FModuleManager::Get().IsModuleLoaded("MainFrame"))
 			{
 				IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
@@ -425,6 +429,7 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 				FSlateApplication::Get().AddWindowAsNativeChild(ImguiWindow.ToSharedRef(), MainFrameWindow.ToSharedRef());
 			}
 			else
+#endif
 			{
 				FSlateApplication::Get().AddWindow(ImguiWindow.ToSharedRef());
 			}

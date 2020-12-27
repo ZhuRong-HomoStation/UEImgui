@@ -35,6 +35,6 @@ public:
 
 	// Font 
 	UPROPERTY(EditAnywhere, Config)
-	FString					FontPath;	
+	FString					FontPath;
 };
 

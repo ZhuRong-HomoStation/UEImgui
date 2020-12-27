@@ -1,6 +1,4 @@
 ﻿#include "ImguiCustomDetailService.h"
-
-
 #include "GenericPlatform/ITextInputMethodSystem.h"
 #include "Services/ImguiDetailCustomization.h"
 

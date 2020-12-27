@@ -3,6 +3,7 @@
 #include "imgui_internal.h"
 #include "Config/ImguiConfig.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "GenericPlatform/ITextInputMethodSystem.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "Widgets/SImguiWidget.h"
 
@@ -125,9 +126,76 @@ void ImGui::EndDetail()
 	ImGui::End();
 }
 
-void ImGui::UEText(const FString& InString)
+void ImGui::Text(const FString& InString)
 {
 	ImGui::Text(TCHAR_TO_UTF8(*InString));
+}
+
+struct InputTextCallback_UserData
+{
+	std::string*            Str;
+	ImGuiInputTextCallback  ChainCallback;
+	void*                   ChainCallbackUserData;
+};
+
+static int InputTextCallback(ImGuiInputTextCallbackData* data)
+{
+	InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+	{
+		// Resize string callback
+		// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
+		std::string* str = user_data->Str;
+		assert(data->Buf == str->c_str());
+		str->resize(data->BufTextLen);
+		data->Buf = (char*)str->c_str();
+	}
+	else if (user_data->ChainCallback)
+	{
+		// Forward to user callback, if any
+		data->UserData = user_data->ChainCallbackUserData;
+		return user_data->ChainCallback(data);
+	}
+	return 0;
+}
+
+bool ImGui::InputText(const char* label, std::string* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback,
+	void* user_data)
+{
+	IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+	flags |= ImGuiInputTextFlags_CallbackResize;
+
+	InputTextCallback_UserData cb_user_data;
+	cb_user_data.Str = str;
+	cb_user_data.ChainCallback = callback;
+	cb_user_data.ChainCallbackUserData = user_data;
+	return InputText(label, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
+}
+
+bool ImGui::InputTextMultiline(const char* label, std::string* str, const ImVec2& size, ImGuiInputTextFlags flags,
+	ImGuiInputTextCallback callback, void* user_data)
+{
+	IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+	flags |= ImGuiInputTextFlags_CallbackResize;
+
+	InputTextCallback_UserData cb_user_data;
+	cb_user_data.Str = str;
+	cb_user_data.ChainCallback = callback;
+	cb_user_data.ChainCallbackUserData = user_data;
+	return InputTextMultiline(label, (char*)str->c_str(), str->capacity() + 1, size, flags, InputTextCallback, &cb_user_data);
+}
+
+bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags,
+	ImGuiInputTextCallback callback, void* user_data)
+{
+	IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
+	flags |= ImGuiInputTextFlags_CallbackResize;
+
+	InputTextCallback_UserData cb_user_data;
+	cb_user_data.Str = str;
+	cb_user_data.ChainCallback = callback;
+	cb_user_data.ChainCallbackUserData = user_data;
+	return InputTextWithHint(label, hint, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
 }
 
 bool ImGui::ShowUEStyleSelector(const char* Label)
@@ -264,8 +332,8 @@ void ImGui::ShowUEStyleEditor()
                     // Tips: in a real user application, you may want to merge and use an icon font into the main font,
                     // so instead of "Save"/"Revert" you'd use icons!
                     // Read the FAQ and docs/FONTS.md about using icon fonts. It's really easy and super convenient!
-                    ImGui::SameLine(0.0f, CurStyle.ItemInnerSpacing.x); if (ImGui::Button("Save")) { Config->ImguiColors[i] = ImGui::UEType(CurStyle.Colors[i]); }
-                    ImGui::SameLine(0.0f, CurStyle.ItemInnerSpacing.x); if (ImGui::Button("Revert")) { CurStyle.Colors[i] = ImGui::ImType(Config->ImguiColors[i]); }
+                    ImGui::SameLine(0.0f, CurStyle.ItemInnerSpacing.x); if (ImGui::Button("Save")) { Config->ImguiColors[i] = *(FLinearColor*)&CurStyle.Colors[i]; }
+                    ImGui::SameLine(0.0f, CurStyle.ItemInnerSpacing.x); if (ImGui::Button("Revert")) { CurStyle.Colors[i] = *(ImVec4*)&Config->ImguiColors[i]; }
                 }
                 ImGui::SameLine(0.0f, CurStyle.ItemInnerSpacing.x);
                 ImGui::TextUnformatted(name);
