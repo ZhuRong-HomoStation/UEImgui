@@ -58,7 +58,8 @@ public:
 	bool TimeToDraw();
 
 	void AddGlobalWindow(const FString& WndName, const FDrawGlobalImgui& InDrawEvent) { AllDrawCallBack.Add(WndName, InDrawEvent); }
-
+	void RemoveGlobalWindow(const FString& WndName) { AllDrawCallBack.Remove(WndName); }
+	
 	void AddRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy);
 	void RemoveRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy) { AllRenderProxy.Remove(InRenderProxy); }
 	

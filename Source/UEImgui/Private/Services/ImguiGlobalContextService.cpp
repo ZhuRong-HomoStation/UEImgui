@@ -440,6 +440,7 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 		}
 		else
 		{
+			// delay destroy 
 			ImguiUnrealWindows.Remove(InWindow->ID);
 			return nullptr;
 		}

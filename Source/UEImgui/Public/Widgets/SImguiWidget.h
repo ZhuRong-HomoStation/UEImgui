@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
+#include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SWidget.h"
 
 class UImguiContext;
@@ -21,11 +22,6 @@ enum class EImguiSizingRule
 
 	// Desired is imgui size, and we will use wnd content size
 	ImContentSize ,
-};
-
-enum class EImguiPosRule
-{
-	
 };
 
 // base class, implement input forward 
@@ -132,6 +128,7 @@ public:
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
 		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
+		SLATE_ARGUMENT(FString, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 	SLATE_END_ARGS()
 
@@ -156,10 +153,39 @@ protected:
 	virtual FVector2D ComputeDesiredSize(float) const override;
 
 	// ~End SWidget API 
-private:
+protected:
 	ImGuiID				TopWndID;
 	TArray<ImGuiID>		WndID;
 	EImguiSizingRule	HSizingRule;
 	EImguiSizingRule	VSizingRule;
 	bool				bAutoSetWidgetPos;
+};
+
+// global imgui widget
+class UEIMGUI_API SGlobalImguiWidget : public SImguiWidgetRenderProxy
+{
+	using Super = SImguiWidgetRenderProxy;
+public:
+	SLATE_BEGIN_ARGS(SGlobalImguiWidget)
+            : _InContext(nullptr)
+            , _InAdapter(nullptr)
+            , _HSizingRule(EImguiSizingRule::NoSizing)
+            , _VSizingRule(EImguiSizingRule::NoSizing)
+            , _AutoSetWidgetPos(true)
+	{}
+		SLATE_ARGUMENT(UImguiContext*, InContext)
+	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
+	    SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
+	    SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
+	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
+		SLATE_ARGUMENT(FString, WndName)
+		SLATE_EVENT(FOnImguiDraw, OnDraw)
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs);
+	~SGlobalImguiWidget();
+	
+private:
+	FString				WindowName;
+	FOnImguiDraw		DrawCallBack;
 };

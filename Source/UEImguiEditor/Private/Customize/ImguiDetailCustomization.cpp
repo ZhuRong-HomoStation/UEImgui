@@ -170,9 +170,9 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 	CategoryBuilder.AddCustomRow(FText::FromString(TEXT("Imgui")), false)
     .WholeRowWidget
     [
-    SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
-    .HSizingRule(EImguiSizingRule::UESize)
-    .VSizingRule(EImguiSizingRule::ImContentSize)
+	    SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
+	    .HSizingRule(EImguiSizingRule::UESize)
+	    .VSizingRule(EImguiSizingRule::ImContentSize)
     ];
 	ImGuiID WndID = ImHashStr(TCHAR_TO_UTF8(*DetailName.ToString()));
 	RenderProxy->SetTopWnd(WndID);

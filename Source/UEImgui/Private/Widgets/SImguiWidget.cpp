@@ -216,6 +216,7 @@ void SImguiWidgetRenderProxy::Construct(const FArguments& InArgs)
 	HSizingRule = InArgs._HSizingRule;
 	VSizingRule = InArgs._VSizingRule;
 	bAutoSetWidgetPos = InArgs._AutoSetWidgetPos;
+	TopWndID = InArgs._ProxyWndName.IsEmpty() ? 0 : ImHashStr(TCHAR_TO_UTF8(*InArgs._ProxyWndName));
 	
 	// construct parent 
 	Super::Construct(
@@ -298,29 +299,74 @@ FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
 	{
 		ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(ID);
 		// HSizing 
-			switch (HSizingRule)
-			{
-			case EImguiSizingRule::ImSize:
-				NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->Size.x);
-				break;
-			case EImguiSizingRule::ImContentSize:
-				NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2);
-				break;
-			default: ;
-			}
+		switch (HSizingRule)
+		{
+		case EImguiSizingRule::ImSize:
+			NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->Size.x);
+			break;
+		case EImguiSizingRule::ImContentSize:
+			NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2);
+			break;
+		default: ;
+		}
 
-			// VSizing
-			switch (VSizingRule)
-			{
-			case EImguiSizingRule::ImSize:
-				NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->Size.y);
-				break;
-			case EImguiSizingRule::ImContentSize:
-				NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2);
-				break;
-			default: ;
-			}
+		// VSizing
+		switch (VSizingRule)
+		{
+		case EImguiSizingRule::ImSize:
+			NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->Size.y);
+			break;
+		case EImguiSizingRule::ImContentSize:
+			NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2);
+			break;
+		default: ;
+		}
 	}
 
 	return NewDesiredSize;
+}
+
+void SGlobalImguiWidget::Construct(const FArguments& InArgs)
+{
+	WindowName = InArgs._WndName;
+	DrawCallBack = InArgs._OnDraw;
+	Super::Construct(Super::FArguments()
+		.InContext(InArgs._InContext)
+		.InAdapter(InArgs._InAdapter)
+		.HSizingRule(InArgs._HSizingRule)
+		.VSizingRule(InArgs._VSizingRule)
+		.AutoSetWidgetPos(InArgs._AutoSetWidgetPos)
+		.ProxyWndName(InArgs._WndName));
+	
+	UImguiGlobalContextService::Get().AddGlobalWindow(WindowName, FDrawGlobalImgui::CreateLambda([this]
+	{
+		if (DrawCallBack.IsBound())
+		{
+			// set size 
+			ImVec2 SizeConstraint(-1, -1);
+			FVector2D UESize = GetCachedGeometry().GetAbsoluteSize();
+			switch (HSizingRule)
+			{
+			case EImguiSizingRule::UESize:
+				SizeConstraint.x = UESize.X;
+				break;
+			}
+			switch (VSizingRule)
+            {
+            case EImguiSizingRule::UESize:
+            	SizeConstraint.y = UESize.Y;
+            	break;
+            }
+			ImGui::SetNextWindowSizeConstraints(SizeConstraint, SizeConstraint);
+		}
+		DrawCallBack.ExecuteIfBound();
+		return true;
+	}));
+
+	UImguiGlobalContextService::Get().AddRenderProxy(StaticCastSharedRef<SImguiWidgetRenderProxy>(this->AsShared()));
+}
+
+SGlobalImguiWidget::~SGlobalImguiWidget()
+{
+	UImguiGlobalContextService::Get().RemoveGlobalWindow(WindowName);
 }
