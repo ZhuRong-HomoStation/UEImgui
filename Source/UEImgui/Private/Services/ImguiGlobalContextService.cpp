@@ -328,6 +328,11 @@ void UImguiGlobalContextService::_DispatchWindows()
 					IDArr.Add(Child->ID);
 				}
 			}
+			TSharedPtr<SImguiWindow>* FoundWnd = ImguiUnrealWindows.Find(Wnd->ID);
+			if (FoundWnd)
+			{
+				(*FoundWnd)->HideWindow();
+			}
 		}
 		else
 		{
