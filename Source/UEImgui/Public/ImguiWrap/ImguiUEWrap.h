@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
+#include <string>
 #include "ImguiUEWrap.generated.h"
 
 struct ImDrawData;
