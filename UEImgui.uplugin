@@ -24,6 +24,11 @@
 			"Name": "UEImguiEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "Imgui",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }
