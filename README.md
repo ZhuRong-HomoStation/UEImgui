@@ -9,7 +9,7 @@
 
 **疑难杂症**:
 - [ ] ★ToolTip与Pop的位置校准
-- [ ] ★输入法接入
+- [x] ★输入法接入
 - [ ] GlobalContext的Focus与UE不一致
 - [ ] Imgui窗口重叠关系与Unreal不一致
 - [ ] ★Modal窗口无法正常弹出

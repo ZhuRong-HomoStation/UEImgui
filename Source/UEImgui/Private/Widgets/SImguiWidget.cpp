@@ -154,6 +154,7 @@ int32 SImguiWidget::OnPaint(
 	ImGui::NewFrame();
 
 	// draw
+	ImGui::SetCurrentWidget(ConstCastSharedRef<SWidget>(this->AsShared()));
 	OnDraw.ExecuteIfBound();
 	
 	// render
