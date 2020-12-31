@@ -125,9 +125,17 @@ CALL_FUNCTION(IsWindowCollapsed, bool)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          IsWindowFocused(ImGuiFocusedFlags flags=0); // is current window focused? or its root/child, depending on flags. see flags for options.
-// Unsupported arg type ImGuiFocusedFlags flags=0
+IMGUI_FUNCTION(IsWindowFocused)
+INT_ARG(flags=0)
+CALL_FUNCTION(IsWindowFocused, bool, flags=0)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          IsWindowHovered(ImGuiHoveredFlags flags=0); // is current window hovered (and typically: not blocked by a popup/modal)? see flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app, you should use the 'io.WantCaptureMouse' boolean for that! Please read the FAQ!
-// Unsupported arg type ImGuiHoveredFlags flags=0
+IMGUI_FUNCTION(IsWindowHovered)
+INT_ARG(flags=0)
+CALL_FUNCTION(IsWindowHovered, bool, flags=0)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImDrawList*   GetWindowDrawList();                        // get draw list associated to the current window, to append your own drawing primitives
 // Unsupported return type ImDrawList*
 //    IMGUI_API ImVec2        GetWindowPos();                             // get current window position in screen space (useful if you want to do your own drawing via the DrawList API)
@@ -667,9 +675,20 @@ CALL_FUNCTION(SmallButton, bool, label)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          InvisibleButton(const char* str_id, const ImVec2& size, ImGuiButtonFlags flags = 0); // flexible button behavior without the visuals, frequently useful to build custom behaviors using the public api (along with IsItemActive, IsItemHovered, etc.)
-// Unsupported arg type  ImGuiButtonFlags flags = 0
+IMGUI_FUNCTION(InvisibleButton)
+LABEL_ARG(str_id)
+IM_VEC_2_ARG(size)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(InvisibleButton, bool, str_id, size, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          ArrowButton(const char* str_id, ImGuiDir dir);                  // square button with an arrow shape
-// Unsupported arg type  ImGuiDir dir
+IMGUI_FUNCTION(ArrowButton)
+LABEL_ARG(str_id)
+INT_ARG(dir)
+CALL_FUNCTION(ArrowButton, bool, str_id, dir)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          Image(ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0 = ImVec2 0  0, const ImVec2& uv1 = ImVec2 1 1, const ImVec4& tint_col = ImVec4 1 1 1 1, const ImVec4& border_col = ImVec4 0 0 0 0);
 IMGUI_FUNCTION(Image)
 IM_TEXTURE_ID_ARG(user_texture_id)
@@ -746,7 +765,14 @@ IMGUI_FUNCTION(Bullet)
 CALL_FUNCTION_NO_RET(Bullet)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);
-// Unsupported arg type  ImGuiComboFlags flags = 0
+IMGUI_FUNCTION(BeginCombo)
+LABEL_ARG(label)
+LABEL_ARG(preview_value)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(BeginCombo, bool, label, preview_value, flags)
+IF_RET_ADD_END_STACK(5)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          EndCombo(); // only call EndCombo() if BeginCombo() returns true!
 IMGUI_FUNCTION(EndCombo)
 CALL_FUNCTION_NO_RET(EndCombo)
@@ -1202,7 +1228,14 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
 // Unsupported arg type  const float* ref_col = NULL
 //    IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, ImVec2 size = ImVec2 0  0); // display a color square/button, hover for details, return true when pressed.
-// Unsupported arg type  ImVec2 size = ImVec2 0  0
+IMGUI_FUNCTION(ColorButton)
+LABEL_ARG(desc_id)
+IM_VEC_4_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+IM_VEC_2_ARG(size)
+CALL_FUNCTION(ColorButton, bool, desc_id, col, flags, size)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetColorEditOptions(ImGuiColorEditFlags flags);                     // initialize current options (generally on application startup) if you want to select a default format, picker type, etc. User will be able to change many settings, unless you pass the _NoOptions flag to your calls.
 IMGUI_FUNCTION(SetColorEditOptions)
 INT_ARG(flags)
@@ -1342,18 +1375,14 @@ CALL_FUNCTION_NO_RET(ListBoxFooter)
 END_IMGUI_FUNC
 //    IMGUI_API void          PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
 // Unsupported arg type  const float* values
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 //    IMGUI_API void          PlotLines(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0);
 // Unsupported arg type  float(*values_getter)(void* data
 // Unsupported arg type  void* data
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 //    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
 // Unsupported arg type  const float* values
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 //    IMGUI_API void          PlotHistogram(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0);
 // Unsupported arg type  float(*values_getter)(void* data
 // Unsupported arg type  void* data
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 //    IMGUI_API void          Value(const char* prefix, bool b);
 IMGUI_FUNCTION(Value)
 LABEL_ARG(prefix)
@@ -1606,7 +1635,12 @@ LABEL_ARG(fmt)
 CALL_FUNCTION_NO_RET(LogText, fmt)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginDragDropSource(ImGuiDragDropFlags flags = 0);                                      // call when the current item is active. If this return true, you can call SetDragDropPayload() + EndDragDropSource()
-// Unsupported arg type ImGuiDragDropFlags flags = 0
+IMGUI_FUNCTION(BeginDragDropSource)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(BeginDragDropSource, bool, flags)
+IF_RET_ADD_END_STACK(14)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SetDragDropPayload(const char* type, const void* data, size_t sz, ImGuiCond cond = 0);  // type is a user defined string of maximum 32 characters. Strings starting with '_' are reserved for dear imgui internal types. Data is copied and held by imgui.
 // Unsupported arg type  const void* data
 // Unsupported arg type  size_t sz
@@ -1623,7 +1657,6 @@ PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API const ImGuiPayload*   AcceptDragDropPayload(const char* type, ImGuiDragDropFlags flags = 0);          // accept contents of a given type. If ImGuiDragDropFlags_AcceptBeforeDelivery is set you can peek into the payload before the mouse button is released.
 // Unsupported return type const
-// Unsupported arg type  ImGuiDragDropFlags flags = 0
 //    IMGUI_API void                  EndDragDropTarget();                                                            // only call EndDragDropTarget() if BeginDragDropTarget() returns true!
 IMGUI_FUNCTION(EndDragDropTarget)
 CALL_FUNCTION_NO_RET(EndDragDropTarget)
@@ -1652,7 +1685,11 @@ OPTIONAL_INT_ARG(offset, 0)
 CALL_FUNCTION_NO_RET(SetKeyboardFocusHere, offset)
 END_IMGUI_FUNC
 //    IMGUI_API bool          IsItemHovered(ImGuiHoveredFlags flags = 0);                         // is the last item hovered? (and usable, aka not blocked by a popup, etc.). See ImGuiHoveredFlags for more options.
-// Unsupported arg type ImGuiHoveredFlags flags = 0
+IMGUI_FUNCTION(IsItemHovered)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(IsItemHovered, bool, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          IsItemActive();                                                     // is the last item active? (e.g. button being held, text field being edited. This will continuously return true while holding mouse button on an item. Items that don't interact will always return false)
 IMGUI_FUNCTION(IsItemActive)
 CALL_FUNCTION(IsItemActive, bool)
@@ -1933,7 +1970,10 @@ OPTIONAL_INT_ARG(button, 0)
 CALL_FUNCTION_NO_RET(ResetMouseDragDelta, button)
 END_IMGUI_FUNC
 //    IMGUI_API ImGuiMouseCursor GetMouseCursor();                                                // get desired cursor type, reset in ImGui::NewFrame(), this is updated during the frame. valid before Render(). If you use software rendering by setting io.MouseDrawCursor ImGui will render those for you
-// Unsupported return type ImGuiMouseCursor
+IMGUI_FUNCTION(GetMouseCursor)
+CALL_FUNCTION(GetMouseCursor, int)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetMouseCursor(ImGuiMouseCursor cursor_type);                       // set desired cursor type
 IMGUI_FUNCTION(SetMouseCursor)
 INT_ARG(cursor_type)
