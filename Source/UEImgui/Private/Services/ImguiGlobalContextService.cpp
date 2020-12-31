@@ -6,6 +6,7 @@
 #include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "Widgets/SImguiWindow.h"
 #include "ImguiWrap/ImguiResourceManager.h"
+#include "ImguiWrap/ImguiTextInputSystem.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Widgets/SToolTip.h"
 #include "Widgets/Images/SImage.h"
@@ -204,6 +205,9 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 	
 	// apply context 
 	GlobalContext->ApplyContext();
+
+	// end listen
+	FImguiTextInputSystem::Get()->EndListen();
 	
 	// render 
 	ImGui::Render();
@@ -220,6 +224,9 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 
 	// begin a new frame to capture global imgui draw 
 	ImGui::NewFrame();
+
+	// begin listen
+	FImguiTextInputSystem::Get()->BeginListen();
 	
 	// clean up render proxy 
 	_CleanUpRenderProxy();
@@ -235,6 +242,16 @@ void UImguiGlobalContextService::_DrawGlobalImguiWnds()
 		auto& Delegate = It.Value();
 		if (Delegate.IsBound())
 		{
+			ImGuiWindow* Wnd = (ImGuiWindow*)GlobalContext->GetContext()->WindowsById.GetVoidPtr(ImHashStr(TCHAR_TO_UTF8(*It.Key())));
+			auto RenderProxy = _FindRenderProxy(Wnd);
+			if (RenderProxy.IsValid())
+			{
+				ImGui::SetCurrentWidget(RenderProxy.Pin());
+			}
+			else
+			{
+				ImGui::SetCurrentWidget(_FindUnrealWindow(Wnd));
+			}
 			bool bIsWndAlive = Delegate.Execute();
 			if (!bIsWndAlive)
 			{
@@ -363,6 +380,7 @@ void UImguiGlobalContextService::_DispatchWindows()
 
 TWeakPtr<SImguiWidgetRenderProxy> UImguiGlobalContextService::_FindRenderProxy(ImGuiWindow* InWindow)
 {
+	if (!InWindow) return nullptr;
 	for (TWeakPtr<SImguiWidgetRenderProxy> Proxy : AllRenderProxy)
 	{
 		if (!Proxy.IsValid()) continue;
@@ -392,6 +410,7 @@ void UImguiGlobalContextService::_CleanUpRenderProxy()
 
 TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWindow* InWindow)
 {
+	if (!InWindow) return nullptr;
 	TSharedPtr<SImguiWindow>* FoundWnd = ImguiUnrealWindows.Find(InWindow->ID);
 	TSharedPtr<SImguiWindow> ImguiWindow;
 

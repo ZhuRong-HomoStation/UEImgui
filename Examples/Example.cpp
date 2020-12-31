@@ -113,6 +113,12 @@ void AImguiExampleActor::OnGUI()
 
 	// resume 
 	ImGui::Columns(1);
+
+	// use input system 
+	char buf[1024];
+	ImGui::UseInputSystem("WDNMD");
+	ImGui::InputText("WDNMD", buf, 1024);
+
 	ImGui::EndDetail();
 }
 
