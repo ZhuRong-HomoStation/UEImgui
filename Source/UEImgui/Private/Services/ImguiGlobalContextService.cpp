@@ -368,7 +368,7 @@ void UImguiGlobalContextService::_DispatchWindows()
 			if (!ImguiWindow) continue;
 			
 			// set window info
-			if (bIsCreate && !Wnd->ParentWindow)
+			if (bIsCreate && !Wnd->ParentWindow && !UEImguiHelp::IsToolTip(Wnd))
 			{
 				Wnd->Pos.x = WorkArea.Left + 160;
 				Wnd->Pos.y = WorkArea.Top + 100;				
