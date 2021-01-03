@@ -359,7 +359,7 @@ void UImguiGlobalContextService::_DispatchWindows()
 		}
 		else
 		{
-			// get  work area 
+			// get work area 
 			FSlateRect WorkArea = FSlateApplication::Get().GetPreferredWorkArea();
 
 			// find window
@@ -368,7 +368,7 @@ void UImguiGlobalContextService::_DispatchWindows()
 			if (!ImguiWindow) continue;
 			
 			// set window info
-			if (bIsCreate)
+			if (bIsCreate && !Wnd->ParentWindow)
 			{
 				Wnd->Pos.x = WorkArea.Left + 160;
 				Wnd->Pos.y = WorkArea.Top + 100;				

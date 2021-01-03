@@ -334,9 +334,11 @@ void SImguiWidgetRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
 	ImGuiContext* LastCtx = ImGui::GetCurrentContext();
 	ImGuiContext* Ctx = GetContext()->GetContext();
 	GetContext()->ApplyContext();
-
+	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(TopWndID);
+	
 	// remove focus
-	ImGui::FocusWindow(nullptr);
+	if (Ctx->ActiveIdWindow && Ctx->ActiveIdWindow->RootWindow != Wnd)
+		ImGui::FocusWindow(nullptr);
 	
 	// resume context 
 	ImGui::SetCurrentContext(LastCtx);
