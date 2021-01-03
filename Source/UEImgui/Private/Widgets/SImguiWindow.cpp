@@ -82,23 +82,20 @@ bool SImguiWindow::SupportsKeyboardFocus() const
 	return true;
 }
 
-// void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
-// {
-// 	// find window 
-// 	UImguiContext* Context = BoundContext.Get();
-// 	if (!Context) return;
-// 	ImGuiWindow* Wnd = Context->GetContext()->NavWindow;
-// 	if (!Wnd) return;
-//
-// 	// change context and change focus 
-// 	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
-// 	Context->ApplyContext();
-// 	if (WndID.Contains(Wnd->ID))
-// 	{
-// 		ImGui::FocusWindow(nullptr);
-// 	}
-// 	ImGui::SetCurrentContext(CurCtx);
-// }
+void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
+{
+	if (!GetContext()) return;
+	// change context 
+	ImGuiContext* LastCtx = ImGui::GetCurrentContext();
+	ImGuiContext* Ctx = GetContext()->GetContext();
+	GetContext()->ApplyContext();
+
+	// remove focus
+	ImGui::FocusWindow(nullptr);
+	
+	// resume context 
+	ImGui::SetCurrentContext(LastCtx);
+}
 
 // FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
 // {

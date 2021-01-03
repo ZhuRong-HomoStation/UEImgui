@@ -327,6 +327,21 @@ FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
 	return NewDesiredSize;
 }
 
+void SImguiWidgetRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
+{
+	if (!GetContext()) return;
+	// change context 
+	ImGuiContext* LastCtx = ImGui::GetCurrentContext();
+	ImGuiContext* Ctx = GetContext()->GetContext();
+	GetContext()->ApplyContext();
+
+	// remove focus
+	ImGui::FocusWindow(nullptr);
+	
+	// resume context 
+	ImGui::SetCurrentContext(LastCtx);
+}
+
 void SGlobalImguiWidget::Construct(const FArguments& InArgs)
 {
 	WindowName = InArgs._WndName;

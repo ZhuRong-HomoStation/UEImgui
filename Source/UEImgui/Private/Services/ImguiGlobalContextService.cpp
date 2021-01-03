@@ -293,7 +293,12 @@ void UImguiGlobalContextService::_DispatchWindows()
 			}
 			continue;
 		}
-		
+
+		if (Wnd->Flags & ImGuiWindowFlags_Modal)
+		{
+			TopSideWndArr.Add(Wnd);
+			continue;
+		}
 		if (UEImguiHelp::IsMenu(Wnd))
 		{
 			if (!UEImguiHelp::IsInnerChild(Wnd))
@@ -432,16 +437,20 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 			{
 				auto Key = ImguiUnrealWindows.FindKey(StaticCastSharedRef<SImguiWindow>(InWnd));
 				ImGuiWindow* Wnd = (ImGuiWindow*)GlobalContext->GetContext()->WindowsById.GetVoidPtr(*Key);
-				AllDrawCallBack.Remove(Wnd->Name);
+				if (Wnd)
+				{
+					AllDrawCallBack.Remove(Wnd->Name);
+				}
 			}));
 
 		if (InWindow->Flags & ImGuiWindowFlags_Modal)
 		{
-			FDisplayMetrics DisplayMetrics;
-			FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
-			InWindow->Pos.x = (DisplayMetrics.PrimaryDisplayWidth - InWindow->Size.x) / 2;
-			InWindow->Pos.y = (DisplayMetrics.PrimaryDisplayHeight - InWindow->Size.y) / 2;
-			FSlateApplication::Get().AddModalWindow(ImguiWindow.ToSharedRef(), nullptr);
+			FSlateRect Rect;
+			FSlateApplication::Get().GetWorkArea(Rect);
+			InWindow->Pos.x = Rect.Left + (Rect.Right - Rect.Left - InWindow->Size.x) / 2;
+			InWindow->Pos.y = Rect.Top + (Rect.Bottom - Rect.Top - InWindow->Size.y) / 2;
+			// the modal window of unreal is block we not support it current
+			FSlateApplication::Get().AddWindow(ImguiWindow.ToSharedRef(), nullptr);
 		}
 		else
 		{
