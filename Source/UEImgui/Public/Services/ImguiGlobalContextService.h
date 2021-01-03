@@ -72,7 +72,7 @@ private:
 	void _OnSlatePreTick(float DeltaTime);
 	
 	void _DrawGlobalImguiWnds();
-	TSharedPtr<SImguiWindow> _FindUnrealWindow(ImGuiWindow* InWindow);
+	TSharedPtr<SImguiWindow> _FindUnrealWindow(ImGuiWindow* InWindow, bool* IsCreated = nullptr);
 	void _DispatchWindows();
 
 	TWeakPtr<SImguiWidgetRenderProxy> _FindRenderProxy(ImGuiWindow* InWindow);
