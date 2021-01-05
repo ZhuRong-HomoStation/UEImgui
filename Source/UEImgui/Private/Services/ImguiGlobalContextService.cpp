@@ -248,9 +248,10 @@ void UImguiGlobalContextService::_DrawGlobalImguiWnds()
 			{
 				ImGui::SetCurrentWidget(RenderProxy.Pin());
 			}
-			else
+			else if (Wnd)
 			{
-				ImGui::SetCurrentWidget(_FindUnrealWindow(Wnd));
+				TSharedPtr<SImguiWindow>* FoundWnd = ImguiUnrealWindows.Find(Wnd->ID);
+				ImGui::SetCurrentWidget(FoundWnd ? *FoundWnd : nullptr);
 			}
 			bool bIsWndAlive = Delegate.Execute();
 			if (!bIsWndAlive)
@@ -293,7 +294,12 @@ void UImguiGlobalContextService::_DispatchWindows()
 			}
 			continue;
 		}
-		
+
+		if (Wnd->Flags & ImGuiWindowFlags_Modal)
+		{
+			TopSideWndArr.Add(Wnd);
+			continue;
+		}
 		if (UEImguiHelp::IsMenu(Wnd))
 		{
 			if (!UEImguiHelp::IsInnerChild(Wnd))
@@ -353,11 +359,20 @@ void UImguiGlobalContextService::_DispatchWindows()
 		}
 		else
 		{
-			// find window 
-			TSharedPtr<SImguiWindow> ImguiWindow = _FindUnrealWindow(Wnd);
+			// get work area 
+			FSlateRect WorkArea = FSlateApplication::Get().GetPreferredWorkArea();
+
+			// find window
+			bool bIsCreate = false;
+			TSharedPtr<SImguiWindow> ImguiWindow = _FindUnrealWindow(Wnd, &bIsCreate);
 			if (!ImguiWindow) continue;
 			
 			// set window info
+			if (bIsCreate && !Wnd->ParentWindow && !UEImguiHelp::IsToolTip(Wnd))
+			{
+				Wnd->Pos.x = WorkArea.Left + 160;
+				Wnd->Pos.y = WorkArea.Top + 100;				
+			}
 			ImguiWindow->MoveWindowTo({ Wnd->Pos.x, Wnd->Pos.y });
 			ImguiWindow->SetTitle(FText::FromString(Wnd->Name));
 			ImguiWindow->Resize({ Wnd->Size.x, Wnd->Size.y });
@@ -408,7 +423,7 @@ void UImguiGlobalContextService::_CleanUpRenderProxy()
 	}
 }
 
-TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWindow* InWindow)
+TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWindow* InWindow, bool* IsCreated)
 {
 	if (!InWindow) return nullptr;
 	TSharedPtr<SImguiWindow>* FoundWnd = ImguiUnrealWindows.Find(InWindow->ID);
@@ -432,16 +447,21 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 			{
 				auto Key = ImguiUnrealWindows.FindKey(StaticCastSharedRef<SImguiWindow>(InWnd));
 				ImGuiWindow* Wnd = (ImGuiWindow*)GlobalContext->GetContext()->WindowsById.GetVoidPtr(*Key);
-				AllDrawCallBack.Remove(Wnd->Name);
+				if (Wnd)
+				{
+					AllDrawCallBack.Remove(Wnd->Name);
+				}
 			}));
 
 		if (InWindow->Flags & ImGuiWindowFlags_Modal)
 		{
-			FDisplayMetrics DisplayMetrics;
-			FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
-			InWindow->Pos.x = (DisplayMetrics.PrimaryDisplayWidth - InWindow->Size.x) / 2;
-			InWindow->Pos.y = (DisplayMetrics.PrimaryDisplayHeight - InWindow->Size.y) / 2;
-			FSlateApplication::Get().AddModalWindow(ImguiWindow.ToSharedRef(), nullptr);
+			FSlateRect Rect;
+			FSlateApplication::Get().GetWorkArea(Rect);
+			InWindow->Pos.x = Rect.Left + (Rect.Right - Rect.Left - InWindow->Size.x) / 2;
+			InWindow->Pos.y = Rect.Top + (Rect.Bottom - Rect.Top - InWindow->Size.y) / 2;
+			// the modal window of unreal is block we not support it current
+			FSlateApplication::Get().AddWindow(ImguiWindow.ToSharedRef(), nullptr);
+			if (IsCreated) *IsCreated = true;
 		}
 		else
 		{
@@ -451,11 +471,13 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 				IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
 				const TSharedPtr<SWindow> MainFrameWindow = MainFrame.GetParentWindow();
 				FSlateApplication::Get().AddWindowAsNativeChild(ImguiWindow.ToSharedRef(), MainFrameWindow.ToSharedRef());
+				if (IsCreated) *IsCreated = true;
 			}
 			else
 #endif
 			{
 				FSlateApplication::Get().AddWindow(ImguiWindow.ToSharedRef());
+				if (IsCreated) *IsCreated = true;
 			}
 
 		}
@@ -465,12 +487,14 @@ TSharedPtr<SImguiWindow> UImguiGlobalContextService::_FindUnrealWindow(ImGuiWind
 		ImguiWindow = *FoundWnd;
 		if (ImguiWindow->GetNativeWindow().IsValid())
 		{
+			if (IsCreated) *IsCreated = !ImguiWindow->GetNativeWindow()->IsVisible();
 			ImguiWindow->ShowWindow();
 		}
 		else
 		{
 			// delay destroy 
 			ImguiUnrealWindows.Remove(InWindow->ID);
+			if (IsCreated) *IsCreated = false;
 			return nullptr;
 		}
 	}

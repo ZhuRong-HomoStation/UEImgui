@@ -145,7 +145,7 @@ bool UEImguiHelp::IsClosestParent(ImGuiWindow* InChild, ImGuiWindow* InParent)
 
 bool UEImguiHelp::IsToolTip(ImGuiWindow* InWnd)
 {
-	return FCStringAnsi::Strncmp(InWnd->Name, "##ToolTip", 9) == 0;
+	return FCStringAnsi::Strncmp(InWnd->Name, "##Tooltip", 9) == 0;
 }
 
 bool UEImguiHelp::IsMenu(ImGuiWindow* InWnd)

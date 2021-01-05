@@ -151,7 +151,7 @@ protected:
 		const FWidgetStyle& InWidgetStyle,
 		bool bParentEnabled) const override;
 	virtual FVector2D ComputeDesiredSize(float) const override;
-
+	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
 	// ~End SWidget API 
 protected:
 	ImGuiID				TopWndID;

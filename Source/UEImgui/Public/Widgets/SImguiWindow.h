@@ -52,7 +52,7 @@ protected:
 	
 	// Focus
 	virtual bool SupportsKeyboardFocus() const override;
-	// virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
+	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
 	// virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
 
 	// cursor
