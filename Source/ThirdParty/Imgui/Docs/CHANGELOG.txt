@@ -32,13 +32,85 @@ HOW TO UPDATE?
 
 
 -----------------------------------------------------------------------
+ DOCKING+MULTI-VIEWPORT BRANCH (In Progress)
+-----------------------------------------------------------------------
+
+DOCKING FEATURES
+
+- Added Docking system: [BETA] (#2109, #351)
+  - Added ImGuiConfigFlags_DockingEnable flag to enable Docking.
+    Set with `io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;`.
+  - Added DockSpace(), DockSpaceOverViewport() API.
+  - Added ImGuiDockNodeFlags flags for DockSpace().
+  - Added SetNextWindowDockID(), SetNextWindowClass() API.
+  - Added GetWindowDockID(), IsWindowDocked() API.
+  - Added ImGuiWindowFlags_NoDocking window flag to disable the possibility for a window to be docked.
+    Popup, Menu and Child windows always have the ImGuiWindowFlags_NoDocking flag set.
+  - Added ImGuiWindowClass to specify advanced docking/viewport related flags via SetNextWindowClass().
+  - Added io.ConfigDockingNoSplit option.
+  - Added io.ConfigDockingWithShift option.
+  - Added io.ConfigDockingAlwaysTabBar option.
+  - Added io.ConfigDockingTransparentPayload option.
+  - Style: Added ImGuiCol_DockingPreview, ImGuiCol_DockingEmptyBg colors.
+  - Demo: Added "DockSpace" example app showcasing use of explicit dockspace nodes.
+
+MULTI-VIEWPORT FEATURES (was previously 'viewport' branch, merged into 'docking')
+
+Breaking Changes:
+
+- IMPORTANT: When multi-viewports are enabled (with io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable),
+  all coordinates/positions will be in your natural OS coordinates space. It means that:
+   - Reference to hard-coded positions such as in SetNextWindowPos(ImVec2(0,0)) are _probably_ not what you want anymore.
+     Use GetMainViewport()->Pos to offset hard-coded positions, e.g. SetNextWindowPos(GetMainViewport()->Pos).
+   - Likewise io.MousePos and GetMousePos() will use OS coordinates.
+     If you query mouse positions to interact with non-imgui coordinates you will need to offset them.
+     e.g. subtract GetWindowViewport()->Pos.
+- Render function: the ImDrawData structure now contains 'DisplayPos' and 'DisplaySize' fields.
+  To support multi-viewport, you need to use those values when creating your orthographic projection matrix.
+  Use 'draw_data->DisplaySize' instead of 'io.DisplaySize', and 'draw_data->DisplayPos' instead of (0,0) as the upper-left point.
+  You need to subtract 'draw_data->DisplayPos' from your scissor rectangles to convert them from global coordinates to frame-buffer coordinates.
+- IO: Moved IME support functions from io.ImeSetInputScreenPosFn, io.ImeWindowHandle to the PlatformIO api.
+- IO: Removed io.DisplayVisibleMin, io.DisplayVisibleMax settings (they were marked obsoleted, used to clip within the (0,0)..(DisplaySize) range).
+
+Other changes:
+(FIXME: This need a fuller explanation!)
+
+- Added ImGuiPlatformIO structure and GetPlatformIO().
+  Similarly to ImGuiIO and GetIO(), this structure is the main point of communication for backends supporting multi-viewports.
+- Added ImGuiPlatformMonitor to feed OS monitor information in the ImGuiPlatformIO::Monitors.
+- Added GetMainViewport().
+- Added GetWindowViewport(), SetNextWindowViewport().
+- Added GetWindowDpiScale().
+- Added GetOverlayDrawList(ImGuiViewport* viewport).
+  The no-parameter version of GetOverlayDrawList() return the overlay for the current window's viewport.
+- Added UpdatePlatformWindows(), RenderPlatformWindows(), DestroyPlatformWindows() for usage for application core.
+- Added FindViewportByID(), FindViewportByPlatformHandle() for usage by backends.
+- Added ImGuiConfigFlags_ViewportsEnable configuration flag and other viewport options.
+- Added io.ConfigViewportsNoAutoMerge, io.ConfigViewportsNoTaskBarIcon, io.ConfigViewportsNoDecoration, io.ConfigViewportsNoDefaultParent options.
+- Added ImGuiBackendFlags_PlatformHasViewports, ImGuiBackendFlags_RendererHasViewports, ImGuiBackendFlags_HasMouseHoveredViewport backend flags.
+- Added io.MainViewport, io.Viewports, io.MouseHoveredViewport (MouseHoveredViewport is optional _even_ for multi-viewport support).
+- Added ImGuiViewport structure, ImGuiViewportFlags flags.
+- Added ImGuiWindowClass and SetNextWindowClass() for passing viewport related hints to the OS/platform back-end.
+- Examples: Renderer: OpenGL2, OpenGL3, DirectX11, DirectX12, Vulkan: Added support for multi-viewports.
+- Examples: Platforms: Win32, GLFW, SDL2: Added support for multi-viewports.
+  Note that Linux/Mac still have inconsistent support for multi-viewports. If you want to help see https://github.com/ocornut/imgui/issues/2117.
+- Examples: Win32: Added DPI-related helpers to access DPI features without requiring the latest Windows SDK at compile time,
+  and without requiring Windows 10 at runtime.
+- Examples: Vulkan: Added various optional helpers in imgui_impl_vulkan.h (they are used for multi-viewport support)
+  to make the examples main.cpp easier to read.
+
+
+-----------------------------------------------------------------------
  VERSION 1.80 (In Progress)
 -----------------------------------------------------------------------
 
 Breaking Changes:
 
+- Added imgui_tables.cpp file! Manually constructed project files will need the new file added!
 - Backends: moved all backends files (imgui_impl_XXXX.cpp, imgui_impl_XXXX.h) from examples/ to backends/. (#3513)
-- Removed redirecting functions/enums names that were marked obsolete in 1.60 (April 2017):
+- Renamed ImDrawList::AddBezierCurve() to ImDrawList::AddBezierCubic(). Kept inline redirection function (will obsolete).
+- Renamed ImDrawList::PathBezierCurveTo() to ImDrawList::PathBezierCubicCurveTo(). Kept inline redirection function (will obsolete).
+- Removed redirecting functions/enums names that were marked obsolete in 1.60 (April 2018):
   - io.RenderDrawListsFn pointer                -> use ImGui::GetDrawData() value and call the render function of your backend
   - ImGui::IsAnyWindowFocused()                 -> use ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)
   - ImGui::IsAnyWindowHovered()                 -> use ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
@@ -47,6 +119,11 @@ Breaking Changes:
 - Removed redirecting functions/enums names that were marked obsolete in 1.61 (May 2018):
   - InputFloat (... int decimal_precision ...)  -> use InputFloat (... const char* format ...) with format = "%.Xf" where X was value for decimal_precision.
   - same for InputFloat2()/InputFloat3()/InputFloat4() variants taking a `int decimal_precision` parameter.
+- Removed redirecting functions/enums names that were marked obsolete in 1.63 (August 2018):
+  - ImGui::IsItemDeactivatedAfterChange()       -> use ImGui::IsItemDeactivatedAfterEdit().
+  - ImGuiCol_ModalWindowDarkening               -> use ImGuiCol_ModalWindowDimBg
+  - ImGuiInputTextCallback                      -> use ImGuiTextEditCallback
+  - ImGuiInputTextCallbackData                  -> use ImGuiTextEditCallbackData
 - If you were still using the old names, while you are cleaning up, considering enabling
   IMGUI_DISABLE_OBSOLETE_FUNCTIONS in imconfig.h even temporarily to have a pass at finding
   and removing up old API calls, if any remaining.
@@ -55,9 +132,20 @@ Breaking Changes:
 - Renamed io.ConfigWindowsMemoryCompactTimer to io.ConfigMemoryCompactTimer as the feature will apply
   to other data structures. (#2636)
 
-
 Other Changes:
 
+- Tables: added new Tables Beta API as a replacement for old Columns. (#2957, #125)
+  Check out 'Demo->Tables' for many demos + API comments in imgui.h for details.
+  - Added 16 functions: BeginTable(), EndTable(),
+                        TableNextRow(), TableNextColumn(), TableSetColumnIndex(), TableGetColumnIndex(), TableGetRowIndex(),
+                        TableSetupColumn(), TableSetupScrollFreeze(),
+                        TableHeadersRow(), TableHeader(), TableSetBgColor(), TableGetSortSpecs(),
+                        TableGetColumnCount(), TableGetColumnName(), TableGetColumnFlags().
+  - Added 2 structures: ImGuiTableSortSpecs, ImGuiTableColumnSortSpecs.
+  - Added 2 enums:      ImGuiSortDirection, ImGuiTableBgTarget.
+  - Added 3 flags sets: ImGuiTableFlags (27 flags), ImGuiTableColumnFlags (24 flags), ImGuiTableRowFlags (1 flags).
+  - Added 5 colors:     ImGuiCol_TableHeaderBg, ImGuiCol_TableBorderStrong, ImGuiCol_TableBorderLight, ImGuiCol_TableRowBg, ImGuiCol_TableRowBgAlt.
+  - Added 1 style var:  ImGuiStyleVar_CellPadding.
 - Tab Bar: Made it possible to append to an existing tab bar by calling BeginTabBar()/EndTabBar() again.
 - Tab Bar: Fixed using more than 128 tabs in a tab bar (scrolling policy recommended).
 - Tab Bar: Do not display a tooltip if the name already fits over a given tab. (#3521)
@@ -67,16 +155,24 @@ Other Changes:
 - Drag and Drop: Fix drag and drop to tie same-size drop targets by choosen the later one. Fixes dragging
   into a full-window-sized dockspace inside a zero-padded window. (#3519, #2717) [@Black-Cat]
 - Checkbox: Added CheckboxFlags() helper with int* type.
+- Clipper: Fixed incorrect end-list positioning when using ImGuiListClipper with 1 item (bug in 1.79). (#3663) [@nyorain]
 - InputText: Fixed updating cursor/selection position when a callback altered the buffer in a way
   where the byte count is unchanged but the decoded character count changes. (#3587) [@gqw]
 - InputText: Fixed swiching from single to multi-line while preserving same ID.
+- Fixed using IsItemEdited() after Combo() not matching the return value from Combo(). (#2034)
 - Nav: Fixed IsItemFocused() from returning false when Nav highlight is hidden because mouse has moved.
   It's essentially been always the case but it doesn't make much sense. Instead we will aim at exposing
   feedback and control of keyboard/gamepad navigation highlight and mouse hover disable flag. (#787, #2048)
 - Metrics: Fixed mishandling of ImDrawCmd::VtxOffset in wireframe mesh renderer.
 - Metrics: Rebranded as "Dear ImGui Metrics/Debugger" to clarify its purpose.
+- ImDrawList: Added ImDrawList::AddQuadBezierCurve(), ImDrawList::PathQuadBezierCurveTo() quadratic bezier
+  helpers. (#3127, #3664, #3665) [@aiekick]
+- Fonts: Updated GetGlyphRangesJapanese() to include a larger 2999 ideograms selection of Joyo/Jinmeiyo
+  kanjis, from the previous 1946 ideograms selection. This will consume a some more memory but be generally
+  much more fitting for Japanese display, until we switch to a more dynamic atlas. (#3627) [@vaiorabbit]
+- Log/Capture: fix capture to work on clipped child windows.
 - Misc: Made the ItemFlags stack shared, so effectively the ButtonRepeat/AllowKeyboardFocus states
-  (and others exposed in internals such as PushItemFlag) are inherited by stacked Begin/End pairs, 
+  (and others exposed in internals such as PushItemFlag) are inherited by stacked Begin/End pairs,
   vs previously a non-child stacked Begin() would reset those flags back to zero for the stacked window.
 - Misc: Replaced UTF-8 decoder with one based on branchless one by Christopher Wellons. [@rokups]
   Super minor fix handling incomplete UTF-8 contents: if input does not contain enough bytes, decoder
@@ -85,14 +181,23 @@ Other Changes:
 - Misc: Made EndFrame() assertion for key modifiers being unchanged during the frame (added in 1.76) more
   lenient, allowing full mid-frame releases. This is to accommodate the use of mid-frame modal native
   windows calls, which leads backends such as GLFW to send key clearing events on focus loss. (#3575)
+- Style: Changed default style.WindowRounding value to 0.0f (matches default for multi-viewports).
+- Style: Reduced the size of the resizing grip, made alpha less prominent.
+- Style: Classic: Increase the default alpha value of WindowBg to be closer to other styles.
 - Demo: Clarify usage of right-aligned items in Demo>Layout>Widgets Width.
 - Backends: OpenGL3: Use glGetString(GL_VERSION) query instead of glGetIntegerv(GL_MAJOR_VERSION, ...)
   when the later returns zero (e.g. Desktop GL 2.x). (#3530) [@xndcn]
+- Backends: OpenGL2: Backup and restore GL_SHADE_MODEL and disable GL_NORMAL_ARRAY state to increase 
+  compatibility with legacy code. (#3671)
 - Backends: OpenGL3: Backup and restore GL_PRIMITIVE_RESTART state. (#3544) [@Xipiryon]
+- Backends: OpenGL2, OpenGL3: Backup and restore GL_STENCIL_TEST enable state. (#3668)
 - Backends: Vulkan: Added support for specifying which subpass to reference during VkPipeline creation. (@3579) [@bdero]
+- Backends: Win32: Fix setting of io.DisplaySize to invalid/uninitialized data after hwnd has been closed.
 - Backends: OSX: Fix keypad-enter key not working on MacOS. (#3554) [@rokups, @lfnoise]
 - Examples: Apple+Metal: Consolidated/simplified to get closer to other examples. (#3543) [@warrenm]
 - Examples: Apple+Metal: Forward events down so OS key combination like Cmd+Q can work. (#3554) [@rokups]
+- Examples: Emscripten: Renamed example_emscripten/ to example_emscripten_opengl3/. (#3632)
+- Examples: DirectX12: Move ImGui::Render() call above the first barrier to clarify its lack of effect on the graphics pipe.
 - CI: Fix testing for Windows DLL builds. (#3603, #3601) [@iboB]
 - Docs: Split examples/README.txt into docs/BACKENDS.md and docs/EXAMPLES.md improved them.
 - Docs: Consistently renamed all occurences of "binding" and "back-end" to "backend" in comments and docs.
@@ -101,6 +206,8 @@ Other Changes:
 -----------------------------------------------------------------------
  VERSION 1.79 (Released 2020-10-08)
 -----------------------------------------------------------------------
+
+Decorated log: https://github.com/ocornut/imgui/releases/tag/v1.79
 
 Breaking Changes:
 
@@ -193,6 +300,8 @@ Other Changes:
 -----------------------------------------------------------------------
  VERSION 1.78 (Released 2020-08-18)
 -----------------------------------------------------------------------
+
+Decorated log: https://github.com/ocornut/imgui/releases/tag/v1.78
 
 Breaking Changes:
 
@@ -1131,6 +1240,7 @@ Breaking Changes:
 - Renamed ImFontAtlas::GlyphRangesBuilder to ImFontGlyphRangesBuilder. Kept redirection typedef (will obsolete).
 
 Other Changes:
+
 - Added BETA api for Tab Bar/Tabs widgets: (#261, #351)
   - Added BeginTabBar(), EndTabBar(), BeginTabItem(), EndTabItem(), SetTabItemClosed() API.
   - Added ImGuiTabBarFlags flags for BeginTabBar().
