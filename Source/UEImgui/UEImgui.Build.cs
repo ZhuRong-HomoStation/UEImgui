@@ -28,6 +28,9 @@ public class UEImgui : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"ApplicationCore" ,
+				"Projects" ,
+				"RenderCore" ,
+				"RHI" ,
 			});
 
 		if (Target.Type == TargetType.Editor)
