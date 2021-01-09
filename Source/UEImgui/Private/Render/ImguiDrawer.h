@@ -45,8 +45,8 @@ protected:
 	FVertexBufferRHIRef	VertexBufferRHI;
 	int32				NumVertices = 0;
 	int32				NumTriangles = 0;
-	TUniquePtr<ImDrawVert>			VtxBuf;
-    TUniquePtr<ImDrawIdx>			IdxBuf;
+	ImDrawVert*			VtxBuf;
+    ImDrawIdx*			IdxBuf;
 	
 	FVector2D			VertexOffset = FVector2D::ZeroVector;
 	float				Scale = 1.f;
