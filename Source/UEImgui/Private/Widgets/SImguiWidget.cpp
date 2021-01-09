@@ -165,11 +165,12 @@ int32 SImguiWidget::OnPaint(
 
 	// revert context 
 	ImGui::SetCurrentContext(OldContext);
-
+	
 	return UEImguiDraw::MakeImgui(
 		OutDrawElements,
 		LayerId,
 		AllottedGeometry.GetAccumulatedRenderTransform(),
+		MyCullingRect,
 		DrawData);
 }
 
@@ -284,6 +285,7 @@ int32 SImguiWidgetRenderProxy::OnPaint(
         OutDrawElements,
         LayerId,
         AccumulatedTran.Inverse().Concatenate(AllottedGeometry.GetAccumulatedRenderTransform()),
+        MyCullingRect,
         AllDrawList);
 }
 

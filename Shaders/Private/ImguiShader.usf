@@ -1,0 +1,53 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D		InTexture;
+SamplerState	InTextureSampler;
+float4x4		InTransform;
+
+struct InputVS
+{
+	float2	Position	: ATTRIBUTE0;
+	float2	UV			: ATTRIBUTE1;
+	float4	Color		: ATTRIBUTE2;
+};
+
+struct OutputVS
+{
+	float4	Position	: SV_POSITION;
+	float2	UV			: TEXCOORD0;
+	float4	Color		: TEXCOORD1;
+};
+
+struct OutputPS
+{
+	float4	Color		: SV_Target0;
+};
+
+OutputVS ImguiShader_VS(InputVS In)
+{
+	OutputVS Out;
+
+	Out.Position = mul(float4(In.Position, 0, 1), InTransform);
+	Out.UV = In.UV;
+	Out.Color = In.Color;
+
+	return Out;
+}
+
+OutputPS ImguiShader_PS(OutputVS In)
+{
+	OutputPS Out;
+
+	Out.Color = In.Color * InTexture.Sample(InTextureSampler, In.UV);
+	
+	return Out;
+}
+
+OutputPS ImguiShader_PSNoTex(OutputVS In)
+{
+	OutputPS Out;
+
+	Out.Color = In.Color;
+	
+	return Out;
+}

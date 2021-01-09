@@ -12,12 +12,14 @@ namespace UEImguiDraw
         FSlateWindowElementList& ElementList,
         uint32 InLayer,
         const FSlateRenderTransform& ImguiToRender,
+        FSlateRect ClipRect,
         ImDrawData* DrawData);
 
 	int32 UEIMGUI_API MakeImgui(
         FSlateWindowElementList& ElementList,
         uint32 InLayer,
         const FSlateRenderTransform& ImguiToRender,
+        FSlateRect ClipRect,
         TArray<ImDrawList*>& AllDrawList);
 
 	FORCEINLINE FColor UnpackColor(ImU32 InPackedImguiColor)
