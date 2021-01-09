@@ -40,13 +40,13 @@ private:
 	FRHITexture2D* _GetTextureFromID(ImTextureID InID);
 public:
 	bool				bIsFree = false;
-protected :
+protected:
 	FIndexBufferRHIRef	IndexBufferRHI;
 	FVertexBufferRHIRef	VertexBufferRHI;
 	int32				NumVertices = 0;
 	int32				NumTriangles = 0;
-	ImDrawVert*			VtxBuf = nullptr;
-    ImDrawIdx*			IdxBuf = nullptr;
+	TUniquePtr<ImDrawVert>			VtxBuf;
+    TUniquePtr<ImDrawIdx>			IdxBuf;
 	
 	FVector2D			VertexOffset = FVector2D::ZeroVector;
 	float				Scale = 1.f;
