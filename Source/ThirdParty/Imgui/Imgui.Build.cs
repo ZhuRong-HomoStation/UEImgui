@@ -14,7 +14,7 @@ public class Imgui : ModuleRules
 			{
                 Path.Combine(ModuleDirectory, "Public")
 			});
-		
+
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{

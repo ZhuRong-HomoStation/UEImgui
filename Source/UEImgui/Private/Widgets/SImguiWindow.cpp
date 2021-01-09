@@ -14,6 +14,7 @@ void SImguiWindow::Construct(const FArguments& InArgs)
 		.IsTopmostWindow(InArgs._IsToolTip)
 		.IsPopupWindow(InArgs._IsMenu || InArgs._IsToolTip || InArgs._IsPopup)
         .SizingRule(ESizingRule::Autosized)
+        .SupportsTransparency(FWindowTransparency(EWindowTransparency::PerWindow))
         .HasCloseButton(false)
         .CreateTitleBar(false)
         .SupportsMaximize(false)
@@ -170,5 +171,6 @@ int32 SImguiWindow::OnPaint(
 		OutDrawElements,
 		LayerId,
 		ImguiRenderTrans,
+		MyCullingRect,
 		AllDrawList);
 }

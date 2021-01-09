@@ -5,7 +5,7 @@
 #include "ImguiWrap/ImguiContext.h"
 #include "Slate/SlateTextureAtlasInterface.h"
 
-FImguiResource::FImguiResource(const FName& InName, UObject* SourceObject)
+FImguiResource::FImguiResource(const FName& InName, UTexture* SourceObject)
 	: Name(InName)
 	, Source(SourceObject)
 {
@@ -63,7 +63,7 @@ ImTextureID UImguiResourceManager::AddResource(FName InResName, UObject* SourceO
 
 	// add resource
 	int32 GotId = CurrentResIdx++;
-	AllResource.Add(GotId, FImguiResource(InResName, SourceObj));
+	AllResource.Add(GotId, FImguiResource(InResName, (UTexture*)SourceObj));
 	NamedResourceMap.Add(InResName, GotId);
 
 	return reinterpret_cast<ImTextureID>((SIZE_T)GotId);
