@@ -39,10 +39,6 @@ public:
 	FReply OnMouseWheel(const FPointerEvent& MouseEvent);
 	FReply OnMouseMove(SWidget* InWidget, const FGeometry& InGeometry, const FPointerEvent& MouseEvent);
 	FReply OnMouseMove(FVector2D OffsetPos, const FPointerEvent& MouseEvent);
-	
-	// TODO: Touch input
-
-	// TODO: Gamepad input
 
 	// Cursor query
 	virtual FCursorReply OnCursorQuery(const FPointerEvent& CursorEvent);

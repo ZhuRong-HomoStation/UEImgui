@@ -1,6 +1,4 @@
 ﻿#include "ImguiWrap/ImguiInputAdapterDeferred.h"
-
-
 #include "imgui_internal.h"
 #include "ImguiWrap/ImguiContext.h"
 

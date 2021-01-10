@@ -10,38 +10,6 @@ FImguiResource::FImguiResource(const FName& InName, UTexture* SourceObject)
 	, Source(SourceObject)
 {
 	check(SourceObject != nullptr);
-
-	// create brush
-	Brush.SetResourceObject(SourceObject);
-
-	// register resource
-	if(FSlateApplication::IsInitialized())
-	{
-		Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(Brush);
-	}
-}
-
-FImguiResource::~FImguiResource()
-{
-	// release resource
-	if(FSlateApplication::IsInitialized())
-	{
-		FSlateApplication::Get().GetRenderer()->ReleaseDynamicResource(Brush);
-	}
-	
-	Name = NAME_None;
-	Source = nullptr;
-	Brush = {};
-	Handle = {};
-}
-
-FSlateResourceHandle FImguiResource::GetHandle()
-{
-	if (!Handle.IsValid() && FSlateApplication::IsInitialized())
-	{
-		Handle = FSlateApplication::Get().GetRenderer()->GetResourceHandle(Brush);
-	}
-	return Handle;
 }
 
 UImguiResourceManager::UImguiResourceManager()
@@ -51,7 +19,7 @@ UImguiResourceManager::UImguiResourceManager()
 {
 }
 
-ImTextureID UImguiResourceManager::AddResource(FName InResName, UObject* SourceObj)
+ImTextureID UImguiResourceManager::AddResource(FName InResName, UTexture* SourceObj)
 {
 	// find resource 
 	auto FoundRes = NamedResourceMap.Find(InResName);
@@ -89,18 +57,6 @@ FImguiResource* UImguiResourceManager::FindResource(FName InResName)
 FImguiResource* UImguiResourceManager::FindResource(ImTextureID InResId)
 {
 	return AllResource.Find((int32)reinterpret_cast<SIZE_T>(InResId));
-}
-
-FSlateResourceHandle UImguiResourceManager::FindHandle(FName InResName)
-{
-	auto FoundId = NamedResourceMap.Find(InResName);
-	return FoundId ? FindHandle(reinterpret_cast<ImTextureID>((SIZE_T)*FoundId)) : FSlateResourceHandle();
-}
-
-FSlateResourceHandle UImguiResourceManager::FindHandle(ImTextureID InResId)
-{
-	auto FoundRes = FindResource(InResId);
-	return FoundRes ? FoundRes->GetHandle() : FSlateResourceHandle();
 }
 
 void UImguiResourceManager::ReleaseResource(FName InResName)

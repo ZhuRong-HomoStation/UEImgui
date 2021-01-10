@@ -3,6 +3,90 @@
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "ImguiConfig.generated.h"
 
+// Imgui setting wrap 
+USTRUCT()
+struct FImguiStyle
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	float       Alpha;                 
+	UPROPERTY()     
+	FVector2D   WindowPadding;              
+	UPROPERTY()
+	float       WindowRounding;             
+	UPROPERTY()
+	float       WindowBorderSize;           
+	UPROPERTY()
+	FVector2D   WindowMinSize;              
+	UPROPERTY()
+	FVector2D   WindowTitleAlign;           
+	UPROPERTY()
+	int		    WindowMenuButtonPosition;   
+	UPROPERTY()
+	float       ChildRounding;              
+	UPROPERTY()
+	float       ChildBorderSize;            
+	UPROPERTY()
+	float       PopupRounding;              
+	UPROPERTY()
+	float       PopupBorderSize;            
+	UPROPERTY()
+	FVector2D   FramePadding;               
+	UPROPERTY()
+	float       FrameRounding;              
+	UPROPERTY()
+	float       FrameBorderSize;            
+	UPROPERTY()
+	FVector2D   ItemSpacing;                
+	UPROPERTY()
+	FVector2D   ItemInnerSpacing;           
+	UPROPERTY()
+	FVector2D   TouchExtraPadding;          
+	UPROPERTY()
+	float       IndentSpacing;              
+	UPROPERTY()
+	float       ColumnsMinSpacing;          
+	UPROPERTY()
+	float       ScrollbarSize;              
+	UPROPERTY()
+	float       ScrollbarRounding;          
+	UPROPERTY()
+	float       GrabMinSize;                
+	UPROPERTY()
+	float       GrabRounding;               
+	UPROPERTY()
+	float       LogSliderDeadzone;          
+	UPROPERTY()
+	float       TabRounding;                
+	UPROPERTY()
+	float       TabBorderSize;              
+	UPROPERTY()
+	float       TabMinWidthForCloseButton;  
+	UPROPERTY()
+	int			ColorButtonPosition;        
+	UPROPERTY()
+	FVector2D   ButtonTextAlign;            
+	UPROPERTY()
+	FVector2D   SelectableTextAlign;        
+	UPROPERTY()
+	FVector2D   DisplayWindowPadding;       
+	UPROPERTY()
+	FVector2D   DisplaySafeAreaPadding;     
+	UPROPERTY()
+	float       MouseCursorScale;           
+	UPROPERTY()
+	bool        AntiAliasedLines;           
+	UPROPERTY()
+	bool        AntiAliasedLinesUseTex;     
+	UPROPERTY()
+	bool        AntiAliasedFill;            
+	UPROPERTY()
+	float       CurveTessellationTol;       
+	UPROPERTY()
+	float       CircleSegmentMaxError;      
+};
+
 UCLASS(Config=ImGui, DefaultConfig)
 class UImguiConfig : public UDeveloperSettings
 {
@@ -37,4 +121,3 @@ public:
 	UPROPERTY(EditAnywhere, Config)
 	FString					FontPath;
 };
-

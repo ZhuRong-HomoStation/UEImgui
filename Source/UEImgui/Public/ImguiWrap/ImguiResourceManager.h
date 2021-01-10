@@ -17,20 +17,12 @@ struct UEIMGUI_API FImguiResource
 	GENERATED_BODY()
 public:
 	FImguiResource() = default;
-	// Source object, can be UMaterialInterface or UTexture, or any object witch implementing ISlateTextureAtlasInterface 
 	FImguiResource(const FName& InName, UTexture* SourceObject);
-	~FImguiResource();
-
-	FSlateResourceHandle GetHandle();
 	
 	UPROPERTY()
 	FName		Name;
 	UPROPERTY()
 	UTexture*	Source;
-	UPROPERTY()
-	FSlateBrush	Brush;
-private:
-	FSlateResourceHandle Handle;
 };
 
 UCLASS()
@@ -45,13 +37,11 @@ public:
 	}
 	
 	// Resource action
-	ImTextureID AddResource(FName InResName, UObject* SourceObj);
+	ImTextureID AddResource(FName InResName, UTexture* SourceObj);
 	bool IsResourceExist(FName InResName);
 	bool IsResourceExist(ImTextureID InID);
 	FImguiResource* FindResource(FName InResName);
 	FImguiResource* FindResource(ImTextureID InResId);
-	FSlateResourceHandle FindHandle(FName InResName);
-	FSlateResourceHandle FindHandle(ImTextureID InResId);
 	void ReleaseResource(FName InResName);
 	void ReleaseResource(ImTextureID InID);
 
