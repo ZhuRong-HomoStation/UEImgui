@@ -4,7 +4,6 @@
 #include "Config/ImguiConfig.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GenericPlatform/ITextInputMethodSystem.h"
-#include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiTextInputSystem.h"
 #include "Widgets/SImguiWidget.h"
 

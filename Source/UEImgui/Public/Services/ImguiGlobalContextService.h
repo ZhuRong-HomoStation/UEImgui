@@ -8,7 +8,6 @@
 #include "ImguiGlobalContextService.generated.h"
 
 struct ImGuiWindow;
-class UImguiContext;
 class UImguiInputAdapter;
 class UImguiInputAdapterDeferred;
 class SImguiWindow;
@@ -78,8 +77,7 @@ private:
 	TWeakPtr<SImguiWidgetRenderProxy> _FindRenderProxy(ImGuiWindow* InWindow);
 	void _CleanUpRenderProxy();
 private:
-	UPROPERTY()
-	UImguiContext*		GlobalContext;
+	ImGuiContext*		GlobalContext;
 
 	UPROPERTY()
 	UImguiInputAdapterDeferred*		InputAdapter;

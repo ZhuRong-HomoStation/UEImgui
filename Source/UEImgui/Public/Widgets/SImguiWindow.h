@@ -1,8 +1,7 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
-#include "ImguiWrap/ImguiContext.h"
-#include "ImguiWrap/ImguiInputAdapter.h"
+#include "ImguiInput//ImguiInputAdapter.h"
 #include "Widgets/SWindow.h"
 
 class UEIMGUI_API SImguiWindow : public SWindow
@@ -14,7 +13,7 @@ public:
 		, _IsMenu(false)
 		, _IsToolTip(false)
 	{}
-		SLATE_ARGUMENT(TWeakObjectPtr<UImguiContext>, Context)
+		SLATE_ARGUMENT(ImGuiContext*, Context)
 		SLATE_ARGUMENT(TWeakObjectPtr<UImguiInputAdapter>, Adapter)
 		SLATE_ARGUMENT(bool, IsMenu)
 		SLATE_ARGUMENT(bool, IsToolTip)	
@@ -30,8 +29,8 @@ public:
 	ImGuiID GetTopWnd() const { return TopWndID; }
 	void SetTopWnd(ImGuiID InID) { TopWndID = InID; }
 	
-	UImguiContext* GetContext() const { return BoundContext.Get(); }
-	void SetContext(UImguiContext* InContext) { BoundContext = InContext; }
+	ImGuiContext* GetContext() const { return BoundContext; }
+	void SetContext(ImGuiContext* InContext) { BoundContext = InContext; }
 
 	UImguiInputAdapter* GetAdapter() const { return BoundAdapter.Get(); }
 	void SetAdapter(UImguiInputAdapter* InAdapter) { BoundAdapter = InAdapter; }
@@ -72,6 +71,6 @@ protected:
 private:
 	ImGuiID								TopWndID;
 	TArray<ImGuiID>						WndID;
-	TWeakObjectPtr<UImguiContext>		BoundContext;
+	ImGuiContext*						BoundContext;
 	TWeakObjectPtr<UImguiInputAdapter>	BoundAdapter;
 };

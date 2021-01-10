@@ -1,8 +1,7 @@
 ﻿#include "ImguiDrawer.h"
-
 #include "ClearQuad.h"
 #include "ImguiShader.h"
-#include "ImguiWrap/ImguiResourceManager.h"
+#include "UEImgui.h"
 
 TArray<TSharedPtr<FImguiDrawer, ESPMode::ThreadSafe>> FImguiDrawer::GlobalPool;
 
@@ -162,7 +161,7 @@ void FImguiDrawer::_AppendDrawList(ImDrawList* InDrawList, ImDrawVert* InVtxBuf,
 FRHITexture2D* FImguiDrawer::_GetTextureFromID(ImTextureID InID)
 {
 	if (!InID) return nullptr;
-	auto ImResource = UImguiResourceManager::Get().FindResource(InID);
+	auto ImResource = UUEImgui::Get().FindResource(InID);
 	if (!ImResource || !ImResource->Source || !ImResource->Source->Resource) return nullptr;
 	return ImResource->Source->Resource->TextureRHI->GetTexture2D();
 }
