@@ -1,6 +1,9 @@
-﻿#include "ImguiInput/ImguiGlobalInputHook.h"
+﻿#include "ImguiWrap/ImguiGlobalInputHook.h"
+
+#include "imgui.h"
 #include "imgui_internal.h"
-#include "ImguiInput/ImguiInputAdapter.h"
+#include "ImguiWrap/ImguiContext.h"
+#include "ImguiWrap/ImguiInputAdapter.h"
 
 void FImguiGlobalInputHook::Tick(const float DeltaTime, FSlateApplication& SlateApp, TSharedRef<ICursor> Cursor)
 {
@@ -47,7 +50,7 @@ bool FImguiGlobalInputHook::HandleMouseMoveEvent(FSlateApplication& SlateApp, co
 	for (UImguiInputAdapter* Adapter : TargetAdapters)
 	{
 		if (!Adapter->GetContext()) continue;
-		if (Adapter->GetContext()->IO.WantCaptureMouse)
+		if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
 		{
 			Adapter->OnMouseMove(FVector2D::ZeroVector, MouseEvent);
 		}
@@ -60,7 +63,7 @@ bool FImguiGlobalInputHook::HandleMouseButtonDownEvent(FSlateApplication& SlateA
 	for (UImguiInputAdapter* Adapter : TargetAdapters)
 	{
 		if (!Adapter->GetContext()) continue;
-		if (Adapter->GetContext()->IO.WantCaptureMouse)
+		if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
 		{
 			Adapter->OnMouseButtonDown(MouseEvent);
 		}
@@ -73,7 +76,7 @@ bool FImguiGlobalInputHook::HandleMouseButtonUpEvent(FSlateApplication& SlateApp
 	for (UImguiInputAdapter* Adapter : TargetAdapters)
 	{
 		if (!Adapter->GetContext()) continue;
-		if (Adapter->GetContext()->IO.WantCaptureMouse)
+		if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
 		{
 			Adapter->OnMouseButtonUp(MouseEvent);
 		}
