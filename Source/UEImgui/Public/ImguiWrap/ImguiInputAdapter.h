@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 #include "ImguiInputAdapter.generated.h"
 
-struct ImGuiContext;
+class UImguiContext;
 struct ImGuiIO;
 
 UCLASS(CustomConstructor)
@@ -44,8 +44,9 @@ public:
 	virtual FCursorReply OnCursorQuery(const FPointerEvent& CursorEvent);
 	
 	// Set context
-	ImGuiContext* GetContext() const { return BoundContext; }
-	void SetContext(ImGuiContext* InContext) { BoundContext = InContext; }
+	UImguiContext* GetContext() const { return BoundContext; }
+	void SetContext(UImguiContext* InContext) { BoundContext = InContext; }
+
 
 	bool CanBlockInput() const { return bBlockInput; }
 	bool CanReceiveMouseInput() const { return bReceiveMouseInput; }
@@ -74,6 +75,6 @@ private:
 	uint8			bReceiveKeyboardInput:1;
 	UPROPERTY()
 	uint8			bReceiveGamePadInput:1;
-	
-	ImGuiContext*	BoundContext;
+	UPROPERTY()
+	UImguiContext*	BoundContext;
 };

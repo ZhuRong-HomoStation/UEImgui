@@ -105,7 +105,7 @@ public:
 		return Config;
 	}
 
-	// set style
+	// set tstyle
 	void SetStyle(ImGuiStyle* InStyle);
 
 public:

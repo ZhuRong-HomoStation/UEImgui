@@ -19,8 +19,6 @@ void SImguiWindow::Construct(const FArguments& InArgs)
         .CreateTitleBar(false)
         .SupportsMaximize(false)
         .SupportsMinimize(false));
-	
-	RequestDestroyWindowOverride.BindLambda([](const TSharedRef<SWindow>&){});
 }
 
 FReply SImguiWindow::OnKeyChar(const FGeometry& MyGeometry, const FCharacterEvent& InCharacterEvent)
@@ -102,6 +100,23 @@ void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
 	ImGui::SetCurrentContext(LastCtx);
 }
 
+// FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
+// {
+// 	// search top level window
+// 	UImguiContext* Context = BoundContext.Get();
+// 	if (!Context) return FReply::Unhandled();
+// 	ImGuiWindow* TopWnd = (ImGuiWindow*)Context->GetContext()->WindowsById.GetVoidPtr(TopWndID);
+// 	if (!TopWnd) return FReply::Unhandled();
+//
+// 	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
+// 	Context->ApplyContext();
+//
+// 	ImGui::FocusWindow(TopWnd);
+// 	
+// 	ImGui::SetCurrentContext(CurCtx);
+// 	return FReply::Handled();
+// }
+
 FCursorReply SImguiWindow::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
 {
 	UImguiInputAdapter* Adapter = GetAdapter();
@@ -110,7 +125,9 @@ FCursorReply SImguiWindow::OnCursorQuery(const FGeometry& MyGeometry, const FPoi
 
 FVector2D SImguiWindow::ComputeDesiredSize(float LayoutScaleMultiplier) const
 {
-	ImGuiContext* Ctx = GetContext();
+	UImguiContext* UECtx = GetContext();
+	if (!UECtx) return FVector2D::ZeroVector;
+	ImGuiContext* Ctx = UECtx->GetContext();
 
 	FVector2D OriginPoint = GetCachedGeometry().GetAccumulatedRenderTransform().GetTranslation();
 	FVector2D NewDesiredSize(0);
@@ -134,7 +151,9 @@ int32 SImguiWindow::OnPaint(
 	const FWidgetStyle& InWidgetStyle,
 	bool bParentEnabled) const
 {
-	ImGuiContext* Ctx = GetContext();
+	UImguiContext* UECtx = GetContext();
+	if (!UECtx) return LayerId;
+	ImGuiContext* Ctx = UECtx->GetContext();
 
 	static TArray<ImDrawList*> AllDrawList;
 	AllDrawList.Reset();

@@ -4,6 +4,7 @@
 #include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SWidget.h"
 
+class UImguiContext;
 class UImguiInputAdapter;
 
 DECLARE_DELEGATE(FOnImguiDraw);
@@ -32,16 +33,16 @@ public:
 		: _InContext(nullptr)
 		, _InAdapter(nullptr)
 	{}
-		SLATE_ARGUMENT(ImGuiContext*, InContext)
+		SLATE_ARGUMENT(UImguiContext*, InContext)
 		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
 	~SImguiWidgetBase();
 
-	ImGuiContext* GetContext() const { return Context; }
+	UImguiContext* GetContext() const { return Context; }
 	UImguiInputAdapter* GetAdapter() const { return Adapter; }
-	void SetContext(ImGuiContext* InContext);
+	void SetContext(UImguiContext* InContext);
 	void SetAdapter(UImguiInputAdapter* InAdapter);
 protected:
 	// ~Begin FGCObject API
@@ -69,7 +70,7 @@ protected:
 	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
 	// ~End SWidget API 
 private:
-	ImGuiContext*			Context;
+	UImguiContext*			Context;
 	UImguiInputAdapter*		Adapter;
 };
 
@@ -85,7 +86,7 @@ public:
 		, _VSizingRule(EImguiSizingRule::NoSizing)
 	{}
 		SLATE_EVENT(FOnImguiDraw, OnDraw)
-		SLATE_ARGUMENT(ImGuiContext*, InContext)
+		SLATE_ARGUMENT(UImguiContext*, InContext)
 		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
 		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
@@ -123,7 +124,7 @@ public:
 			, _VSizingRule(EImguiSizingRule::NoSizing)
 			, _AutoSetWidgetPos(true)
 	{}
-	    SLATE_ARGUMENT(ImGuiContext*, InContext)
+	    SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
 		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
@@ -172,7 +173,7 @@ public:
             , _VSizingRule(EImguiSizingRule::NoSizing)
             , _AutoSetWidgetPos(true)
 	{}
-		SLATE_ARGUMENT(ImGuiContext*, InContext)
+		SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 	    SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
 	    SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)

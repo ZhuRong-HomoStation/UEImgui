@@ -1,5 +1,7 @@
 ﻿#include "ImguiWrap/ImguiHelp.h"
+
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiResourceManager.h"
 #include "Render/ImguiDrawer.h"
 
 // global array for fast build draw list 

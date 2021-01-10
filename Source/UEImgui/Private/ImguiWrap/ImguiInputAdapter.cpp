@@ -1,6 +1,7 @@
-#include "ImguiInput/ImguiInputAdapter.h"
+#include "ImguiWrap/ImguiInputAdapter.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiContext.h"
 
 UImguiInputAdapter::UImguiInputAdapter(const FObjectInitializer& InInitializer)
 	: Super(InInitializer)
@@ -208,7 +209,7 @@ FCursorReply UImguiInputAdapter::OnCursorQuery(const FPointerEvent& CursorEvent)
 {
 	if (!BoundContext) return FCursorReply::Unhandled();
 	
-	switch (BoundContext->MouseCursor)
+	switch (BoundContext->GetContext()->MouseCursor)
 	{
 	case ImGuiMouseCursor_Arrow:       return FCursorReply::Cursor(EMouseCursor::Default);
 	case ImGuiMouseCursor_TextInput:   return FCursorReply::Cursor(EMouseCursor::TextEditBeam);
@@ -225,41 +226,41 @@ FCursorReply UImguiInputAdapter::OnCursorQuery(const FPointerEvent& CursorEvent)
 
 void UImguiInputAdapter::AddInputCharacter(TCHAR InChar)
 {
-	BoundContext->IO.AddInputCharacter(static_cast<ImWchar>(InChar));
+	BoundContext->GetIO()->AddInputCharacter(static_cast<ImWchar>(InChar));
 }
 
 void UImguiInputAdapter::SetKeyState(uint32 InKeyNum, bool InState)
 {
-	BoundContext->IO.KeysDown[InKeyNum] = InState;
+	BoundContext->GetIO()->KeysDown[InKeyNum] = InState;
 }
 
 void UImguiInputAdapter::SetCtrl(bool InState)
 {
-	BoundContext->IO.KeyCtrl = InState;
+	BoundContext->GetIO()->KeyCtrl = InState;
 }
 
 void UImguiInputAdapter::SetAlt(bool InState)
 {
-	BoundContext->IO.KeyAlt = InState;
+	BoundContext->GetIO()->KeyAlt = InState;
 }
 
 void UImguiInputAdapter::SetShift(bool InState)
 {
-	BoundContext->IO.KeyShift = InState;
+	BoundContext->GetIO()->KeyShift = InState;
 }
 
 void UImguiInputAdapter::SetMouseBtnState(uint32 MouseBtnIndex, bool InState)
 {
-	BoundContext->IO.MouseDown[MouseBtnIndex] = InState;
+	BoundContext->GetIO()->MouseDown[MouseBtnIndex] = InState;
 }
 
 void UImguiInputAdapter::SetMouseWheel(float MouseWheel)
 {
-	BoundContext->IO.MouseWheel = MouseWheel;
+	BoundContext->GetIO()->MouseWheel = MouseWheel;
 }
 
 void UImguiInputAdapter::SetMousePos(FVector2D InMousePos)
 {
-	BoundContext->IO.MousePos.x = InMousePos.X;
-	BoundContext->IO.MousePos.y = InMousePos.Y;
+	BoundContext->GetIO()->MousePos.x = InMousePos.X;
+	BoundContext->GetIO()->MousePos.y = InMousePos.Y;
 }

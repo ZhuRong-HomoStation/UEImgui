@@ -1,5 +1,6 @@
-﻿#include "ImguiInput/ImguiInputAdapterDeferred.h"
+﻿#include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiContext.h"
 
 void UImguiInputAdapterDeferred::AddInputCharacter(TCHAR InChar)
 {
@@ -63,7 +64,7 @@ FCursorReply UImguiInputAdapterDeferred::OnCursorQuery(const FPointerEvent& Curs
 void UImguiInputAdapterDeferred::ApplyInput()
 {
 	if (!GetContext()) return;
-	ImGuiIO* IO = &GetContext()->IO;
+	ImGuiIO* IO = GetContext()->GetIO();
 	
 	// copy data 
 	IO->InputQueueCharacters = InputQueueCharacters;
@@ -82,5 +83,5 @@ void UImguiInputAdapterDeferred::ApplyInput()
 
 void UImguiInputAdapterDeferred::SaveTempData()
 {
-	Cursor = GetContext()->MouseCursor;
+	Cursor = GetContext()->GetContext()->MouseCursor;
 }

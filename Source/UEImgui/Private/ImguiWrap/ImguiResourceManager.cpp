@@ -1,16 +1,31 @@
-﻿#include "UEImgui.h"
-#include "imgui_internal.h"
+﻿#include "ImguiWrap/ImguiResourceManager.h"
+#include "imgui.h"
 #include "Logging.h"
 #include "Config/ImguiConfig.h"
-#include "ImguiInput/ImguiInputAdapter.h"
+#include "ImguiWrap/ImguiContext.h"
+#include "Slate/SlateTextureAtlasInterface.h"
 
-ImTextureID UUEImgui::AddResource(FName InResName, UTexture* SourceObj)
+FImguiResource::FImguiResource(const FName& InName, UTexture* SourceObject)
+	: Name(InName)
+	, Source(SourceObject)
+{
+	check(SourceObject != nullptr);
+}
+
+UImguiResourceManager::UImguiResourceManager()
+	: CurrentResIdx(1)
+	, GlobalContext(nullptr)
+	, DefaultFont(nullptr)
+{
+}
+
+ImTextureID UImguiResourceManager::AddResource(FName InResName, UTexture* SourceObj)
 {
 	// find resource 
 	auto FoundRes = NamedResourceMap.Find(InResName);
 	if (FoundRes)
 	{
-		UE_LOG(LogUEImgui, Warning, TEXT("UUEImgui::AddResource : resource %s has exist!!!"), *InResName.ToString());
+		UE_LOG(LogUEImgui, Warning, TEXT("UImguiResourceManager::AddResource : resource %s has exist!!!"), *InResName.ToString());
 		return reinterpret_cast<ImTextureID>((SIZE_T)*FoundRes);
 	}
 
@@ -22,29 +37,29 @@ ImTextureID UUEImgui::AddResource(FName InResName, UTexture* SourceObj)
 	return reinterpret_cast<ImTextureID>((SIZE_T)GotId);
 }
 
-bool UUEImgui::IsResourceExist(FName InResName)
+bool UImguiResourceManager::IsResourceExist(FName InResName)
 {
 	return NamedResourceMap.Find(InResName) != nullptr;
 }
 
-bool UUEImgui::IsResourceExist(ImTextureID InID)
+bool UImguiResourceManager::IsResourceExist(ImTextureID InID)
 {
 	return AllResource.Find((int32)reinterpret_cast<SIZE_T>(InID)) != nullptr;
 }
 
-FImguiResource* UUEImgui::FindResource(FName InResName)
+FImguiResource* UImguiResourceManager::FindResource(FName InResName)
 {
 	auto FoundID = NamedResourceMap.Find(InResName);
 	if (!FoundID) return nullptr;
 	return AllResource.Find(*FoundID);
 }
 
-FImguiResource* UUEImgui::FindResource(ImTextureID InResId)
+FImguiResource* UImguiResourceManager::FindResource(ImTextureID InResId)
 {
 	return AllResource.Find((int32)reinterpret_cast<SIZE_T>(InResId));
 }
 
-void UUEImgui::ReleaseResource(FName InResName)
+void UImguiResourceManager::ReleaseResource(FName InResName)
 {
 	auto FoundRes = NamedResourceMap.Find(InResName);
 	if (FoundRes)
@@ -54,7 +69,7 @@ void UUEImgui::ReleaseResource(FName InResName)
 	}
 }
 
-void UUEImgui::ReleaseResource(ImTextureID InID)
+void UImguiResourceManager::ReleaseResource(ImTextureID InID)
 {
 	int32 UEId = (int32)reinterpret_cast<SIZE_T>(InID);
 	auto FoundRes = AllResource.Find(UEId);
@@ -65,7 +80,25 @@ void UUEImgui::ReleaseResource(ImTextureID InID)
 	}
 }
 
-void UUEImgui::Initialize(FSubsystemCollectionBase& Collection)
+UImguiContext* UImguiResourceManager::CreateContext()
+{
+	if (PooledContext.Num() == 0)
+	{
+		UImguiContext* NewContext = NewObject<UImguiContext>(this);
+		NewContext->Init(DefaultFont);
+		return NewContext;
+	}
+	return PooledContext.Pop(false);
+}
+
+void UImguiResourceManager::ReleaseContext(UImguiContext* InContext)
+{
+	if (InContext == GlobalContext) return;
+	InContext->Reset();
+	PooledContext.Add(InContext);
+}
+
+void UImguiResourceManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
@@ -76,7 +109,7 @@ void UUEImgui::Initialize(FSubsystemCollectionBase& Collection)
 	_InitGlobalContext();
 }
 
-void UUEImgui::Deinitialize()
+void UImguiResourceManager::Deinitialize()
 {
 	Super::Deinitialize();
 
@@ -87,48 +120,27 @@ void UUEImgui::Deinitialize()
 	_ShutDownGlobalContext();
 }
 
-void UUEImgui::_InitGlobalContext()
+void UImguiResourceManager::_InitGlobalContext()
 {
 	// please init font first 
 	check(DefaultFont);
-
-	// create context 
-	GlobalContext = ImGui::CreateContext(DefaultFont);
-
-	// enable keyboard control
-	GlobalContext->IO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-	// set backend flags
-	GlobalContext->IO.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-	GlobalContext->IO.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
-	GlobalContext->IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
-	GlobalContext->IO.BackendPlatformName = "Unreal Backend";
-	GlobalContext->IO.BackendPlatformName = "Unreal Widget";
-
-	// set up style
-	ImGui::StyleColorConfig(&GlobalContext->Style);
-
-	// disable .ini by default
-	GlobalContext->IO.IniFilename = nullptr;
-
-	// set up key map 
-	UImguiInputAdapter::CopyUnrealKeyMap(&GlobalContext->IO);
+	GlobalContext = NewObject<UImguiContext>(this);
+	GlobalContext->Init(DefaultFont);
 
 	// capture display device info
 	FDisplayMetrics DisplayMetrics;
 	FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
-	GlobalContext->IO.DisplaySize = {
+	GlobalContext->GetIO()->DisplaySize = {
 		(float)DisplayMetrics.VirtualDisplayRect.Right - DisplayMetrics.VirtualDisplayRect.Left,
 		(float)DisplayMetrics.VirtualDisplayRect.Bottom - DisplayMetrics.VirtualDisplayRect.Top };
 }
 
-void UUEImgui::_ShutDownGlobalContext()
+void UImguiResourceManager::_ShutDownGlobalContext()
 {
-	ImGui::DestroyContext(GlobalContext);
 	GlobalContext = nullptr;
 }
 
-void UUEImgui::_InitDefaultFont()
+void UImguiResourceManager::_InitDefaultFont()
 {
 	DefaultFont = IM_NEW(ImFontAtlas);	
 
@@ -184,7 +196,7 @@ void UUEImgui::_InitDefaultFont()
 	DefaultFont->TexID = reinterpret_cast<ImTextureID>(EGlobalImguiTextureId::DefaultFont);
 }
 
-void UUEImgui::_ShutDownDefaultFont()
+void UImguiResourceManager::_ShutDownDefaultFont()
 {
 	IM_DELETE(DefaultFont);
 }
