@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
+#include "ImguiInput/ImguiGlobalInputHook.h"
+#include "ImguiInput/ImguiInputAdapterDeferred.h"
 #include "UEImgui.generated.h"
 
 /**
@@ -30,6 +32,7 @@ public:
 	UTexture*	Source;
 };
 
+DECLARE_DELEGATE_RetVal(bool, FDrawGlobalImgui);
 
 /**
  * @brief Imgui subsystem, interface for a global context of imgui 
@@ -49,6 +52,9 @@ public:
 	FImguiResource* FindResource(ImTextureID InResId);
 	void ReleaseResource(FName InResName);
 	void ReleaseResource(ImTextureID InID);
+	
+	// Draw imgui
+	void AddGlobalWindow(const FDrawGlobalImgui& InDrawEvent) { AllDrawCallBack.Add(InDrawEvent); }
 protected:
 	// ~Begin UEngineSubsystem API
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -63,14 +69,27 @@ private:
 	void _InitDefaultFont();
 	void _ShutDownDefaultFont();
 private:
+	// Resources 
 	UPROPERTY()
 	TMap<int32, FImguiResource>	AllResource;
-	TMap<FName, int32>			NamedResourceMap;
-	int32						CurrentResIdx;
 
+	// Name find map 
+	TMap<FName, int32>			NamedResourceMap;
+
+	// Current unique id 
+	int32						CurrentResIdx;
+	
+	// Global context 
 	ImGuiContext*				GlobalContext;
 
+	// Global input adapter 
+	UPROPERTY()
+	UImguiInputAdapterDeferred*	InputAdapter;
+
+	// Default font atlas 
 	ImFontAtlas*				DefaultFont;
-	
+
+	// Draw callbacks 
+	TArray<FDrawGlobalImgui>	AllDrawCallBack;
 };
 
