@@ -2,6 +2,9 @@
 
 在UE4中使用Imgui
 
+### main分支即日起停止维护，所有疑难杂症预计会在Docking分支得到解决，Docking分支完成后将会替换主线 
+
+
 **Example**: 将根目录下的[Examples](./Examples/)拷贝至任意Module下(需要引用Imgui和UEImgui模块)即可看到示例效果
 
 **TODO**: 
