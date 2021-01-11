@@ -26,15 +26,12 @@ public:
 };
 
 UCLASS()
-class UEIMGUI_API UImguiResourceManager : public UEngineSubsystem
+class UEIMGUI_API UImguiResourceManager : public UObject
 {
 	GENERATED_BODY()
 public:
 	UImguiResourceManager();
-	static UImguiResourceManager& Get()
-	{
-		return *GEngine->GetEngineSubsystem<UImguiResourceManager>();
-	}
+	static UImguiResourceManager& Get();
 	
 	// Resource action
 	ImTextureID AddResource(FName InResName, UTexture* SourceObj);
@@ -45,35 +42,21 @@ public:
 	void ReleaseResource(FName InResName);
 	void ReleaseResource(ImTextureID InID);
 
-	// Context action
-	UImguiContext* GetGlobalContext() const { return GlobalContext; }
-	UImguiContext* CreateContext();
-	void ReleaseContext(UImguiContext* InContext);
+	// Default font
+	ImFontAtlas* GetDefaultFont() const { return DefaultFont; }
 protected:
-	// ~Begin USubsystem API
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
-	// ~End UImguiResourceManager API
+	// ~Begin UObject API
+	virtual void BeginDestroy() override;
+	// ~End UObject API
 private:
-	// Global Context
-	void _InitGlobalContext();
-	void _ShutDownGlobalContext();
-	
-	// font
+	// Font
 	void _InitDefaultFont();
 	void _ShutDownDefaultFont();
-
 private:
 	UPROPERTY()
 	TMap<int32, FImguiResource>	AllResource;
 	TMap<FName, int32>			NamedResourceMap;
 	int32						CurrentResIdx;
-
-	UPROPERTY()
-	TArray<UImguiContext*>		PooledContext;
-
-	UPROPERTY()
-	UImguiContext*				GlobalContext;
 
 	ImFontAtlas*				DefaultFont;
 };

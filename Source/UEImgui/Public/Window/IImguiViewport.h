@@ -3,7 +3,7 @@
 
 struct IImguiViewport
 {
-	~IImguiViewport() {}
+	virtual ~IImguiViewport() {}
 
 	virtual TSharedPtr<SWindow> GetWindow() = 0;
 	virtual ImGuiID GetPersistWindowID() { return 0; }

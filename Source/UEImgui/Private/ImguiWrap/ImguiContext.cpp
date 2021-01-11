@@ -17,16 +17,34 @@ UImguiContext::UImguiContext(const FObjectInitializer& InInitializer)
 {
 }
 
-void UImguiContext::Init(ImFontAtlas* InDefaultFontAtlas, bool bEnableDocking)
+void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas, bool bEnableDocking)
 {
 	// create context 
 	Context = ImGui::CreateContext(InDefaultFontAtlas);
+
+	// init font
+	if (!InDefaultFontAtlas)
+	{
+		_SetUpDefaultFont();
+	}
 
 	// set up context 
 	_SetupImguiContext(bEnableDocking);
 
 	// set up key map 
 	UImguiInputAdapter::CopyUnrealKeyMap(GetIO());
+
+	// setup main view port
+	MainViewPort = InMainViewPort;
+	auto ImMainViewPort = Context->Viewports[0];
+	ImMainViewPort->PlatformHandle = ImMainViewPort->PlatformHandleRaw = InMainViewPort.Get();
+
+	// setup main client size
+	auto MainViewPortSize = InMainViewPort->GetSize();
+	GetIO()->DisplaySize = *(ImVec2*)&MainViewPortSize;
+
+	// add to search map
+	ImViewportToUE.Add(ImMainViewPort, MainViewPort);
 }
 
 void UImguiContext::ShutDown()
@@ -36,6 +54,17 @@ void UImguiContext::ShutDown()
 
 	// clean reference
 	Context = nullptr;
+}
+
+void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)
+{
+	check(InRenderProxy.IsValid() && InRenderProxy.Pin()->IsPersist());
+	AllRenderProxy.Add(InRenderProxy);
+}
+
+void UImguiContext::RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)
+{
+	AllRenderProxy.Remove(InRenderProxy);
 }
 
 ImGuiIO* UImguiContext::GetIO() const
@@ -51,6 +80,7 @@ ImGuiStyle* UImguiContext::GetStyle() const
 void UImguiContext::ApplyContext()
 {
 	ImGui::SetCurrentContext(Context);
+	FImguiWindowWrapper::CurContext = this;
 }
 
 void UImguiContext::DrawGlobal()
@@ -60,7 +90,7 @@ void UImguiContext::DrawGlobal()
 		auto& CurCallBack = AllDrawCallBack[i];
 		
 		if (!CurCallBack.IsBound()) continue;
-		bool bNeedClose = CurCallBack.Execute();
+		bool bNeedClose = !CurCallBack.Execute();
 		if (bNeedClose)
 		{
 			CurCallBack.Unbind();
@@ -68,9 +98,10 @@ void UImguiContext::DrawGlobal()
 	}
 }
 
-void UImguiContext::UpdateViewport()
+void UImguiContext::UpdateViewport(UImguiInputAdapter* InAdapter)
 {
 	FImguiWindowWrapper::CurContext = this;
+	FImguiWindowWrapper::CurInputAdapter = InAdapter;
 	ImGui::UpdatePlatformWindows();
 }
 
@@ -147,7 +178,8 @@ void UImguiContext::_UpdateWindow(ImGuiViewport* viewport)
 
 ImVec2 UImguiContext::_GetWindowPos(ImGuiViewport* viewport)
 {
-	return *(ImVec2*)&_SafeFindViewport(viewport)->GetPos();
+	auto Pos = _SafeFindViewport(viewport)->GetPos();
+	return *(ImVec2*)&Pos;
 }
 
 void UImguiContext::_SetWindowPos(ImGuiViewport* viewport, ImVec2 pos)
@@ -157,7 +189,8 @@ void UImguiContext::_SetWindowPos(ImGuiViewport* viewport, ImVec2 pos)
 
 ImVec2 UImguiContext::_GetWindowSize(ImGuiViewport* viewport)
 {
-	return *(ImVec2*)&_SafeFindViewport(viewport)->GetSize();
+	auto Size = _SafeFindViewport(viewport)->GetSize();
+	return *(ImVec2*)&Size;
 }
 
 void UImguiContext::_SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
@@ -172,12 +205,12 @@ void UImguiContext::_SetWindowFocus(ImGuiViewport* viewport)
 
 bool UImguiContext::_GetWindowFocus(ImGuiViewport* viewport)
 {
-	_SafeFindViewport(viewport)->GetFocus();
+	return _SafeFindViewport(viewport)->GetFocus();
 }
 
 bool UImguiContext::_GetWindowMinimized(ImGuiViewport* viewport)
 {
-	_SafeFindViewport(viewport)->GetMinimized();
+	return _SafeFindViewport(viewport)->GetMinimized();
 }
 
 void UImguiContext::_SetWindowTitle(ImGuiViewport* viewport, const char* title)
@@ -192,11 +225,12 @@ void UImguiContext::_SetWindowAlpha(ImGuiViewport* viewport, float alpha)
 
 float UImguiContext::_GetWindowDpiScale(ImGuiViewport* viewport)
 {
-	_SafeFindViewport(viewport)->GetDpiScale();
+	return _SafeFindViewport(viewport)->GetDpiScale();
 }
 
 void UImguiContext::_OnChangedViewport(ImGuiViewport* viewport)
 {
+	if (!ImViewportToUE.Contains(viewport)) return;
 	_SafeFindViewport(viewport)->OnChangeViewport();
 }
 
@@ -222,6 +256,8 @@ void UImguiContext::_SetupImguiContext(bool bEnableDocking)
 	GetIO()->BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 	GetIO()->BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 	GetIO()->BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+	GetIO()->BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+	GetIO()->BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 	GetIO()->BackendPlatformName = "Unreal Backend";
 	GetIO()->BackendPlatformName = "Unreal Widget";
 
@@ -241,32 +277,18 @@ void UImguiContext::_SetupImguiContext(bool bEnableDocking)
 	{
 		ImGuiPlatformMonitor Monitor;
 		Monitor.DpiScale = 1.f;
+
 		Monitor.MainPos.x = Info.DisplayRect.Left;
 		Monitor.MainPos.y = Info.DisplayRect.Top;
 		Monitor.MainSize.x = Info.DisplayRect.Right - Info.DisplayRect.Left;
 		Monitor.MainSize.y = Info.DisplayRect.Bottom - Info.DisplayRect.Top;
+
 		Monitor.WorkPos.x = Info.WorkArea.Left;
 		Monitor.WorkPos.y = Info.WorkArea.Top;
-		Monitor.MainSize.x = Info.WorkArea.Right - Info.WorkArea.Left;
-		Monitor.MainSize.y = Info.WorkArea.Bottom - Info.WorkArea.Top;
+		Monitor.WorkSize.x = Info.WorkArea.Right - Info.WorkArea.Left;
+		Monitor.WorkSize.y = Info.WorkArea.Bottom - Info.WorkArea.Top;
 		Context->PlatformIO.Monitors.push_back(Monitor);
 	}
-}
-
-ImFontAtlas& GetDefaultFontAtlas()
-{
-	static ImFontAtlas FontAtlas;
-	if (!FontAtlas.IsBuilt())
-	{
-		ImFontConfig FontConfig = {};
-		FontConfig.SizePixels = FMath::RoundFromZero(13.f);
-		FontAtlas.AddFontDefault(&FontConfig);
-
-		unsigned char* Pixels;
-		int Width, Height, Bpp;
-		FontAtlas.GetTexDataAsRGBA32(&Pixels, &Width, &Height, &Bpp);
-	}
-	return FontAtlas;
 }
 
 void UImguiContext::_SetUpDefaultFont()

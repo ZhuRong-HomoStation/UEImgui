@@ -25,12 +25,16 @@ public:
 	UImguiContext(const FObjectInitializer& InInitializer);
 
 	// init and shutdown 
-	void Init(ImFontAtlas* InDefaultFontAtlas = nullptr, bool bEnableDocking = true);
+	void Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas = nullptr, bool bEnableDocking = true);
 	void ShutDown();
 
 	// global draw
-	int32 AddGlobalWindow(FDrawGlobalImgui InCallBack);
-	void RemoveGlobalWindow(int32 InIndex);
+	int32 AddGlobalWindow(const FDrawGlobalImgui& InCallBack) { return AllDrawCallBack.Add(InCallBack); }
+	void RemoveGlobalWindow(int32 InIndex) { AllDrawCallBack[InIndex].Unbind(); }
+
+	// proxy
+	void AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy);
+	void RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy);
 	
 	// context operation 
 	ImGuiContext* GetContext() const { return Context; }
@@ -42,8 +46,9 @@ public:
 	void NewFrame() { ImGui::NewFrame(); }
 	void DrawGlobal();
 	void Render() { ImGui::Render(); }
-	void UpdateViewport();
+	void UpdateViewport(UImguiInputAdapter* InAdapter);
 private:
+	// window platform 
 	void	_CreateWindow(ImGuiViewport* viewport, UImguiInputAdapter* InInputAdapter);
 	void	_DestroyWindow(ImGuiViewport* viewport);
 	void	_ShowWindow(ImGuiViewport* viewport);
@@ -61,12 +66,15 @@ private:
 	void	_OnChangedViewport(ImGuiViewport* viewport);
 	void	_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos);
 
+	// setup  
 	void _SetupImguiContext(bool bEnableDocking);
 	void _SetUpDefaultFont();
+
+	// help function 
 	TSharedPtr<IImguiViewport> _SafeFindViewport(ImGuiViewport* InViewport, bool bNeedShow = true);
-	
 	TWeakPtr<IImguiViewport> _DispatchProxy(ImGuiViewport* InViewport, UImguiInputAdapter* InInputAdapter);
 private:
+	TSharedPtr<IImguiViewport>			MainViewPort;
 	TArray<FDrawGlobalImgui>			AllDrawCallBack;
 	TArray<TWeakPtr<IImguiViewport>>	AllRenderProxy;
 	TArray<TSharedPtr<IImguiViewport>>	AllDispatchedViewport;

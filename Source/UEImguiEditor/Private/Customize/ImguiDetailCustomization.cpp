@@ -105,7 +105,8 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
 	RenderProxy->SetTopWnd(WndID);
 
 	// add window 
-	UImguiGlobalContextService::Get().AddGlobalWindow(DetailName.ToString(), FDrawGlobalImgui::CreateLambda(
+	UImguiGlobalContextService::Get().GetGlobalContext()
+    ->AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
         [DetailName, RenderProxy, AllCustomization, AllObjs]
         {
 			if (RenderProxy.IsUnique()) return false;
@@ -127,7 +128,7 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
             }
             return true;
         }));
-	UImguiGlobalContextService::Get().AddRenderProxy(RenderProxy);
+	UImguiGlobalContextService::Get().GetGlobalContext()->AddRenderProxy(RenderProxy);
 }
 
 void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UObject*>& InObjs, IDetailChildrenBuilder& ChildBuilder)
@@ -180,7 +181,7 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 	RenderProxy->SetTopWnd(WndID);
 
 	// add window 
-	UImguiGlobalContextService::Get().AddGlobalWindow(DetailName.ToString(), FDrawGlobalImgui::CreateLambda(
+	UImguiGlobalContextService::Get().GetGlobalContext()->AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
 		[Obj, OnGUIFunc, DetailName, RenderProxy, AllCustomization]
         {
 			if (RenderProxy.IsUnique()) return false;
@@ -205,5 +206,5 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 			}
             return true;
         }));
-	UImguiGlobalContextService::Get().AddRenderProxy(RenderProxy);
+	UImguiGlobalContextService::Get().GetGlobalContext()->AddRenderProxy(RenderProxy);
 }

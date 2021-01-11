@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SWidget.h"
+#include "Window/IImguiViewport.h"
 
 class UImguiContext;
 class UImguiInputAdapter;
@@ -69,6 +70,8 @@ protected:
 	// cursor
 	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
 	// ~End SWidget API 
+protected:
+	bool					bHasFocus = false;
 private:
 	UImguiContext*			Context;
 	UImguiInputAdapter*		Adapter;
@@ -113,7 +116,7 @@ private:
 };
 
 // imgui draw proxy widget, only do input forward and draw, always used for global context 
-class UEIMGUI_API SImguiWidgetRenderProxy : public SImguiWidgetBase
+class UEIMGUI_API SImguiWidgetRenderProxy : public SImguiWidgetBase, public IImguiViewport
 {
 	using Super = SImguiWidgetBase;
 public:
@@ -152,8 +155,26 @@ protected:
 		bool bParentEnabled) const override;
 	virtual FVector2D ComputeDesiredSize(float) const override;
 	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
-	// ~End SWidget API 
+	// ~End SWidget API
+
+	// ~Begin IImguiViewport API
+	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd; }
+	virtual void Show(TSharedPtr<SWindow> InParent) override { }
+	virtual void Update() override {}
+	virtual FVector2D GetPos() override { return GetTickSpaceGeometry().GetAbsolutePosition(); }
+	virtual void SetPos(FVector2D InPos) override {  }
+	virtual FVector2D GetSize() override { return GetTickSpaceGeometry().GetAbsoluteSize(); }
+	virtual void SetSize(FVector2D InSize) override {}
+	virtual bool GetFocus() override { return bHasFocus; }
+	virtual void SetFocus() override { FSlateApplication::Get().SetUserFocus(0, AsShared()); }
+	virtual bool GetMinimized() override { return CachedWnd.IsValid() ? CachedWnd->IsWindowMinimized() : false; }
+	virtual void SetTitle(const char* InTitle) override { CachedWnd->SetTitle(FText::FromString(FString(InTitle))); }
+	virtual void SetAlpha(float InAlpha) override { }
+	virtual void SetupViewport(ImGuiViewport* InViewport) override {  }
+	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
+	// ~End IImguiViewport API 
 protected:
+	mutable TSharedPtr<SWindow> CachedWnd;
 	ImGuiID				TopWndID;
 	TArray<ImGuiID>		WndID;
 	EImguiSizingRule	HSizingRule;
@@ -186,6 +207,6 @@ public:
 	~SGlobalImguiWidget();
 	
 private:
-	FString				WindowName;
+	int32				WindowId;
 	FOnImguiDraw		DrawCallBack;
 };

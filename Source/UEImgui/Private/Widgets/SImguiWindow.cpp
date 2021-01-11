@@ -2,6 +2,11 @@
 #include "imgui_internal.h"
 #include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiUEWrap.h"
+#if WITH_EDITOR
+#include "Interfaces/IMainFrameModule.h"
+#endif
+
+class IMainFrameModule;
 
 void SImguiWindow::Construct(const FArguments& InArgs)
 {
@@ -94,6 +99,7 @@ void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
 FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
 {
 	bInFocus = true;
+	return FReply::Unhandled();
 }
 
 FCursorReply SImguiWindow::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
@@ -138,7 +144,18 @@ void SImguiWindow::Show(TSharedPtr<SWindow> InParent)
 	{
 		InParent->AddChildWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
 	}
-	FSlateApplication::Get().AddWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
+#if WITH_EDITOR
+	if (FModuleManager::Get().IsModuleLoaded("MainFrame"))
+	{
+		IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
+		const TSharedPtr<SWindow> MainFrameWindow = MainFrame.GetParentWindow();
+		FSlateApplication::Get().AddWindowAsNativeChild(StaticCastSharedRef<SWindow>(AsShared()), MainFrameWindow.ToSharedRef());
+	}
+	else
+#endif
+	{
+		FSlateApplication::Get().AddWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
+	}
 }
 
 void SImguiWindow::Update()

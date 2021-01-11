@@ -17,7 +17,7 @@ void SImguiWidgetBase::Construct(const FArguments& InArgs)
 	// validate 
 	if (!Context)
 	{
-		Context = UImguiResourceManager::Get().CreateContext();
+		
 	}
 	if (!Adapter)
 	{
@@ -28,7 +28,7 @@ void SImguiWidgetBase::Construct(const FArguments& InArgs)
 
 SImguiWidgetBase::~SImguiWidgetBase()
 {
-	UImguiResourceManager::Get().ReleaseContext(Context);
+	(Context);
 }
 
 void SImguiWidgetBase::SetContext(UImguiContext* InContext)
@@ -280,6 +280,9 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	{	
 		AllDrawList.Add(static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(ID))->DrawList);
 	}
+
+	// cache window
+	CachedWnd = StaticCastSharedRef<SWindow>(OutDrawElements.GetPaintWindow()->AsShared());
 	
 	return UEImguiDraw::MakeImgui(
         OutDrawElements,
@@ -348,7 +351,6 @@ void SImguiWidgetRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
 
 void SGlobalImguiWidget::Construct(const FArguments& InArgs)
 {
-	WindowName = InArgs._WndName;
 	DrawCallBack = InArgs._OnDraw;
 	Super::Construct(Super::FArguments()
 		.InContext(InArgs._InContext)
@@ -358,7 +360,7 @@ void SGlobalImguiWidget::Construct(const FArguments& InArgs)
 		.AutoSetWidgetPos(InArgs._AutoSetWidgetPos)
 		.ProxyWndName(InArgs._WndName));
 	
-	UImguiGlobalContextService::Get().AddGlobalWindow(WindowName, FDrawGlobalImgui::CreateLambda([this]
+	WindowId = UImguiGlobalContextService::Get().GetGlobalContext()->AddGlobalWindow(FDrawGlobalImgui::CreateLambda([this]
 	{
 		if (DrawCallBack.IsBound())
 		{
@@ -383,10 +385,10 @@ void SGlobalImguiWidget::Construct(const FArguments& InArgs)
 		return true;
 	}));
 
-	UImguiGlobalContextService::Get().AddRenderProxy(StaticCastSharedRef<SImguiWidgetRenderProxy>(this->AsShared()));
+	UImguiGlobalContextService::Get().GetGlobalContext()->AddRenderProxy(StaticCastSharedRef<SImguiWidgetRenderProxy>(this->AsShared()));
 }
 
 SGlobalImguiWidget::~SGlobalImguiWidget()
 {
-	UImguiGlobalContextService::Get().RemoveGlobalWindow(WindowName);
+	UImguiGlobalContextService::Get().GetGlobalContext()->RemoveGlobalWindow(WindowId);
 }

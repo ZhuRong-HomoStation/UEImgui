@@ -38,7 +38,7 @@ public class UEImgui : ModuleRules
 			PrivateDependencyModuleNames.AddRange(
 				new string[]
 				{
-					"MainFrame"	
+					"MainFrame"	,
 				});
 		}
 		

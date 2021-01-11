@@ -27,10 +27,7 @@ public:
 
 	bool TimeToDraw();
 
-	
-	void AddRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy);
-	void RemoveRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy) { AllRenderProxy.Remove(InRenderProxy); }
-	
+	UImguiContext* GetGlobalContext() { return GlobalContext; }
 protected:
 	// ~Begin USubsystem API
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -38,25 +35,12 @@ protected:
 	// ~End USubsystem API
 private:
 	void _OnSlatePreTick(float DeltaTime);
-	
-	void _DrawGlobalImguiWnds();
-	TSharedPtr<SImguiWindow> _FindUnrealWindow(ImGuiWindow* InWindow, bool* IsCreated = nullptr);
-	void _DispatchWindows();
-
-	TWeakPtr<SImguiWidgetRenderProxy> _FindRenderProxy(ImGuiWindow* InWindow);
-	void _CleanUpRenderProxy();
 private:
 	UPROPERTY()
-	UImguiContext*		GlobalContext;
+	UImguiContext*					GlobalContext;
 
 	UPROPERTY()
 	UImguiInputAdapterDeferred*		InputAdapter;
-
-	// render proxy to block render data from dispatch windows 
-	TArray<TWeakPtr<SImguiWidgetRenderProxy>>	AllRenderProxy;
-
-	// draw call, for quick create imgui windows 
-	TMap<FString ,FDrawGlobalImgui>			AllDrawCallBack;
 
 	// input hook, used to capture mouse input when resizing windows 
 	TSharedPtr<FImguiGlobalInputHook>		GlobalInputHook;

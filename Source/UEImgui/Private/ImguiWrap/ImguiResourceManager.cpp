@@ -14,9 +14,21 @@ FImguiResource::FImguiResource(const FName& InName, UTexture* SourceObject)
 
 UImguiResourceManager::UImguiResourceManager()
 	: CurrentResIdx(1)
-	, GlobalContext(nullptr)
 	, DefaultFont(nullptr)
 {
+	_InitDefaultFont();
+}
+
+UImguiResourceManager& UImguiResourceManager::Get()
+{
+	static UImguiResourceManager* Ins = nullptr;
+	if (!Ins)
+	{
+		Ins = NewObject<UImguiResourceManager>();
+		Ins->AddToRoot();
+	}
+
+	return *Ins;
 }
 
 ImTextureID UImguiResourceManager::AddResource(FName InResName, UTexture* SourceObj)
@@ -80,64 +92,10 @@ void UImguiResourceManager::ReleaseResource(ImTextureID InID)
 	}
 }
 
-UImguiContext* UImguiResourceManager::CreateContext()
+void UImguiResourceManager::BeginDestroy()
 {
-	if (PooledContext.Num() == 0)
-	{
-		UImguiContext* NewContext = NewObject<UImguiContext>(this);
-		NewContext->Init(DefaultFont);
-		return NewContext;
-	}
-	return PooledContext.Pop(false);
-}
-
-void UImguiResourceManager::ReleaseContext(UImguiContext* InContext)
-{
-	if (InContext == GlobalContext) return;
-	InContext->Reset();
-	PooledContext.Add(InContext);
-}
-
-void UImguiResourceManager::Initialize(FSubsystemCollectionBase& Collection)
-{
-	Super::Initialize(Collection);
-
-	// init default font
-	_InitDefaultFont();
-	
-	// init global context
-	_InitGlobalContext();
-}
-
-void UImguiResourceManager::Deinitialize()
-{
-	Super::Deinitialize();
-
-	// release default font
+	Super::BeginDestroy();
 	_ShutDownDefaultFont();
-
-	// release default context 
-	_ShutDownGlobalContext();
-}
-
-void UImguiResourceManager::_InitGlobalContext()
-{
-	// please init font first 
-	check(DefaultFont);
-	GlobalContext = NewObject<UImguiContext>(this);
-	GlobalContext->Init(DefaultFont);
-
-	// capture display device info
-	FDisplayMetrics DisplayMetrics;
-	FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
-	GlobalContext->GetIO()->DisplaySize = {
-		(float)DisplayMetrics.VirtualDisplayRect.Right - DisplayMetrics.VirtualDisplayRect.Left,
-		(float)DisplayMetrics.VirtualDisplayRect.Bottom - DisplayMetrics.VirtualDisplayRect.Top };
-}
-
-void UImguiResourceManager::_ShutDownGlobalContext()
-{
-	GlobalContext = nullptr;
 }
 
 void UImguiResourceManager::_InitDefaultFont()
