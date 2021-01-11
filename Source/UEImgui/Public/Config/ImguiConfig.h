@@ -10,19 +10,19 @@ struct FImguiStyle
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	float       Alpha;                 
+	float       Alpha;        
+	UPROPERTY()              
+	FVector2D   WindowPadding;         
 	UPROPERTY()     
-	FVector2D   WindowPadding;              
-	UPROPERTY()
-	float       WindowRounding;             
-	UPROPERTY()
+	float       WindowRounding;         
+	UPROPERTY()    
 	float       WindowBorderSize;           
 	UPROPERTY()
 	FVector2D   WindowMinSize;              
 	UPROPERTY()
 	FVector2D   WindowTitleAlign;           
-	UPROPERTY()
-	int		    WindowMenuButtonPosition;   
+	// UPROPERTY()
+	ImGuiDir    WindowMenuButtonPosition = ImGuiDir_Left;   
 	UPROPERTY()
 	float       ChildRounding;              
 	UPROPERTY()
@@ -41,6 +41,8 @@ public:
 	FVector2D   ItemSpacing;                
 	UPROPERTY()
 	FVector2D   ItemInnerSpacing;           
+	UPROPERTY()
+	FVector2D   CellPadding;                
 	UPROPERTY()
 	FVector2D   TouchExtraPadding;          
 	UPROPERTY()
@@ -63,8 +65,8 @@ public:
 	float       TabBorderSize;              
 	UPROPERTY()
 	float       TabMinWidthForCloseButton;  
-	UPROPERTY()
-	int			ColorButtonPosition;        
+	// UPROPERTY()
+	ImGuiDir    ColorButtonPosition = ImGuiDir_Right;        
 	UPROPERTY()
 	FVector2D   ButtonTextAlign;            
 	UPROPERTY()

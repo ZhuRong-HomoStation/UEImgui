@@ -148,7 +148,9 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 	// process dispatched window case 
 	if (UEWidget.IsValid() && !UEWidget.Pin()->IsPersist())
 	{
-		AllDispatchedViewport.Remove(UEWidget.Pin());
+		auto PinnedUEWidget = UEWidget.Pin();
+		static_cast<SImguiWindow*>(PinnedUEWidget.Get())->RequestDestroyWindow();
+		AllDispatchedViewport.Remove(PinnedUEWidget);
 	}
 	
 	// remove from map 

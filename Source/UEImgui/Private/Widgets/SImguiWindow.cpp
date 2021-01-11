@@ -26,6 +26,7 @@ void SImguiWindow::Construct(const FArguments& InArgs)
         .CreateTitleBar(false)
         .SupportsMaximize(false)
         .SupportsMinimize(false)
+        .UserResizeBorder(FMargin(0))
         .FocusWhenFirstShown(InArgs._TakeFocusWhenShow));
 }
 
@@ -128,7 +129,7 @@ int32 SImguiWindow::OnPaint(
 	return UEImguiDraw::MakeImgui(
 		OutDrawElements,
 		LayerId,
-		FSlateRenderTransform(),
+		FSlateRenderTransform(-GetPositionInScreen()),
 		MyCullingRect,
 		BoundViewport->DrawData);
 }
@@ -142,7 +143,9 @@ void SImguiWindow::Show(TSharedPtr<SWindow> InParent)
 	}
 	if (InParent.IsValid())
 	{
-		InParent->AddChildWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
+		FSlateApplication::Get().AddWindowAsNativeChild(StaticCastSharedRef<SWindow>(AsShared()), InParent.ToSharedRef());
+		MoveWindowTo(GetInitialDesiredPositionInScreen());
+		return;
 	}
 #if WITH_EDITOR
 	if (FModuleManager::Get().IsModuleLoaded("MainFrame"))
@@ -156,6 +159,7 @@ void SImguiWindow::Show(TSharedPtr<SWindow> InParent)
 	{
 		FSlateApplication::Get().AddWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
 	}
+	MoveWindowTo(GetInitialDesiredPositionInScreen());
 }
 
 void SImguiWindow::Update()

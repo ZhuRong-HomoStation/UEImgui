@@ -28,8 +28,8 @@ TWeakPtr<SWidget> CurrentRenderWidget;
 
 void ImGui::StyleColorUE(ImGuiStyle* dst)
 {
-	ImGuiStyle* style = dst ? dst : &ImGui::GetStyle();
-    ImVec4* colors = style->Colors;
+	ImGuiStyle* CurStyle = dst ? dst : &ImGui::GetStyle();
+    ImVec4* colors = CurStyle->Colors;
 	
 	// color settings 
 	colors[ImGuiCol_Text]                   = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -82,20 +82,20 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
 	// other settings
-	style->ChildRounding = 0;
-	style->FrameRounding = 0;
-	style->PopupRounding = 0;
-	style->ScrollbarRounding = 0;
-	style->WindowRounding = 0;
+	CurStyle->ChildRounding = 0;
+	CurStyle->FrameRounding = 0;
+	CurStyle->PopupRounding = 0;
+	CurStyle->ScrollbarRounding = 0;
+	CurStyle->WindowRounding = 0;
 }
 
 void ImGui::StyleColorConfig(ImGuiStyle* dst)
 {
-	ImGuiStyle* style = dst ? dst : &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImGuiStyle* CurStyle = dst ? dst : &ImGui::GetStyle();
+	ImVec4* colors = CurStyle->Colors;
 
 	FMemory::Memcpy(colors ,UImguiConfig::Get()->ImguiColors.GetData(), ImGuiCol_COUNT * sizeof(ImVec4));
-	FMemory::Memcpy(style, &UImguiConfig::Get()->ImguiStyle, sizeof(FImguiStyle));
+	FMemory::Memcpy(CurStyle, &UImguiConfig::Get()->ImguiStyle, sizeof(FImguiStyle));
 }
 
 void ImGui::SetCurrentDetail(FName InDetailName)
@@ -153,14 +153,14 @@ void ImGui::UseInputSystem(const char* label, ImGuiInputTextFlags flags)
 		ImGuiWindow* window = GetCurrentWindow();
 		ImGuiContext& g = *GImGui;
 		ImGuiIO& io = g.IO;
-		const ImGuiStyle& style = g.Style;
+		const ImGuiStyle& CurStyle = g.Style;
 		const ImGuiID id = window->GetID(label);
 		ImGuiInputTextState* state = GetInputTextState(id);
 
 		const bool is_multiline = (flags & ImGuiInputTextFlags_Multiline) != 0;
 		const ImVec2 label_size = CalcTextSize(label, NULL, true);
-		const ImVec2 frame_size = CalcItemSize(ImVec2(0, 0), CalcItemWidth(), (is_multiline ? g.FontSize * 8.0f : label_size.y) + style.FramePadding.y * 2.0f); // Arbitrary default of 8 lines high for multi-line
-		const ImVec2 total_size = ImVec2(frame_size.x + (label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f), frame_size.y);
+		const ImVec2 frame_size = CalcItemSize(ImVec2(0, 0), CalcItemWidth(), (is_multiline ? g.FontSize * 8.0f : label_size.y) + CurStyle.FramePadding.y * 2.0f); // Arbitrary default of 8 lines high for multi-line
+		const ImVec2 total_size = ImVec2(frame_size.x + (label_size.x > 0.0f ? CurStyle.ItemInnerSpacing.x + label_size.x : 0.0f), frame_size.y);
 
 		InputSystem->ImguiInputState = state;
 		InputSystem->TargetContext = GImGui;
@@ -310,11 +310,12 @@ void ImGui::ShowUEStyleEditor()
 	// TabBar
 	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None))
 	{
-		if (ImGui::BeginTabItem("Sizes"))
+        if (ImGui::BeginTabItem("Sizes"))
         {
             ImGui::Text("Main");
             ImGui::SliderFloat2("WindowPadding", (float*)&CurStyle.WindowPadding, 0.0f, 20.0f, "%.0f");
             ImGui::SliderFloat2("FramePadding", (float*)&CurStyle.FramePadding, 0.0f, 20.0f, "%.0f");
+            ImGui::SliderFloat2("CellPadding", (float*)&CurStyle.CellPadding, 0.0f, 20.0f, "%.0f");
             ImGui::SliderFloat2("ItemSpacing", (float*)&CurStyle.ItemSpacing, 0.0f, 20.0f, "%.0f");
             ImGui::SliderFloat2("ItemInnerSpacing", (float*)&CurStyle.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
             ImGui::SliderFloat2("TouchExtraPadding", (float*)&CurStyle.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
@@ -421,7 +422,7 @@ void ImGui::ShowUEStyleEditor()
         //     _HelpMarker(
         //         "Those are old settings provided for convenience.\n"
         //         "However, the _correct_ way of scaling your UI is currently to reload your font at the designed size, "
-        //         "rebuild the font atlas, and call style.ScaleAllSizes() on a reference ImGuiStyle structure.\n"
+        //         "rebuild the font atlas, and call CurStyle.ScaleAllSizes() on a reference ImGuiStyle structure.\n"
         //         "Using those settings here will give you poor quality results.");
         //     static float window_scale = 1.0f;
         //     if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
@@ -434,21 +435,21 @@ void ImGui::ShowUEStyleEditor()
 
         // if (ImGui::BeginTabItem("Rendering"))
         // {
-        //     ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines);
+        //     ImGui::Checkbox("Anti-aliased lines", &CurStyle.AntiAliasedLines);
         //     ImGui::SameLine();
-        //     HelpMarker("When disabling anti-aliasing lines, you'll probably want to disable borders in your style as well.");
+        //     HelpMarker("When disabling anti-aliasing lines, you'll probably want to disable borders in your CurStyle as well.");
         //
-        //     ImGui::Checkbox("Anti-aliased lines use texture", &style.AntiAliasedLinesUseTex);
+        //     ImGui::Checkbox("Anti-aliased lines use texture", &CurStyle.AntiAliasedLinesUseTex);
         //     ImGui::SameLine();
         //     HelpMarker("Faster lines using texture data. Require backend to render with bilinear filtering (not point/nearest filtering).");
         //
-        //     ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
+        //     ImGui::Checkbox("Anti-aliased fill", &CurStyle.AntiAliasedFill);
         //     ImGui::PushItemWidth(100);
-        //     ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, 10.0f, "%.2f");
-        //     if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+        //     ImGui::DragFloat("Curve Tessellation Tolerance", &CurStyle.CurveTessellationTol, 0.02f, 0.10f, 10.0f, "%.2f");
+        //     if (CurStyle.CurveTessellationTol < 0.10f) CurStyle.CurveTessellationTol = 0.10f;
         //
         //     // When editing the "Circle Segment Max Error" value, draw a preview of its effect on auto-tessellated circles.
-        //     ImGui::DragFloat("Circle Segment Max Error", &style.CircleSegmentMaxError, 0.01f, 0.10f, 10.0f, "%.2f");
+        //     ImGui::DragFloat("Circle Segment Max Error", &CurStyle.CircleSegmentMaxError, 0.01f, 0.10f, 10.0f, "%.2f");
         //     if (ImGui::IsItemActive())
         //     {
         //         ImGui::SetNextWindowPos(ImGui::GetCursorScreenPos());
@@ -469,7 +470,7 @@ void ImGui::ShowUEStyleEditor()
         //     ImGui::SameLine();
         //     HelpMarker("When drawing circle primitives with \"num_segments == 0\" tesselation will be calculated automatically.");
         //
-        //     ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+        //     ImGui::DragFloat("Global Alpha", &CurStyle.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
         //     ImGui::PopItemWidth();
         //
         //     ImGui::EndTabItem();

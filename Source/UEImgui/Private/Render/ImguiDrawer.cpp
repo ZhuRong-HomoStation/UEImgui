@@ -95,12 +95,28 @@ void FImguiDrawer::_UpdateBufferSize(int32 InVtxNum, int32 InIdxNum)
 	FRHIResourceCreateInfo CreateInfo;
 	if (InVtxNum > NumVertices)
 	{
+		if (VertexBufferRHI.IsValid())
+		{
+			ENQUEUE_RENDER_COMMAND(UnlockOldVtxBuffer)(
+			[VtxBuf=VertexBufferRHI](FRHICommandListImmediate& RHICmdList)
+			{
+				RHIUnlockVertexBuffer(VtxBuf);
+			});
+		}
         VertexBufferRHI = RHICreateVertexBuffer(sizeof(ImDrawVert) * InVtxNum, BUF_Dynamic, CreateInfo);
 		VtxBuf = nullptr;
 		NumVertices = InVtxNum;
     }
 	if (InIdxNum > NumTriangles * 3)
 	{
+		if (IndexBufferRHI.IsValid())
+		{
+			ENQUEUE_RENDER_COMMAND(UnlockOldIdxBuffer)(
+            [IdxBuf=IndexBufferRHI](FRHICommandListImmediate& RHICmdList)
+            {
+                RHIUnlockIndexBuffer(IdxBuf);
+            });
+		}
 		check(InIdxNum % 3 == 0);
 		IndexBufferRHI = RHICreateIndexBuffer(sizeof(ImDrawIdx), sizeof(ImDrawIdx) * InIdxNum, BUF_Dynamic, CreateInfo);
 		IdxBuf = nullptr;		
@@ -123,8 +139,8 @@ void FImguiDrawer::_AppendDrawData(ImDrawData* InDrawData, ImDrawVert* InVtxBuf,
 
 		_AppendDrawList(DrawList, InVtxBuf, InIdxBuf, GlobalVtxOffset, GlobalIdxOffset);
 		
-		GlobalVtxOffset += DrawList->IdxBuffer.Size;
-		GlobalIdxOffset += DrawList->VtxBuffer.Size;
+		GlobalVtxOffset += DrawList->VtxBuffer.Size;
+		GlobalIdxOffset += DrawList->IdxBuffer.Size;
 	}
 }
 
@@ -320,4 +336,7 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	// lock for copy data 
 	VtxBuf = (ImDrawVert*)RHILockVertexBuffer(VertexBufferRHI, 0, NumVertices * sizeof(ImDrawVert), EResourceLockMode::RLM_WriteOnly);
 	IdxBuf = (ImDrawIdx*)RHILockIndexBuffer(IndexBufferRHI, 0, NumTriangles * 3 * sizeof(ImDrawIdx), EResourceLockMode::RLM_WriteOnly);
+
+	// reset draw elements
+	AllDrawElements.Reset();
 }
