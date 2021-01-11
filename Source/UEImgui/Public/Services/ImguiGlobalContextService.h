@@ -1,11 +1,10 @@
 #pragma once
 #include "CoreMinimal.h"
-
 #include "imgui.h"
 #include "Framework/Application/IInputProcessor.h"
 #include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "Widgets/SImguiWidget.h"
-
+#include "ImguiWrap/ImguiContext.h"
 #include "ImguiGlobalContextService.generated.h"
 
 struct ImGuiWindow;
@@ -14,8 +13,6 @@ class UImguiInputAdapter;
 class UImguiInputAdapterDeferred;
 class SImguiWindow;
 struct ImDrawData;
-
-DECLARE_DELEGATE_RetVal(bool, FDrawGlobalImgui)
 
 UCLASS()
 class UEIMGUI_API UImguiGlobalContextService : public UEngineSubsystem
@@ -30,8 +27,6 @@ public:
 
 	bool TimeToDraw();
 
-	void AddGlobalWindow(const FString& WndName, const FDrawGlobalImgui& InDrawEvent) { AllDrawCallBack.Add(WndName, InDrawEvent); }
-	void RemoveGlobalWindow(const FString& WndName) { AllDrawCallBack.Remove(WndName); }
 	
 	void AddRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy);
 	void RemoveRenderProxy(TWeakPtr<SImguiWidgetRenderProxy> InRenderProxy) { AllRenderProxy.Remove(InRenderProxy); }

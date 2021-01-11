@@ -4,32 +4,28 @@
 #include "ImguiWrap/ImguiContext.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
 #include "Widgets/SWindow.h"
+#include "Window/IImguiViewport.h"
 
-class UEIMGUI_API SImguiWindow : public SWindow
+class UEIMGUI_API SImguiWindow : public SWindow, public IImguiViewport
 {
 	using Super = SWindow;
 public:
 	SLATE_BEGIN_ARGS(SImguiWindow)
 		: _Context(nullptr)
-		, _IsMenu(false)
+		, _Viewport(nullptr)
 		, _IsToolTip(false)
 	{}
 		SLATE_ARGUMENT(TWeakObjectPtr<UImguiContext>, Context)
 		SLATE_ARGUMENT(TWeakObjectPtr<UImguiInputAdapter>, Adapter)
-		SLATE_ARGUMENT(bool, IsMenu)
+		SLATE_ARGUMENT(ImGuiViewport*, Viewport)
 		SLATE_ARGUMENT(bool, IsToolTip)	
 		SLATE_ARGUMENT(bool, IsPopup)	
+		SLATE_ARGUMENT(bool, TakeFocusWhenShow)	
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
 
-	// Context action
-	const TArray<ImGuiID>& GetWndID() const { return WndID; }
-	TArray<ImGuiID>& GetWndID() { return WndID; }
-
-	ImGuiID GetTopWnd() const { return TopWndID; }
-	void SetTopWnd(ImGuiID InID) { TopWndID = InID; }
-	
+	// Context action	
 	UImguiContext* GetContext() const { return BoundContext.Get(); }
 	void SetContext(UImguiContext* InContext) { BoundContext = InContext; }
 
@@ -53,7 +49,7 @@ protected:
 	// Focus
 	virtual bool SupportsKeyboardFocus() const override;
 	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
-	// virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
+	virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
 
 	// cursor
 	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
@@ -69,9 +65,26 @@ protected:
 		const FWidgetStyle& InWidgetStyle,
 		bool bParentEnabled) const override;
 	// ~Begin SWidget API
+
+	// ~Begin IImguiViewport API
+	virtual TSharedPtr<SWindow> GetWindow() override { return StaticCastSharedRef<SWindow>(AsShared()); }
+	virtual void Show(TSharedPtr<SWindow> InParent) override;
+	virtual void Update() override;
+	virtual FVector2D GetPos() override;
+	virtual void SetPos(FVector2D InPos) override;
+	virtual FVector2D GetSize() override;
+	virtual void SetSize(FVector2D InSize) override;
+	virtual bool GetFocus() override;
+	virtual void SetFocus() override;
+	virtual bool GetMinimized() override;
+	virtual void SetTitle(const char* InTitle) override;
+	virtual void SetAlpha(float InAlpha) override;
+	virtual void SetupViewport(ImGuiViewport* InViewport) override;
+	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override;
+	// ~End IImguiViewport API 
 private:
-	ImGuiID								TopWndID;
-	TArray<ImGuiID>						WndID;
+	ImGuiViewport*						BoundViewport;
 	TWeakObjectPtr<UImguiContext>		BoundContext;
 	TWeakObjectPtr<UImguiInputAdapter>	BoundAdapter;
+	bool		bInFocus = false;
 };

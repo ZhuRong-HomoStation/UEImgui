@@ -6,19 +6,22 @@
 void SImguiWindow::Construct(const FArguments& InArgs)
 {
 	BoundContext = InArgs._Context;
+	BoundAdapter = InArgs._Adapter;
+	BoundViewport = InArgs._Viewport;
 	
 	Super::Construct( Super::FArguments()
         .LayoutBorder(FMargin(0))
         .HasCloseButton(false)
-		.Type(InArgs._IsMenu ? EWindowType::Menu : InArgs._IsToolTip ? EWindowType::ToolTip : EWindowType::Normal)
+		.Type(InArgs._IsToolTip ? EWindowType::ToolTip : EWindowType::Normal)
 		.IsTopmostWindow(InArgs._IsToolTip)
-		.IsPopupWindow(InArgs._IsMenu || InArgs._IsToolTip || InArgs._IsPopup)
+		.IsPopupWindow(InArgs._IsToolTip || InArgs._IsPopup)
         .SizingRule(ESizingRule::Autosized)
         .SupportsTransparency(FWindowTransparency(EWindowTransparency::PerWindow))
         .HasCloseButton(false)
         .CreateTitleBar(false)
         .SupportsMaximize(false)
-        .SupportsMinimize(false));
+        .SupportsMinimize(false)
+        .FocusWhenFirstShown(InArgs._TakeFocusWhenShow));
 }
 
 FReply SImguiWindow::OnKeyChar(const FGeometry& MyGeometry, const FCharacterEvent& InCharacterEvent)
@@ -85,37 +88,13 @@ bool SImguiWindow::SupportsKeyboardFocus() const
 
 void SImguiWindow::OnFocusLost(const FFocusEvent& InFocusEvent)
 {
-	if (!GetContext()) return;
-	// change context 
-	ImGuiContext* LastCtx = ImGui::GetCurrentContext();
-	ImGuiContext* Ctx = GetContext()->GetContext();
-	GetContext()->ApplyContext();
-	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(TopWndID);
-	
-	// remove focus
-	if (Ctx->ActiveIdWindow && Ctx->ActiveIdWindow->RootWindow != Wnd)
-		ImGui::FocusWindow(nullptr);
-	
-	// resume context 
-	ImGui::SetCurrentContext(LastCtx);
+	bInFocus = false;
 }
 
-// FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
-// {
-// 	// search top level window
-// 	UImguiContext* Context = BoundContext.Get();
-// 	if (!Context) return FReply::Unhandled();
-// 	ImGuiWindow* TopWnd = (ImGuiWindow*)Context->GetContext()->WindowsById.GetVoidPtr(TopWndID);
-// 	if (!TopWnd) return FReply::Unhandled();
-//
-// 	ImGuiContext* CurCtx = ImGui::GetCurrentContext();
-// 	Context->ApplyContext();
-//
-// 	ImGui::FocusWindow(TopWnd);
-// 	
-// 	ImGui::SetCurrentContext(CurCtx);
-// 	return FReply::Handled();
-// }
+FReply SImguiWindow::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
+{
+	bInFocus = true;
+}
 
 FCursorReply SImguiWindow::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
 {
@@ -125,21 +104,8 @@ FCursorReply SImguiWindow::OnCursorQuery(const FGeometry& MyGeometry, const FPoi
 
 FVector2D SImguiWindow::ComputeDesiredSize(float LayoutScaleMultiplier) const
 {
-	UImguiContext* UECtx = GetContext();
-	if (!UECtx) return FVector2D::ZeroVector;
-	ImGuiContext* Ctx = UECtx->GetContext();
-
-	FVector2D OriginPoint = GetCachedGeometry().GetAccumulatedRenderTransform().GetTranslation();
-	FVector2D NewDesiredSize(0);
-
-	for (ImGuiID ID : WndID)
-	{
-		ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(ID);
-		NewDesiredSize.X = FMath::Max(Wnd->Size.x, NewDesiredSize.X);
-		NewDesiredSize.Y = FMath::Max(Wnd->Size.y, NewDesiredSize.Y);
-	}
-
-	return NewDesiredSize;
+	if (!BoundViewport) return FVector2D::ZeroVector;
+	return FVector2D(BoundViewport->Size.x, BoundViewport->Size.y);
 }
 
 int32 SImguiWindow::OnPaint(
@@ -151,26 +117,108 @@ int32 SImguiWindow::OnPaint(
 	const FWidgetStyle& InWidgetStyle,
 	bool bParentEnabled) const
 {
-	UImguiContext* UECtx = GetContext();
-	if (!UECtx) return LayerId;
-	ImGuiContext* Ctx = UECtx->GetContext();
-
-	static TArray<ImDrawList*> AllDrawList;
-	AllDrawList.Reset();
-	for (ImGuiID ID : WndID)
-	{	
-		AllDrawList.Add(static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(ID))->DrawList);
-	}
-
-	// collect render trans 
-	ImGuiWindow* TopWnd = static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(TopWndID));
-	if (!TopWnd) return LayerId;
-	FSlateRenderTransform ImguiRenderTrans(FVector2D(-TopWnd->Pos.x, -TopWnd->Pos.y));
+	if (!BoundViewport) return LayerId;
 	
 	return UEImguiDraw::MakeImgui(
 		OutDrawElements,
 		LayerId,
-		ImguiRenderTrans,
+		FSlateRenderTransform(),
 		MyCullingRect,
-		AllDrawList);
+		BoundViewport->DrawData);
+}
+
+void SImguiWindow::Show(TSharedPtr<SWindow> InParent)
+{
+	if (GetNativeWindow().IsValid())
+	{
+		ShowWindow();
+		return;
+	}
+	if (InParent.IsValid())
+	{
+		InParent->AddChildWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
+	}
+	FSlateApplication::Get().AddWindow(StaticCastSharedRef<SWindow>(this->AsShared()));
+}
+
+void SImguiWindow::Update()
+{
+}
+
+FVector2D SImguiWindow::GetPos()
+{
+	return ScreenPosition;
+}
+
+void SImguiWindow::SetPos(FVector2D InPos)
+{
+	MoveWindowTo(InPos);
+}
+
+FVector2D SImguiWindow::GetSize()
+{
+	return SWindow::Size;
+}
+
+void SImguiWindow::SetSize(FVector2D InSize)
+{
+	Morpher.Sequence.JumpToEnd();
+
+	InSize.X = FMath::Max(SizeLimits.GetMinWidth().Get(InSize.X), InSize.X);
+	InSize.X = FMath::Min(SizeLimits.GetMaxWidth().Get(InSize.X), InSize.X);
+
+	InSize.Y = FMath::Max(SizeLimits.GetMinHeight().Get(InSize.Y), InSize.Y);
+	InSize.Y = FMath::Min(SizeLimits.GetMaxHeight().Get(InSize.Y), InSize.Y);
+
+	// ReshapeWindow W/H takes an int, so lets move our new W/H to int before checking if they are the same size
+	FIntPoint CurrentIntSize = FIntPoint(FMath::CeilToInt(Size.X), FMath::CeilToInt(Size.Y));
+	FIntPoint NewIntSize     = FIntPoint(FMath::CeilToInt(InSize.X), FMath::CeilToInt(InSize.Y));
+
+	if (CurrentIntSize != NewIntSize)
+	{
+		if (NativeWindow.IsValid())
+		{
+			NativeWindow->ReshapeWindow(FMath::TruncToInt(ScreenPosition.X), FMath::TruncToInt(ScreenPosition.Y), NewIntSize.X, NewIntSize.Y);
+		}
+		else
+		{
+			InitialDesiredSize = InSize;
+		}
+	}
+	SetCachedSize(InSize);
+}
+
+bool SImguiWindow::GetFocus()
+{
+	return bInFocus;
+}
+
+void SImguiWindow::SetFocus()
+{
+	FSlateApplication::Get().SetUserFocus(0, AsShared());
+}
+
+bool SImguiWindow::GetMinimized()
+{
+	return false;
+}
+
+void SImguiWindow::SetTitle(const char* InTitle)
+{
+	Title = FText::FromString(InTitle);
+}
+
+void SImguiWindow::SetAlpha(float InAlpha)
+{
+	SetOpacity(InAlpha);
+}
+
+void SImguiWindow::SetupViewport(ImGuiViewport* InViewport)
+{
+	BoundViewport = InViewport;
+}
+
+void SImguiWindow::SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter)
+{
+	SetAdapter(ImguiInputAdapter);
 }
