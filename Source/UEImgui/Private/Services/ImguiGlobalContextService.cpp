@@ -1,5 +1,6 @@
 #include "Services/ImguiGlobalContextService.h"
 #include "ImguiPerInstanceCtx.h"
+#include "imgui_internal.h"
 #include "ImguiWrap/ImguiContext.h"
 #include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
@@ -130,7 +131,7 @@ namespace UEImgui_Private
 #if WITH_EDITOR
 			return EngineGlobalCtxGuard()->Context;
 #else 
-			return nullptr
+			return nullptr;
 #endif 	
 		}
 	}
