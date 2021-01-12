@@ -4,9 +4,9 @@
 #include "Logging.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiContext.h"
-#include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiUEWrap.h"
+#include "Render/ImguiDrawer.h"
 #include "Widgets/Input/SEditableText.h"
 
 void SImguiWidgetRenderProxy::Construct(const FArguments& InArgs)
@@ -112,13 +112,26 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	bool bParentEnabled) const
 {
 	if (!BoundViewport || !BoundViewport->DrawData) return LayerId;
-	
-	UEImguiDraw::MakeImgui(
-		OutDrawElements,
-		LayerId,
-		FSlateRenderTransform(Args.GetWindowToDesktopTransform() + AllottedGeometry.GetAbsolutePosition()),
-		MyCullingRect,
-		BoundViewport->DrawData);
+
+	if (BoundViewport->DrawData->DisplaySize.x <= 0.0f || BoundViewport->DrawData->DisplaySize.y <= 0.0f)
+	{
+		return LayerId + 1;
+	}
+
+	// get vertex offset
+	FVector2D ImguiVertexOffset = Args.GetWindowToDesktopTransform() + AllottedGeometry.GetAbsolutePosition() - *(FVector2D*)&BoundViewport->Pos;
+
+	auto Size = OutDrawElements.GetPaintWindow()->GetSizeInScreen();
+	auto Drawer = FImguiDrawer::AllocDrawer();
+	FMatrix OrthoMatrix(
+        FPlane(2.0f / Size.X,   0.0f,			0.0f,			0.0f),
+        FPlane(0.0f,			-2.0f / Size.Y,	0.0f,			0.0f),
+        FPlane(0.0f,			0.0f,			1.f / 5000.f,	0.0f),
+        FPlane(-1,			    1,				0.5f,			1.0f));
+	Drawer->SetSlateTransform(ImguiVertexOffset, 1, OrthoMatrix);
+	Drawer->SetClipRect(FSlateRect(0,0,Size.X, Size.Y));
+	Drawer->SetDrawData(BoundViewport->DrawData);
+	FSlateDrawElement::MakeCustom(OutDrawElements, LayerId, Drawer);
 	return LayerId + 1;
 }
 

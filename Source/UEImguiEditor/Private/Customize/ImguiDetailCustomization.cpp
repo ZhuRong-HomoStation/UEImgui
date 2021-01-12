@@ -5,7 +5,6 @@
 #include "IDetailChildrenBuilder.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Service/ImguiCustomDetailService.h"
 #include "Services/ImguiGlobalContextService.h"

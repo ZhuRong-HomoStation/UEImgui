@@ -6,6 +6,18 @@
 
 TArray<TSharedPtr<FImguiDrawer, ESPMode::ThreadSafe>> FImguiDrawer::GlobalPool;
 
+FImguiDrawer::~FImguiDrawer()
+{
+	if (VtxBuf)
+	{
+		FMemory::Free(VtxBuf);
+	}
+	if (IdxBuf)
+	{
+		FMemory::Free(IdxBuf);
+	}
+}
+
 void FImguiDrawer::SetDrawData(ImDrawData* InDrawData)
 {
 	// get vertex and index num 
@@ -14,7 +26,6 @@ void FImguiDrawer::SetDrawData(ImDrawData* InDrawData)
 
 	// update buffer 
 	_UpdateBufferSize(VtxNum, IdxNum);
-	if (!IdxBuf || !VtxBuf) return;
 
 	// copy data 
 	_AppendDrawData(InDrawData, VtxBuf, IdxBuf);
@@ -33,7 +44,6 @@ void FImguiDrawer::SetDrawData(const TArray<ImDrawData*>& InDrawData)
 
 	// update buffer
 	_UpdateBufferSize(VtxNum, IdxNum);
-	if (!IdxBuf || !VtxBuf) return;
 
 	// copy data 
 	int32 BaseVtx = 0;
@@ -62,7 +72,6 @@ void FImguiDrawer::SetDrawData(const TArray<ImDrawList*>& InDrawData)
 
 	// update buffer
 	_UpdateBufferSize(VtxNum, IdxNum);
-	if (!IdxBuf || !VtxBuf) return;
 
 	// copy data 
 	int32 BaseVtx = 0;
@@ -95,31 +104,25 @@ void FImguiDrawer::_UpdateBufferSize(int32 InVtxNum, int32 InIdxNum)
 	FRHIResourceCreateInfo CreateInfo;
 	if (InVtxNum > NumVertices)
 	{
-		if (VertexBufferRHI.IsValid())
+		auto VtxBufSize = sizeof(ImDrawVert) * InVtxNum;
+        VertexBufferRHI = RHICreateVertexBuffer(VtxBufSize, BUF_Dynamic, CreateInfo);
+		if (VtxBuf)
 		{
-			ENQUEUE_RENDER_COMMAND(UnlockOldVtxBuffer)(
-			[VtxBuf=VertexBufferRHI](FRHICommandListImmediate& RHICmdList)
-			{
-				RHIUnlockVertexBuffer(VtxBuf);
-			});
+			FMemory::Free(VtxBuf);
 		}
-        VertexBufferRHI = RHICreateVertexBuffer(sizeof(ImDrawVert) * InVtxNum, BUF_Dynamic, CreateInfo);
-		VtxBuf = nullptr;
+		VtxBuf = (ImDrawVert*)FMemory::Malloc(VtxBufSize);
 		NumVertices = InVtxNum;
     }
 	if (InIdxNum > NumTriangles * 3)
 	{
-		if (IndexBufferRHI.IsValid())
-		{
-			ENQUEUE_RENDER_COMMAND(UnlockOldIdxBuffer)(
-            [IdxBuf=IndexBufferRHI](FRHICommandListImmediate& RHICmdList)
-            {
-                RHIUnlockIndexBuffer(IdxBuf);
-            });
-		}
+		auto IdxBufSize = sizeof(ImDrawIdx) * InIdxNum;
 		check(InIdxNum % 3 == 0);
-		IndexBufferRHI = RHICreateIndexBuffer(sizeof(ImDrawIdx), sizeof(ImDrawIdx) * InIdxNum, BUF_Dynamic, CreateInfo);
-		IdxBuf = nullptr;		
+		IndexBufferRHI = RHICreateIndexBuffer(sizeof(ImDrawIdx), IdxBufSize, BUF_Dynamic, CreateInfo);
+		if (IdxBuf)
+		{
+			FMemory::Free(IdxBuf);
+		}
+		IdxBuf = (ImDrawIdx*)FMemory::Malloc(IdxBufSize);		
 		NumTriangles = InIdxNum / 3;
 	}
 }
@@ -207,23 +210,21 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	// early out
 	if (AllDrawElements.Num() == 0)
 	{
-		if (!VtxBuf && VertexBufferRHI.IsValid())
-		{
-			VtxBuf = (ImDrawVert*)RHILockVertexBuffer(VertexBufferRHI, 0, NumVertices * sizeof(ImDrawVert), EResourceLockMode::RLM_WriteOnly);
-		}
-		if (!IdxBuf && IndexBufferRHI.IsValid())
-		{
-			IdxBuf = (ImDrawIdx*)RHILockIndexBuffer(IndexBufferRHI, 0, NumTriangles * 3 * sizeof(ImDrawIdx), EResourceLockMode::RLM_WriteOnly);
-		}
 		bIsFree = true;
 		return;
 	}
 
-	// unlock for draw 
+	// copy data
+	auto VtxBufSize = NumVertices * sizeof(ImDrawVert);
+	auto IdxBufSize = NumTriangles * 3 * sizeof(ImDrawIdx);
+	ImDrawVert* RHIVtxBuf = (ImDrawVert*)RHILockVertexBuffer(VertexBufferRHI, 0, VtxBufSize, EResourceLockMode::RLM_WriteOnly);
+	ImDrawIdx*  RHIIdxBuf = (ImDrawIdx*)RHILockIndexBuffer(IndexBufferRHI, 0, IdxBufSize, EResourceLockMode::RLM_WriteOnly);
+
+	FMemory::Memcpy(RHIVtxBuf, VtxBuf, VtxBufSize);
+	FMemory::Memcpy(RHIIdxBuf, IdxBuf, IdxBufSize);
+	
 	RHIUnlockVertexBuffer(VertexBufferRHI);
 	RHIUnlockIndexBuffer(IndexBufferRHI);
-	VtxBuf = nullptr;
-	IdxBuf = nullptr;
 	
 	// get render target 
 	FTexture2DRHIRef* RT = (FTexture2DRHIRef*)RenderTarget;
@@ -330,13 +331,9 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	// end pass
 	RHICmdList.EndRenderPass();
 
-	// mark free 
-	bIsFree = true;
-
-	// lock for copy data 
-	VtxBuf = (ImDrawVert*)RHILockVertexBuffer(VertexBufferRHI, 0, NumVertices * sizeof(ImDrawVert), EResourceLockMode::RLM_WriteOnly);
-	IdxBuf = (ImDrawIdx*)RHILockIndexBuffer(IndexBufferRHI, 0, NumTriangles * 3 * sizeof(ImDrawIdx), EResourceLockMode::RLM_WriteOnly);
-
 	// reset draw elements
 	AllDrawElements.Reset();
+	
+	// mark free 
+	bIsFree = true;
 }

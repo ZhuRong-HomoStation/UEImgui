@@ -14,6 +14,7 @@ public:
 		FSlateRect		ScissorRect;
 	};
 public:
+	~FImguiDrawer();
 	void SetDrawData(ImDrawData* InDrawData);
 	void SetDrawData(const TArray<ImDrawData*>& InDrawData);
 	void SetDrawData(const TArray<ImDrawList*>& InDrawData);
