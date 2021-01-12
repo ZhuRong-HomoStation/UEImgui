@@ -151,12 +151,13 @@ void UImguiContext::_CreateWindow(ImGuiViewport* viewport, UImguiInputAdapter* I
 void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 {
 	// find UE widget
-	auto UEWidget = ImViewportToUE[viewport];
-
+	auto UEWidget = ImViewportToUE.Find(viewport);
+	if (!UEWidget) return;
+	
 	// process dispatched window case 
-	if (UEWidget.IsValid() && !UEWidget.Pin()->IsPersist())
+	if (UEWidget->IsValid() && !UEWidget->Pin()->IsPersist())
 	{
-		auto PinnedUEWidget = UEWidget.Pin();
+		auto PinnedUEWidget = UEWidget->Pin();
 		if (FSlateApplication::IsInitialized())
 		{
 			static_cast<SImguiWindow*>(PinnedUEWidget.Get())->RequestDestroyWindow();

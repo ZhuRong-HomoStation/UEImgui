@@ -1,121 +1,159 @@
 #include "Services/ImguiGlobalContextService.h"
-#include "imgui_internal.h"
-#include "Framework/Application/IInputProcessor.h"
+#include "ImguiPerInstanceCtx.h"
 #include "ImguiWrap/ImguiContext.h"
-#include "ImguiWrap/ImguiHelp.h"
-#include "ImguiWrap/ImguiInputAdapterDeferred.h"
-#include "Widgets/SImguiWindow.h"
+#include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiResourceManager.h"
-#include "ImguiWrap/ImguiTextInputSystem.h"
-#include "ImguiWrap/ImguiUEWrap.h"
-#include "Widgets/SToolTip.h"
-#include "Widgets/Images/SImage.h"
-#include "Window/ImguiWindowWrapper.h"
 
 #if WITH_EDITOR
-#include "Interfaces/IMainFrameModule.h"
-#endif 
-
-UImguiGlobalContextService::UImguiGlobalContextService()
-	: GlobalContext(nullptr)
+#define protected public
+#define private public 
+#include "LevelEditorViewport.h"
+#include "LevelEditor.h"
+#include "ILevelEditor.h"
+#include "ILevelViewport.h"
+#include "SEditorViewport.h"
+class FEditorGlobalContextGuard : public FTickableGameObject
 {
-}
+public:	
+	virtual void Tick(float DeltaTime) override
+	{		
+		// create imgui context 
+		if (!Context)
+		{
+			Context = NewObject<UImguiContext>();
+			InputAdapter = NewObject<UImguiInputAdapter>();
+			Context->AddToRoot();
+			InputAdapter->AddToRoot();
+			InputAdapter->SetContext(Context);
+			return;
+		}
 
-bool UImguiGlobalContextService::TimeToDraw()
-{
-	return InputAdapter != nullptr && GlobalContext != nullptr;
-}
+		// add global hook 
 
-void UImguiGlobalContextService::Initialize(FSubsystemCollectionBase& Collection)
-{
-	if (FSlateApplication::IsInitialized())
-	{
-		GlobalInputHook = MakeShared<FImguiGlobalInputHook>();
-		FSlateApplication::Get().OnPreTick().AddUObject(this, &UImguiGlobalContextService::_OnSlatePreTick);
-		FSlateApplication::Get().RegisterInputPreProcessor(GlobalInputHook);
-	}
-}
+		// try to init
+		if (!Context->IsInit())
+		{
+			// find viewport widget 
+			auto& AllViewportClients = GEditor->GetLevelViewportClients();
+			if (AllViewportClients.Num() == 0) return;
+			auto Widget = AllViewportClients[0]->GetEditorViewportWidget();
 
-void UImguiGlobalContextService::Deinitialize()
-{
-	if (FSlateApplication::IsInitialized())
-	{
-		FSlateApplication::Get().OnPreTick().Remove(PreTickHandle);
-	}
-	GlobalContext->ShutDown();
-}
+			// create proxy
+			TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
+            .InContext(Context)
+            .InAdapter(InputAdapter)
+            .HSizingRule(EImguiSizingRule::UESize)
+            .VSizingRule(EImguiSizingRule::UESize)
+            .BlockInput(false);
+			
+			// add to viewport 
+			Widget->ViewportOverlay->AddSlot()
+			[
+				Proxy->AsShared()
+			];
 
-void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
-{
-	if (!GlobalContext)
-	{
-		// create render proxy
-		TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy).BlockInput(false);
-		
-		IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
-		const TSharedPtr<SWindow> MainFrameWindow = MainFrame.GetParentWindow();
+			// init context
+			Context->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 
-		auto OldContent = MainFrameWindow->GetContent();
+			// set viewport manually 
+			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
 
-		MainFrameWindow->SetContent(SNew(SOverlay)
-			+ SOverlay::Slot()
-	        .HAlign(HAlign_Fill)
-	        .VAlign(VAlign_Fill)
-	        [
-	            Proxy->AsShared()
-	        ]
-			+ SOverlay::Slot()
-	        [
-	            ConstCastSharedRef<SWidget>(OldContent)
-	        ]);
-		
-		// create global context 
-		GlobalContext = NewObject<UImguiContext>();
-		GlobalContext->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
-		
-		// create adapter
-		if (!InputAdapter) InputAdapter = NewObject<UImguiInputAdapterDeferred>();
-		InputAdapter->SetContext(GlobalContext);
+			return;
+		}
 
-		// setup context and adapter
-		Proxy->SetAdapter(InputAdapter);
-		Proxy->SetContext(GlobalContext);
+		// update main viewport size
+		Context->UpdateSize();
 
-		// add to global input hook
-		GlobalInputHook->AddAdapter(InputAdapter);
-		return;
-	}
-
-	// update main viewport size
-	GlobalContext->UpdateSize();
-
-	// set up context info
-	GlobalContext->GetIO()->DeltaTime = DeltaTime;
+		// set up context info
+		Context->GetIO()->DeltaTime = DeltaTime;
 	
-	// apply context 
-	GlobalContext->ApplyContext();
+		// apply context 
+		Context->ApplyContext();
 
-	// end listen
-	FImguiTextInputSystem::Get()->EndListen();
+		// begin frame
+		Context->NewFrame();
 
-	// apply input 
-	InputAdapter->ApplyInput();
-	InputAdapter->SaveTempData();
+		// draw global
+		Context->DrawGlobal();
 
-	// begin frame
-	GlobalContext->NewFrame();
+		// render
+		Context->Render();
 
-	// draw global
-	GlobalContext->DrawGlobal();
+		// update viewport 
+		Context->UpdateViewport(InputAdapter);
+	}
+	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FEditorGlobalContextGuard, STATGROUP_Tickables); }
+	virtual bool IsTickableInEditor() const override { return true; }
+	virtual bool IsTickableWhenPaused() const override { return true; }
+	
+	UImguiContext* Context = nullptr;
+	UImguiInputAdapter* InputAdapter = nullptr;
+};
+static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
+{
+	static FEditorGlobalContextGuard Ins;
+	return &Ins;
+}
+#undef protected
+#undef private 
+#endif
 
-	// render
-	GlobalContext->Render();
+namespace UEImgui_Private
+{
+	static UImguiContext* GetActiveContext(UObject* WorldContextObject = nullptr)
+	{
+		UWorld* FoundWorld = WorldContextObject ? WorldContextObject->GetWorld() : GWorld;
+		if (!FoundWorld) return nullptr;
+		UGameInstance* GameInst = FoundWorld->GetGameInstance();
+		if (GameInst)
+		{
+			auto PerInsCtx = GameInst->GetSubsystem<UImguiPerInstanceCtx>();
+			if (!PerInsCtx) return nullptr;
+			return PerInsCtx->GetGlobalContext();
+		}
+		else
+		{
+#if WITH_EDITOR
+			return EngineGlobalCtxGuard()->Context;
+#else 
+			return nullptr
+#endif 	
+		}
+	}
+	
+}
 
-	// update viewport
-	FImguiWindowWrapper::CurInputAdapter = InputAdapter;
-	GlobalContext->UpdateViewport(InputAdapter);
+bool UEImGui::TimeToDraw(UObject* WorldContextObject)
+{
+	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	return Ctx ? Ctx->IsInit() : false;
+}
 
-	// begin listen
-	FImguiTextInputSystem::Get()->BeginListen();
+int32 UEImGui::AddGlobalWindow(const FDrawGlobalImgui& InGlobalContext, UObject* WorldContextObject)
+{
+	check(TimeToDraw());
+	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	return Ctx->AddGlobalWindow(InGlobalContext);
+}
+
+void UEImGui::RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject)
+{
+	check(TimeToDraw());
+	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	Ctx->RemoveGlobalWindow(InIndex);
+}
+
+void UEImGui::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
+{
+	check(TimeToDraw());
+	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	Ctx->AddRenderProxy(InRenderProxy);
+}
+
+void UEImGui::RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
+{
+	check(TimeToDraw());
+	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	Ctx->RemoveRenderProxy(InRenderProxy);
 }
 

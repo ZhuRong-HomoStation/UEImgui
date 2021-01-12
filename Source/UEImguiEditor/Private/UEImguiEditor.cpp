@@ -70,7 +70,7 @@ void FUEImguiEditor::_InitCommand()
 		FImguiEditorCommand::Get().OpenImguiDemo,
 		FExecuteAction::CreateLambda([]
 		{
-			UImguiGlobalContextService::Get().GetGlobalContext()->AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+			UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
 		        {
 		            bool IsOpen = true;
 		            ImGui::ShowDemoWindow(&IsOpen);
@@ -84,7 +84,7 @@ void FUEImguiEditor::_InitCommand()
         FImguiEditorCommand::Get().OpenStyleEditor,
         FExecuteAction::CreateLambda([]
         {
-            UImguiGlobalContextService::Get().GetGlobalContext()->AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+            UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
                 {
                     bool IsOpen = true;
             		ImGui::Begin("ImguiStyleEditor", &IsOpen);

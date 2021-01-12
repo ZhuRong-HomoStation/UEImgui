@@ -207,11 +207,11 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	// early out
 	if (AllDrawElements.Num() == 0)
 	{
-		if (!VtxBuf)
+		if (!VtxBuf && VertexBufferRHI.IsValid())
 		{
 			VtxBuf = (ImDrawVert*)RHILockVertexBuffer(VertexBufferRHI, 0, NumVertices * sizeof(ImDrawVert), EResourceLockMode::RLM_WriteOnly);
 		}
-		if (!IdxBuf)
+		if (!IdxBuf && IndexBufferRHI.IsValid())
 		{
 			IdxBuf = (ImDrawIdx*)RHILockIndexBuffer(IndexBufferRHI, 0, NumTriangles * 3 * sizeof(ImDrawIdx), EResourceLockMode::RLM_WriteOnly);
 		}

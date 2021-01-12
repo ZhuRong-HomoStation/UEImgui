@@ -1,55 +1,14 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "imgui.h"
-#include "Framework/Application/IInputProcessor.h"
-#include "ImguiWrap/ImguiGlobalInputHook.h"
-#include "Widgets/SImguiWidget.h"
-#include "ImguiWrap/ImguiContext.h"
-#include "ImguiGlobalContextService.generated.h"
+#include "Window/IImguiViewport.h"
 
-struct ImGuiWindow;
-class UImguiContext;
-class UImguiInputAdapter;
-class UImguiInputAdapterDeferred;
-class SImguiWindow;
-struct ImDrawData;
+DECLARE_DELEGATE_RetVal(bool, FDrawGlobalImgui);
 
-UCLASS()
-class UEIMGUI_API UImguiGlobalContextService : public UEngineSubsystem
+namespace UEImGui
 {
-	GENERATED_BODY()
-public:
-	UImguiGlobalContextService();
-	static UImguiGlobalContextService& Get()
-	{
-		return *GEngine->GetEngineSubsystem<UImguiGlobalContextService>();
-	}
-
-	bool TimeToDraw();
-
-	UImguiContext* GetGlobalContext() { return GlobalContext; }
-protected:
-	// ~Begin USubsystem API
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
-	// ~End USubsystem API
-private:
-	void _OnSlatePreTick(float DeltaTime);
-private:
-	UPROPERTY()
-	UImguiContext*					GlobalContext;
-
-	UPROPERTY()
-	UImguiInputAdapterDeferred*		InputAdapter = nullptr;
-
-	// input hook, used to capture mouse input when resizing windows 
-	TSharedPtr<FImguiGlobalInputHook>		GlobalInputHook;
-
-	// imgui windows map to unreal windows 
-	TMap<ImGuiID, TSharedPtr<SImguiWindow>>	ImguiUnrealWindows;
-
-	// used for unregister delegate 
-	FDelegateHandle		PreTickHandle;
-};
-
-
+	UEIMGUI_API bool	TimeToDraw(UObject* WorldContextObject = nullptr);
+	UEIMGUI_API int32	AddGlobalWindow(const FDrawGlobalImgui& InGlobalContext, UObject* WorldContextObject = nullptr);
+	UEIMGUI_API void	RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject = nullptr);
+	UEIMGUI_API void	AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject = nullptr);
+	UEIMGUI_API void	RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject = nullptr);
+}

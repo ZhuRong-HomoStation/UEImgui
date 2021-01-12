@@ -5,6 +5,7 @@
 #include "IDetailChildrenBuilder.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Service/ImguiCustomDetailService.h"
 #include "Services/ImguiGlobalContextService.h"
@@ -26,7 +27,7 @@ void FImguiDetailCustomization::CustomizeChildren(
 	IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
 	// not time
-	if (!UImguiGlobalContextService::Get().TimeToDraw()) return;
+	if (!UEImGui::TimeToDraw()) return;
 	
 	// get detail name 
 	FName DetailName = ChildBuilder.GetParentCategory().GetParentLayout().GetDetailsView()->GetIdentifier();
@@ -105,8 +106,7 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
 	RenderProxy->SetPersistWndID(WndID);
 
 	// add window 
-	UImguiGlobalContextService::Get().GetGlobalContext()
-    ->AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
+	UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
         [DetailName, RenderProxy, AllCustomization, AllObjs]
         {
 			if (RenderProxy.IsUnique()) return false;
@@ -128,7 +128,7 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
             }
             return true;
         }));
-	UImguiGlobalContextService::Get().GetGlobalContext()->AddRenderProxy(RenderProxy);
+	UEImGui::AddRenderProxy(RenderProxy);
 }
 
 void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UObject*>& InObjs, IDetailChildrenBuilder& ChildBuilder)
@@ -181,7 +181,7 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 	RenderProxy->SetPersistWndID(WndID);
 
 	// add window 
-	UImguiGlobalContextService::Get().GetGlobalContext()->AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
+	UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda(
 		[Obj, OnGUIFunc, DetailName, RenderProxy, AllCustomization]
         {
 			if (RenderProxy.IsUnique()) return false;
@@ -206,5 +206,5 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 			}
             return true;
         }));
-	UImguiGlobalContextService::Get().GetGlobalContext()->AddRenderProxy(RenderProxy);
+	UEImGui::AddRenderProxy(RenderProxy);
 }

@@ -7,7 +7,7 @@
 
 class UImguiInputAdapter;
 
-DECLARE_DELEGATE_RetVal(bool, FDrawGlobalImgui)
+DECLARE_DELEGATE_RetVal(bool, FDrawGlobalImgui);
 
 /*
  * hold an imgui environment 
@@ -18,8 +18,9 @@ class UEIMGUI_API UImguiContext : public UObject
 	GENERATED_BODY()
 	friend struct FImguiWindowWrapper;
 public:
-	// init and shutdown 
+	// init and shutdown
 	void Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas = nullptr, bool bEnableDocking = true);
+	bool IsInit() const { return Context != nullptr; }
 	void UpdateSize();
 	void ShutDown();
 

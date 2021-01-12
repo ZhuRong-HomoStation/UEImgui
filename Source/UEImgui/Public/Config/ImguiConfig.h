@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 #include "ImguiWrap/ImguiUEWrap.h"
+#include "Engine/DeveloperSettings.h"
 #include "ImguiConfig.generated.h"
 
 // Imgui setting wrap 

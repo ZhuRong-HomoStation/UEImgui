@@ -111,7 +111,8 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	const FWidgetStyle& InWidgetStyle,
 	bool bParentEnabled) const
 {
-	if (!BoundViewport) return LayerId;
+	if (!BoundViewport || !BoundViewport->DrawData) return LayerId;
+	
 	UEImguiDraw::MakeImgui(
 		OutDrawElements,
 		LayerId,

@@ -39,6 +39,8 @@ public class UEImgui : ModuleRules
 				new string[]
 				{
 					"MainFrame"	,
+					"LevelEditor" ,
+					"UnrealEd" ,
 				});
 		}
 		
