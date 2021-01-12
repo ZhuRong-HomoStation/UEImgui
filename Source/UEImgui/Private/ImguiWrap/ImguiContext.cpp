@@ -13,10 +13,6 @@ void UImguiContext::BeginDestroy()
 	ShutDown();
 }
 
-UImguiContext::UImguiContext(const FObjectInitializer& InInitializer)
-{
-}
-
 void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas, bool bEnableDocking)
 {
 	// create context 
@@ -45,6 +41,18 @@ void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas*
 
 	// add to search map
 	ImViewportToUE.Add(ImMainViewPort, MainViewPort);
+}
+
+void UImguiContext::UpdateSize()
+{
+	if (!MainViewPort.IsValid())
+	{
+		return;
+	}
+
+	// setup main client size
+	auto MainViewPortSize = MainViewPort->GetSize();
+	GetIO()->DisplaySize = *(ImVec2*)&MainViewPortSize;
 }
 
 void UImguiContext::ShutDown()

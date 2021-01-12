@@ -17,15 +17,10 @@ class UEIMGUI_API UImguiContext : public UObject
 {
 	GENERATED_BODY()
 	friend struct FImguiWindowWrapper;
-protected:
-	// ~Begin UObject API
-	virtual void BeginDestroy() override;
-	// ~End UObject API 
 public:
-	UImguiContext(const FObjectInitializer& InInitializer);
-
 	// init and shutdown 
 	void Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas = nullptr, bool bEnableDocking = true);
+	void UpdateSize();
 	void ShutDown();
 
 	// global draw
@@ -47,6 +42,10 @@ public:
 	void DrawGlobal();
 	void Render() { ImGui::Render(); }
 	void UpdateViewport(UImguiInputAdapter* InAdapter);
+protected:
+	// ~Begin UObject API
+	virtual void BeginDestroy() override;
+	// ~End UObject API 
 private:
 	// window platform 
 	void	_CreateWindow(ImGuiViewport* viewport, UImguiInputAdapter* InInputAdapter);

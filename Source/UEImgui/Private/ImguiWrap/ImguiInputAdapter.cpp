@@ -90,7 +90,7 @@ FReply UImguiInputAdapter::OnKeyChar(const FCharacterEvent& InCharacterEvent)
 {
 	if (!bReceiveKeyboardInput || !BoundContext) return FReply::Unhandled();
 	AddInputCharacter(InCharacterEvent.GetCharacter());
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();
+	return bBlockInput && BoundContext->GetIO()->WantCaptureKeyboard ? FReply::Handled() : FReply::Unhandled();
 }
 
 FReply UImguiInputAdapter::OnKeyDown(const FKeyEvent& InKeyEvent)
@@ -115,7 +115,7 @@ FReply UImguiInputAdapter::OnKeyDown(const FKeyEvent& InKeyEvent)
 	{
 		SetKeyState(MapKey(InKeyEvent), true);
 	}
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();
+	return bBlockInput && BoundContext->GetIO()->WantCaptureKeyboard ? FReply::Handled() : FReply::Unhandled();
 }
 
 FReply UImguiInputAdapter::OnKeyUp(const FKeyEvent& InKeyEvent)
@@ -140,7 +140,7 @@ FReply UImguiInputAdapter::OnKeyUp(const FKeyEvent& InKeyEvent)
 	{
 		SetKeyState(MapKey(InKeyEvent), false);
 	}
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();
+	return bBlockInput && BoundContext->GetIO()->WantCaptureKeyboard ? FReply::Handled() : FReply::Unhandled();
 }
 
 FReply UImguiInputAdapter::OnMouseButtonDown(const FPointerEvent& MouseEvent)
@@ -151,7 +151,7 @@ FReply UImguiInputAdapter::OnMouseButtonDown(const FPointerEvent& MouseEvent)
 	if (Index == INDEX_NONE) return FReply::Unhandled();
 
 	SetMouseBtnState(Index, true);
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();	
+	return bBlockInput && BoundContext->GetIO()->WantCaptureMouse ? FReply::Handled() : FReply::Unhandled();	
 }
 
 FReply UImguiInputAdapter::OnMouseButtonUp(const FPointerEvent& MouseEvent)
@@ -162,7 +162,7 @@ FReply UImguiInputAdapter::OnMouseButtonUp(const FPointerEvent& MouseEvent)
 	if (Index == INDEX_NONE) return FReply::Unhandled();
 
 	SetMouseBtnState(Index, false);
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();	
+	return bBlockInput && BoundContext->GetIO()->WantCaptureMouse ? FReply::Handled() : FReply::Unhandled();	
 }
 
 FReply UImguiInputAdapter::OnMouseButtonDoubleClick(const FPointerEvent& InMouseEvent)
@@ -173,7 +173,7 @@ FReply UImguiInputAdapter::OnMouseButtonDoubleClick(const FPointerEvent& InMouse
 	if (Index == INDEX_NONE) return FReply::Unhandled();
 
 	SetMouseBtnState(Index, true);
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();	
+	return bBlockInput && BoundContext->GetIO()->WantCaptureMouse ? FReply::Handled() : FReply::Unhandled();	
 }
 
 FReply UImguiInputAdapter::OnMouseWheel(const FPointerEvent& MouseEvent)
@@ -181,7 +181,7 @@ FReply UImguiInputAdapter::OnMouseWheel(const FPointerEvent& MouseEvent)
 	if (!bReceiveMouseInput || !BoundContext) return FReply::Unhandled();
 
 	SetMouseWheel(MouseEvent.GetWheelDelta());
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();	
+	return bBlockInput && BoundContext->GetIO()->WantCaptureMouse ? FReply::Handled() : FReply::Unhandled();	
 }
 
 FReply UImguiInputAdapter::OnMouseMove(SWidget* InWidget, const FGeometry& InGeometry, const FPointerEvent& MouseEvent)
@@ -193,7 +193,7 @@ FReply UImguiInputAdapter::OnMouseMove(SWidget* InWidget, const FGeometry& InGeo
 	
 	SetMousePos(Position);
 	
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();	
+	return bBlockInput && BoundContext->GetIO()->WantCaptureMouse ? FReply::Handled() : FReply::Unhandled();	
 }
 
 FReply UImguiInputAdapter::OnMouseMove(FVector2D OffsetPos, const FPointerEvent& MouseEvent)
@@ -202,7 +202,7 @@ FReply UImguiInputAdapter::OnMouseMove(FVector2D OffsetPos, const FPointerEvent&
 
 	SetMousePos(MouseEvent.GetScreenSpacePosition() - OffsetPos);
 	
-	return bBlockInput ? FReply::Handled() : FReply::Unhandled();	
+	return bBlockInput && BoundContext->GetIO()->WantCaptureMouse ? FReply::Handled() : FReply::Unhandled();	
 }
 
 FCursorReply UImguiInputAdapter::OnCursorQuery(const FPointerEvent& CursorEvent)

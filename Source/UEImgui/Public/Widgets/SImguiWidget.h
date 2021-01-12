@@ -33,9 +33,11 @@ public:
 	SLATE_BEGIN_ARGS(SImguiWidgetBase)
 		: _InContext(nullptr)
 		, _InAdapter(nullptr)
+		, _BlockInput(true)
 	{}
 		SLATE_ARGUMENT(UImguiContext*, InContext)
 		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
+		SLATE_ARGUMENT(bool, BlockInput)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -72,47 +74,10 @@ protected:
 	// ~End SWidget API 
 protected:
 	bool					bHasFocus = false;
+	bool					bBlockInput;
 private:
 	UImguiContext*			Context;
 	UImguiInputAdapter*		Adapter;
-};
-
-// standard imgui widget, always used for standard context 
-class UEIMGUI_API SImguiWidget : public SImguiWidgetBase
-{
-	using Super = SImguiWidgetBase;
-public:
-	SLATE_BEGIN_ARGS(SImguiWidget)
-        : _InContext(nullptr)
-        , _InAdapter(nullptr)
-		, _HSizingRule(EImguiSizingRule::NoSizing)
-		, _VSizingRule(EImguiSizingRule::NoSizing)
-	{}
-		SLATE_EVENT(FOnImguiDraw, OnDraw)
-		SLATE_ARGUMENT(UImguiContext*, InContext)
-		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
-		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
-		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs);
-protected:
-	// ~Begin SWidget API
-	virtual int32 OnPaint(
-        const FPaintArgs& Args,
-        const FGeometry& AllottedGeometry,
-        const FSlateRect& MyCullingRect, 
-        FSlateWindowElementList& OutDrawElements,
-        int32 LayerId,
-        const FWidgetStyle& InWidgetStyle,
-        bool bParentEnabled) const override;
-	
-	virtual FVector2D ComputeDesiredSize(float LayoutScaleMultiplier) const override;
-	// ~End SWidget API
-private:
-	EImguiSizingRule	HSizingRule;
-	EImguiSizingRule	VSizingRule;	
-	FOnImguiDraw		OnDraw;
 };
 
 // imgui draw proxy widget, only do input forward and draw, always used for global context 
@@ -126,6 +91,7 @@ public:
 			, _HSizingRule(EImguiSizingRule::NoSizing)
 			, _VSizingRule(EImguiSizingRule::NoSizing)
 			, _AutoSetWidgetPos(true)
+			, _BlockInput(true)
 	{}
 	    SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
@@ -133,6 +99,7 @@ public:
 		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
 		SLATE_ARGUMENT(FString, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
+		SLATE_ARGUMENT(bool, BlockInput)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -161,9 +128,9 @@ protected:
 	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd; }
 	virtual void Show(TSharedPtr<SWindow> InParent) override { }
 	virtual void Update() override {}
-	virtual FVector2D GetPos() override { return GetTickSpaceGeometry().GetAbsolutePosition(); }
+	virtual FVector2D GetPos() override { return GetPaintSpaceGeometry().GetAbsolutePosition(); }
 	virtual void SetPos(FVector2D InPos) override {  }
-	virtual FVector2D GetSize() override { return GetTickSpaceGeometry().GetAbsoluteSize(); }
+	virtual FVector2D GetSize() override { return GetPaintSpaceGeometry().GetAbsoluteSize(); }
 	virtual void SetSize(FVector2D InSize) override {}
 	virtual bool GetFocus() override { return bHasFocus; }
 	virtual void SetFocus() override { FSlateApplication::Get().SetUserFocus(0, AsShared()); }

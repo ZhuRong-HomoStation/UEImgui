@@ -50,7 +50,7 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 	if (!GlobalContext)
 	{
 		// create render proxy
-		TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy);
+		TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy).BlockInput(false);
 		
 		IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
 		const TSharedPtr<SWindow> MainFrameWindow = MainFrame.GetParentWindow();
@@ -59,13 +59,15 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 
 		MainFrameWindow->SetContent(SNew(SOverlay)
 			+ SOverlay::Slot()
-			[
-				Proxy->AsShared()
-			]
+	        .HAlign(HAlign_Fill)
+	        .VAlign(VAlign_Fill)
+	        [
+	            Proxy->AsShared()
+	        ]
 			+ SOverlay::Slot()
-			[
-				ConstCastSharedRef<SWidget>(OldContent)
-			]);
+	        [
+	            ConstCastSharedRef<SWidget>(OldContent)
+	        ]);
 		
 		// create global context 
 		GlobalContext = NewObject<UImguiContext>();
@@ -75,10 +77,17 @@ void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
 		if (!InputAdapter) InputAdapter = NewObject<UImguiInputAdapterDeferred>();
 		InputAdapter->SetContext(GlobalContext);
 
+		// setup context and adapter
+		Proxy->SetAdapter(InputAdapter);
+		Proxy->SetContext(GlobalContext);
+
 		// add to global input hook
 		GlobalInputHook->AddAdapter(InputAdapter);
 		return;
 	}
+
+	// update main viewport size
+	GlobalContext->UpdateSize();
 
 	// set up context info
 	GlobalContext->GetIO()->DeltaTime = DeltaTime;

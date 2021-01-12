@@ -40,7 +40,7 @@ private:
 	UImguiContext*					GlobalContext;
 
 	UPROPERTY()
-	UImguiInputAdapterDeferred*		InputAdapter;
+	UImguiInputAdapterDeferred*		InputAdapter = nullptr;
 
 	// input hook, used to capture mouse input when resizing windows 
 	TSharedPtr<FImguiGlobalInputHook>		GlobalInputHook;
