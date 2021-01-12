@@ -42,6 +42,7 @@ void UImguiGlobalContextService::Deinitialize()
 	{
 		FSlateApplication::Get().OnPreTick().Remove(PreTickHandle);
 	}
+	GlobalContext->ShutDown();
 }
 
 void UImguiGlobalContextService::_OnSlatePreTick(float DeltaTime)
