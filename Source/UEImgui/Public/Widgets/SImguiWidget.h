@@ -25,6 +25,10 @@ enum class EImguiSizingRule
 	ImContentSize ,
 };
 
+// imgui render proxy
+// imgui window
+// imgui widget (main widget)
+
 // base class, implement input forward 
 class UEIMGUI_API SImguiWidgetBase : public SLeafWidget, public FGCObject
 {
@@ -149,31 +153,3 @@ protected:
 	bool				bAutoSetWidgetPos;
 };
 
-// global imgui widget
-class UEIMGUI_API SGlobalImguiWidget : public SImguiWidgetRenderProxy
-{
-	using Super = SImguiWidgetRenderProxy;
-public:
-	SLATE_BEGIN_ARGS(SGlobalImguiWidget)
-            : _InContext(nullptr)
-            , _InAdapter(nullptr)
-            , _HSizingRule(EImguiSizingRule::NoSizing)
-            , _VSizingRule(EImguiSizingRule::NoSizing)
-            , _AutoSetWidgetPos(true)
-	{}
-		SLATE_ARGUMENT(UImguiContext*, InContext)
-	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
-	    SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
-	    SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
-	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
-		SLATE_ARGUMENT(FString, WndName)
-		SLATE_EVENT(FOnImguiDraw, OnDraw)
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs);
-	~SGlobalImguiWidget();
-	
-private:
-	int32				WindowId;
-	FOnImguiDraw		DrawCallBack;
-};
