@@ -120,7 +120,8 @@ void FImguiGlobalInputHook::AddReferencedObjects(FReferenceCollector& Collector)
 
 TSharedPtr<FImguiGlobalInputHook> FImguiGlobalInputHook::Get()
 {
-	TSharedPtr<FImguiGlobalInputHook> Instance;
+	static TSharedPtr<FImguiGlobalInputHook> Instance;
+	if (!FSlateApplication::IsInitialized()) return nullptr;
 	if (!Instance.IsValid())
 	{
 		Instance = MakeShared<FImguiGlobalInputHook>();

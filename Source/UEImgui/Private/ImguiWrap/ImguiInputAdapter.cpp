@@ -157,7 +157,7 @@ FReply UImguiInputAdapter::OnMouseButtonDown(const FPointerEvent& MouseEvent)
 FReply UImguiInputAdapter::OnMouseButtonUp(const FPointerEvent& MouseEvent)
 {
 	if (!bReceiveMouseInput || !BoundContext) return FReply::Unhandled();
-
+	
 	uint32 Index = MapMouse(MouseEvent);
 	if (Index == INDEX_NONE) return FReply::Unhandled();
 
@@ -167,6 +167,7 @@ FReply UImguiInputAdapter::OnMouseButtonUp(const FPointerEvent& MouseEvent)
 
 FReply UImguiInputAdapter::OnMouseButtonDoubleClick(const FPointerEvent& InMouseEvent)
 {
+	return FReply::Unhandled();
 	if (!bReceiveMouseInput || !BoundContext) return FReply::Unhandled();
 
 	uint32 Index = MapMouse(InMouseEvent);

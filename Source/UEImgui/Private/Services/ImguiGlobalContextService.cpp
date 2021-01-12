@@ -1,7 +1,9 @@
 #include "Services/ImguiGlobalContextService.h"
 #include "ImguiPerInstanceCtx.h"
 #include "ImguiWrap/ImguiContext.h"
+#include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
+#include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 
 #if WITH_EDITOR
@@ -12,7 +14,7 @@
 #include "ILevelEditor.h"
 #include "ILevelViewport.h"
 #include "SEditorViewport.h"
-class FEditorGlobalContextGuard : public FTickableGameObject
+class FEditorGlobalContextGuard : public FTickableEditorObject
 {
 public:	
 	virtual void Tick(float DeltaTime) override
@@ -21,7 +23,7 @@ public:
 		if (!Context)
 		{
 			Context = NewObject<UImguiContext>();
-			InputAdapter = NewObject<UImguiInputAdapter>();
+			InputAdapter = NewObject<UImguiInputAdapterDeferred>();
 			Context->AddToRoot();
 			InputAdapter->AddToRoot();
 			InputAdapter->SetContext(Context);
@@ -29,15 +31,22 @@ public:
 		}
 
 		// add global hook 
-
+		static bool bHookAdded = false;
+		if (!bHookAdded)
+		{
+			auto GlobalHook = FImguiGlobalInputHook::Get();
+			if (!GlobalHook.IsValid()) return;
+			GlobalHook->AddAdapter(InputAdapter);
+			bHookAdded = true;
+		}
+		
 		// try to init
 		if (!Context->IsInit())
 		{
 			// find viewport widget 
 			auto& AllViewportClients = GEditor->GetLevelViewportClients();
 			if (AllViewportClients.Num() == 0) return;
-			auto Widget = AllViewportClients[0]->GetEditorViewportWidget();
-
+			
 			// create proxy
 			TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
             .InContext(Context)
@@ -46,11 +55,14 @@ public:
             .VSizingRule(EImguiSizingRule::UESize)
             .BlockInput(false);
 			
-			// add to viewport 
-			Widget->ViewportOverlay->AddSlot()
-			[
-				Proxy->AsShared()
-			];
+			// add to viewport
+			for (FLevelEditorViewportClient* Client : AllViewportClients)
+			{
+				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
+                [
+                    Proxy->AsShared()
+                ];
+			}
 
 			// init context
 			Context->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
@@ -70,6 +82,10 @@ public:
 		// apply context 
 		Context->ApplyContext();
 
+		// apply input 
+		InputAdapter->ApplyInput();
+		InputAdapter->SaveTempData();
+		
 		// begin frame
 		Context->NewFrame();
 
@@ -83,11 +99,9 @@ public:
 		Context->UpdateViewport(InputAdapter);
 	}
 	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FEditorGlobalContextGuard, STATGROUP_Tickables); }
-	virtual bool IsTickableInEditor() const override { return true; }
-	virtual bool IsTickableWhenPaused() const override { return true; }
 	
 	UImguiContext* Context = nullptr;
-	UImguiInputAdapter* InputAdapter = nullptr;
+	UImguiInputAdapterDeferred* InputAdapter = nullptr;
 };
 static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
 {

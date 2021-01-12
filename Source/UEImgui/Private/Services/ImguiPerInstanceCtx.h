@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "ImguiWrap/ImguiContext.h"
+#include "ImguiWrap/ImguiInputAdapterDeferred.h"
+
 #include "ImguiPerInstanceCtx.generated.h"
 
 UCLASS()
@@ -24,5 +26,5 @@ private:
 	UImguiContext*		GlobalContext;
 
 	UPROPERTY()
-	UImguiInputAdapter*	InputAdapter;
+	UImguiInputAdapterDeferred*	InputAdapter;
 };

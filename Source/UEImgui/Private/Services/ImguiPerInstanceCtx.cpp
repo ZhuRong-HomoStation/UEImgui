@@ -1,5 +1,6 @@
 ﻿#include "ImguiPerInstanceCtx.h"
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 
@@ -9,12 +10,18 @@ void UImguiPerInstanceCtx::Initialize(FSubsystemCollectionBase& Collection)
 	GlobalContext = NewObject<UImguiContext>();
 
 	// create input adapter
-	InputAdapter = NewObject<UImguiInputAdapter>();
+	InputAdapter = NewObject<UImguiInputAdapterDeferred>();
 	InputAdapter->SetContext(GlobalContext);
+
+	// add adapter
+	FImguiGlobalInputHook::Get()->AddAdapter(InputAdapter);
 }
 
 void UImguiPerInstanceCtx::Deinitialize()
 {
+	// remove adapter 
+	FImguiGlobalInputHook::Get()->RemoveAdapter(InputAdapter);
+	
 	// shutdown global context
 	GlobalContext->ShutDown();
 }
@@ -57,6 +64,10 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 	// apply context 
 	GlobalContext->ApplyContext();
 
+	// apply input 
+	InputAdapter->ApplyInput();
+	InputAdapter->SaveTempData();
+	
 	// begin frame
 	GlobalContext->NewFrame();
 

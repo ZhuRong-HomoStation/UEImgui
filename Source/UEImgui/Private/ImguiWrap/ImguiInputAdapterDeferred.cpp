@@ -65,7 +65,7 @@ void UImguiInputAdapterDeferred::ApplyInput()
 {
 	if (!GetContext()) return;
 	ImGuiIO* IO = GetContext()->GetIO();
-	
+
 	// copy data 
 	IO->InputQueueCharacters = InputQueueCharacters;
 	IO->KeyCtrl = KeyCtrl;

@@ -8,7 +8,7 @@ class UImguiInputAdapter;
 class FImguiGlobalInputHook : public IInputProcessor, public FGCObject
 {
 public:
-	TSharedPtr<FImguiGlobalInputHook> Get();
+	static TSharedPtr<FImguiGlobalInputHook> Get();
 	
 	void AddAdapter(UImguiInputAdapter* InInputAdapter);
 	void RemoveAdapter(UImguiInputAdapter* InInputAdapter);
