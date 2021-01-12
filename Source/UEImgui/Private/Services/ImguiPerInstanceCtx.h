@@ -1,11 +1,10 @@
 ﻿#pragma once
 #include "ImguiWrap/ImguiContext.h"
 #include "ImguiWrap/ImguiInputAdapterDeferred.h"
-
 #include "ImguiPerInstanceCtx.generated.h"
 
 UCLASS()
-class UImguiPerInstanceCtx : public UGameInstanceSubsystem, public FTickableGameObject
+class UImguiPerInstanceCtx : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
@@ -14,17 +13,16 @@ protected:
 	// ~Begin UGameInstanceSubsystem API
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
-	// ~End UGameInstanceSubsystem API
+	// ~End UGameInstanceSubsystem API 
+	void Tick(float DeltaTime);
 
-	// ~Begin FTickableGameObject API 
-	virtual void Tick(float DeltaTime) override;
-	virtual TStatId GetStatId() const override { return Super::GetStatID(); } 
-	// ~End FTickableGameObject API
-
+	virtual void BeginDestroy() override;
 private:
 	UPROPERTY()
 	UImguiContext*		GlobalContext;
 
 	UPROPERTY()
 	UImguiInputAdapterDeferred*	InputAdapter;
+
+	FDelegateHandle PreSlateTick;
 };

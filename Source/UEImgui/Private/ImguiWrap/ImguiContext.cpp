@@ -62,6 +62,12 @@ void UImguiContext::ShutDown()
 
 	// clean reference
 	Context = nullptr;
+
+	MainViewPort.Reset();
+	AllDrawCallBack.Reset();
+	AllRenderProxy.Reset();
+	AllDispatchedViewport.Reset();
+	ImViewportToUE.Reset();
 }
 
 void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)

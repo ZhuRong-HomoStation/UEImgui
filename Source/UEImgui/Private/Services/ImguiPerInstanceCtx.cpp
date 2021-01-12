@@ -15,15 +15,32 @@ void UImguiPerInstanceCtx::Initialize(FSubsystemCollectionBase& Collection)
 
 	// add adapter
 	FImguiGlobalInputHook::Get()->AddAdapter(InputAdapter);
+
+	// add tick function
+	PreSlateTick = FSlateApplication::Get().OnPreTick().AddUObject(this, &UImguiPerInstanceCtx::Tick);
 }
 
 void UImguiPerInstanceCtx::Deinitialize()
 {
-	// remove adapter 
-	FImguiGlobalInputHook::Get()->RemoveAdapter(InputAdapter);
+	if (InputAdapter)
+	{
+		// remove adapter 
+		FImguiGlobalInputHook::Get()->RemoveAdapter(InputAdapter);
+		InputAdapter = nullptr;
+	}
 	
-	// shutdown global context
-	GlobalContext->ShutDown();
+	if (GlobalContext)
+	{
+		// shutdown global context
+		GlobalContext->ShutDown();
+		GlobalContext = nullptr;
+	}
+
+	// remove tick function
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().OnPreTick().Remove(PreSlateTick);
+	}
 }
 
 void UImguiPerInstanceCtx::Tick(float DeltaTime)
@@ -79,4 +96,9 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 
 	// update viewport 
 	GlobalContext->UpdateViewport(InputAdapter);
+}
+
+void UImguiPerInstanceCtx::BeginDestroy()
+{
+	Deinitialize();
 }
