@@ -95,7 +95,7 @@ protected:
 	// ~End SWidget API
 
 	// ~Begin IImguiViewport API
-	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd; }
+	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd.Pin(); }
 	virtual void Show(TSharedPtr<SWindow> InParent) override { }
 	virtual bool IsPersist() override { return true; }
 	virtual ImGuiID GetPersistWindowID() override { return PersistWndID; }
@@ -106,15 +106,15 @@ protected:
 	virtual void SetSize(FVector2D InSize) override {}
 	virtual bool GetFocus() override { return bHasFocus; }
 	virtual void SetFocus() override { FSlateApplication::Get().SetUserFocus(0, AsShared()); }
-	virtual bool GetMinimized() override { return CachedWnd.IsValid() ? CachedWnd->IsWindowMinimized() : false; }
-	virtual void SetTitle(const char* InTitle) override { CachedWnd->SetTitle(FText::FromString(FString(InTitle))); }
+	virtual bool GetMinimized() override { return CachedWnd.IsValid() ? CachedWnd.Pin()->IsWindowMinimized() : false; }
+	virtual void SetTitle(const char* InTitle) override {  }
 	virtual void SetAlpha(float InAlpha) override { }
 	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
 	// ~End IImguiViewport API 
 protected:
 	// cached top side window 
-	mutable TSharedPtr<SWindow> CachedWnd;
+	mutable TWeakPtr<SWindow> CachedWnd;
 
 	// imgui state  
 	UImguiContext*		Context;

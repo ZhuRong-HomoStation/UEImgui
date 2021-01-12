@@ -124,7 +124,7 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	// get vertex offset
 	FVector2D ImguiVertexOffset = AllottedGeometry.GetAbsolutePosition() - *(FVector2D*)&BoundViewport->Pos;
 
-	auto Size = CachedWnd->GetSizeInScreen();
+	auto Size = OutDrawElements.GetPaintWindow()->GetSizeInScreen();
 	auto Drawer = FImguiDrawer::AllocDrawer();
 	FMatrix OrthoMatrix(
         FPlane(2.0f / Size.X,   0.0f,			0.0f,			0.0f),

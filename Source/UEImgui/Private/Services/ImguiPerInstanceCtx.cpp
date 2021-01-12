@@ -100,5 +100,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 
 void UImguiPerInstanceCtx::BeginDestroy()
 {
+	Super::BeginDestroy();
+	
 	Deinitialize();
 }
