@@ -102,7 +102,7 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
         .VSizingRule(EImguiSizingRule::ImContentSize)
     ];
 	ImGuiID WndID = ImHashStr(TCHAR_TO_UTF8(*DetailName.ToString()));
-	RenderProxy->SetTopWnd(WndID);
+	RenderProxy->SetPersistWndID(WndID);
 
 	// add window 
 	UImguiGlobalContextService::Get().GetGlobalContext()
@@ -178,7 +178,7 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
 	    .VSizingRule(EImguiSizingRule::ImContentSize)
     ];
 	ImGuiID WndID = ImHashStr(TCHAR_TO_UTF8(*DetailName.ToString()));
-	RenderProxy->SetTopWnd(WndID);
+	RenderProxy->SetPersistWndID(WndID);
 
 	// add window 
 	UImguiGlobalContextService::Get().GetGlobalContext()->AddGlobalWindow(FDrawGlobalImgui::CreateLambda(

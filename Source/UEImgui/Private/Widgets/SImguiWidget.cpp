@@ -9,140 +9,97 @@
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Widgets/Input/SEditableText.h"
 
-void SImguiWidgetBase::Construct(const FArguments& InArgs)
+void SImguiWidgetRenderProxy::Construct(const FArguments& InArgs)
 {
+	HSizingRule = InArgs._HSizingRule;
+	VSizingRule = InArgs._VSizingRule;
+	bAutoSetWidgetPos = InArgs._AutoSetWidgetPos;
+	PersistWndID = InArgs._ProxyWndName.IsEmpty() ? 0 : ImHashStr(TCHAR_TO_UTF8(*InArgs._ProxyWndName));
 	Context = InArgs._InContext;
 	Adapter = InArgs._InAdapter;
-	bBlockInput = InArgs._BlockInput;
-
-	// validate 
-	if (!Context)
-	{
-		
-	}
-	if (!Adapter)
-	{
-		Adapter = NewObject<UImguiInputAdapter>();
-	}
-	Adapter->SetContext(Context);
+	bBlockInput  = InArgs._BlockInput;
 }
 
-SImguiWidgetBase::~SImguiWidgetBase()
-{
-	(Context);
-}
-
-void SImguiWidgetBase::SetContext(UImguiContext* InContext)
+void SImguiWidgetRenderProxy::SetContext(UImguiContext* InContext)
 {
 	check(InContext != nullptr);
 	Context = InContext;
 	if (Adapter) Adapter->SetContext(Context);
 }
 
-void SImguiWidgetBase::SetAdapter(UImguiInputAdapter* InAdapter)
+void SImguiWidgetRenderProxy::SetAdapter(UImguiInputAdapter* InAdapter)
 {
 	check(InAdapter != nullptr);
 	Adapter = InAdapter;
 	if (Context) Adapter->SetContext(Context);	
 }
 
-void SImguiWidgetBase::AddReferencedObjects(FReferenceCollector& Collector)
+void SImguiWidgetRenderProxy::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(Context);
 	Collector.AddReferencedObject(Adapter);
 }
 
-FString SImguiWidgetBase::GetReferencerName() const
+FString SImguiWidgetRenderProxy::GetReferencerName() const
 {
-	return TEXT("ImguiWidget");
+	return TEXT("ImguiRenderProxy");
 }
 
-FReply SImguiWidgetBase::OnKeyChar(const FGeometry& MyGeometry, const FCharacterEvent& InCharacterEvent)
+FReply SImguiWidgetRenderProxy::OnKeyChar(const FGeometry& MyGeometry, const FCharacterEvent& InCharacterEvent)
 {
 	Super::OnKeyChar(MyGeometry, InCharacterEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnKeyChar(InCharacterEvent);
+	FReply AdapterReply = Adapter->OnKeyChar(InCharacterEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
-FReply SImguiWidgetBase::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+FReply SImguiWidgetRenderProxy::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
 	Super::OnKeyDown(MyGeometry, InKeyEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnKeyDown(InKeyEvent);
+	FReply AdapterReply = Adapter->OnKeyDown(InKeyEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
-FReply SImguiWidgetBase::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
+FReply SImguiWidgetRenderProxy::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
 	Super::OnKeyUp(MyGeometry, InKeyEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnKeyUp(InKeyEvent);
+	FReply AdapterReply = Adapter->OnKeyUp(InKeyEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
-FReply SImguiWidgetBase::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SImguiWidgetRenderProxy::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	Super::OnMouseButtonDown(MyGeometry, MouseEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnMouseButtonDown(MouseEvent);
+	FReply AdapterReply = Adapter->OnMouseButtonDown(MouseEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
-FReply SImguiWidgetBase::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SImguiWidgetRenderProxy::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	Super::OnMouseButtonDown(MyGeometry, MouseEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnMouseButtonUp(MouseEvent);}
+	FReply AdapterReply = Adapter->OnMouseButtonUp(MouseEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
+}
 
-FReply SImguiWidgetBase::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+FReply SImguiWidgetRenderProxy::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry,
+	const FPointerEvent& InMouseEvent)
 {
 	Super::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnMouseButtonDoubleClick(InMouseEvent);
+	FReply AdapterReply = Adapter->OnMouseButtonDoubleClick(InMouseEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
-FReply SImguiWidgetBase::OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SImguiWidgetRenderProxy::OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	Super::OnMouseWheel(MyGeometry, MouseEvent);
 	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnMouseWheel(MouseEvent);
-}
-
-FReply SImguiWidgetBase::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
-{
-	Super::OnMouseMove(MyGeometry, MouseEvent);
-	if (!Adapter) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : Adapter->OnMouseMove(this, MyGeometry, MouseEvent);
-}
-
-bool SImguiWidgetBase::SupportsKeyboardFocus() const
-{
-	return Adapter && Adapter->CanReceiveKeyboardInput();
-}
-
-FCursorReply SImguiWidgetBase::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
-{
-	Super::OnCursorQuery(MyGeometry, CursorEvent);
-	return Adapter->OnCursorQuery(CursorEvent);
-}
-
-void SImguiWidgetRenderProxy::Construct(const FArguments& InArgs)
-{
-	HSizingRule = InArgs._HSizingRule;
-	VSizingRule = InArgs._VSizingRule;
-	bAutoSetWidgetPos = InArgs._AutoSetWidgetPos;
-	TopWndID = InArgs._ProxyWndName.IsEmpty() ? 0 : ImHashStr(TCHAR_TO_UTF8(*InArgs._ProxyWndName));
-	
-	// construct parent 
-	Super::Construct(
-        Super::FArguments()
-        .InContext(InArgs._InContext)
-        .InAdapter(InArgs._InAdapter)
-        .BlockInput(InArgs._BlockInput));
-}
-
-FReply SImguiWidgetRenderProxy::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
-{
-	Super::OnMouseMove(MyGeometry, MouseEvent);
-	if (!GetAdapter()) return FReply::Unhandled();
-	return !bBlockInput ? FReply::Unhandled() : GetAdapter()->OnMouseMove(FVector2D::ZeroVector, MouseEvent);
+	FReply AdapterReply = Adapter->OnMouseWheel(MouseEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
 int32 SImguiWidgetRenderProxy::OnPaint(
@@ -154,53 +111,14 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	const FWidgetStyle& InWidgetStyle,
 	bool bParentEnabled) const
 {
-	UImguiContext* UECtx = GetContext();
-	if (!UECtx) return LayerId;
-	ImGuiContext* Ctx = UECtx->GetContext();
-	ImGuiWindow* Wnd = static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(TopWndID));
-	if (!Wnd) return LayerId;
-	
-	FSlateRenderTransform AccumulatedTran = GetCachedGeometry().GetAccumulatedRenderTransform();
-	
-	if (bAutoSetWidgetPos)
-	{
-		Wnd->Pos = { AccumulatedTran.GetTranslation().X, AccumulatedTran.GetTranslation().Y };
-	}
-	else
-	{
-		AccumulatedTran.SetTranslation(FVector2D(Wnd->Pos.x, Wnd->Pos.y));
-	}
-
-	switch (HSizingRule)
-	{
-	case EImguiSizingRule::UESize:
-		Wnd->Size.x = AllottedGeometry.GetAbsoluteSize().X;			
-		break;
-	}
-
-	switch (VSizingRule)
-	{
-	case EImguiSizingRule::UESize:
-		Wnd->Size.y = AllottedGeometry.GetAbsoluteSize().Y;
-		break;
-	}
-	
-	static TArray<ImDrawList*> AllDrawList;
-	AllDrawList.Reset();
-	for (ImGuiID ID : WndID)
-	{	
-		AllDrawList.Add(static_cast<ImGuiWindow*>(Ctx->WindowsById.GetVoidPtr(ID))->DrawList);
-	}
-
-	// cache window
-	CachedWnd = StaticCastSharedRef<SWindow>(OutDrawElements.GetPaintWindow()->AsShared());
-	
-	return UEImguiDraw::MakeImgui(
-        OutDrawElements,
-        LayerId,
-        AccumulatedTran.Inverse().Concatenate(AllottedGeometry.GetAccumulatedRenderTransform()),
-        MyCullingRect,
-        AllDrawList);
+	if (!BoundViewport) return LayerId;
+	UEImguiDraw::MakeImgui(
+		OutDrawElements,
+		LayerId,
+		FSlateRenderTransform(Args.GetWindowToDesktopTransform() + AllottedGeometry.GetAbsolutePosition()),
+		MyCullingRect,
+		BoundViewport->DrawData);
+	return LayerId + 1;
 }
 
 FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
@@ -212,35 +130,44 @@ FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
 	FVector2D OriginPoint = GetCachedGeometry().GetAccumulatedRenderTransform().GetTranslation();
 	FVector2D NewDesiredSize(0);
 
-	for (ImGuiID ID : WndID)
+	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
+	// HSizing 
+	switch (HSizingRule)
 	{
-		ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(ID);
-		// HSizing 
-		switch (HSizingRule)
-		{
-		case EImguiSizingRule::ImSize:
-			NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->Size.x);
-			break;
-		case EImguiSizingRule::ImContentSize:
-			NewDesiredSize.X = FMath::Max(NewDesiredSize.X, Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2);
-			break;
-		default: ;
-		}
+	case EImguiSizingRule::ImSize:
+		NewDesiredSize.X = Wnd->Size.x;
+		break;
+	case EImguiSizingRule::ImContentSize:
+		NewDesiredSize.X = Wnd->ContentSize.x + (Wnd->WindowBorderSize + Wnd->WindowPadding.x) * 2;
+		break;
+	default: ;
+	}
 
-		// VSizing
-		switch (VSizingRule)
-		{
-		case EImguiSizingRule::ImSize:
-			NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->Size.y);
-			break;
-		case EImguiSizingRule::ImContentSize:
-			NewDesiredSize.Y = FMath::Max(NewDesiredSize.Y, Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2);
-			break;
-		default: ;
-		}
+	// VSizing
+	switch (VSizingRule)
+	{
+	case EImguiSizingRule::ImSize:
+		NewDesiredSize.Y = Wnd->Size.y;
+		break;
+	case EImguiSizingRule::ImContentSize:
+		NewDesiredSize.Y = Wnd->ContentSize.y + (Wnd->WindowBorderSize + Wnd->WindowPadding.y) * 2;
+		break;
+	default: ;
 	}
 
 	return NewDesiredSize;
+}
+
+FReply SImguiWidgetRenderProxy::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (!GetAdapter()) return FReply::Unhandled();
+	FReply AdapterReply = Adapter->OnMouseMove(FVector2D::ZeroVector, MouseEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
+}
+
+bool SImguiWidgetRenderProxy::SupportsKeyboardFocus() const
+{
+	return Adapter && Adapter->CanReceiveKeyboardInput();
 }
 
 void SImguiWidgetRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
@@ -250,7 +177,7 @@ void SImguiWidgetRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
 	ImGuiContext* LastCtx = ImGui::GetCurrentContext();
 	ImGuiContext* Ctx = GetContext()->GetContext();
 	GetContext()->ApplyContext();
-	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(TopWndID);
+	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
 	
 	// remove focus
 	if (Ctx->ActiveIdWindow && Ctx->ActiveIdWindow->RootWindow != Wnd)
@@ -258,5 +185,11 @@ void SImguiWidgetRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
 	
 	// resume context 
 	ImGui::SetCurrentContext(LastCtx);
+}
+
+FCursorReply SImguiWidgetRenderProxy::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
+{
+	Super::OnCursorQuery(MyGeometry, CursorEvent);
+	return Adapter->OnCursorQuery(CursorEvent);
 }
 

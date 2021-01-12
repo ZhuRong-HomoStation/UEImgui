@@ -25,69 +25,10 @@ enum class EImguiSizingRule
 	ImContentSize ,
 };
 
-// imgui render proxy
-// imgui window
-// imgui widget (main widget)
-
-// base class, implement input forward 
-class UEIMGUI_API SImguiWidgetBase : public SLeafWidget, public FGCObject
-{
-	using Super = SWidget;
-public:
-	SLATE_BEGIN_ARGS(SImguiWidgetBase)
-		: _InContext(nullptr)
-		, _InAdapter(nullptr)
-		, _BlockInput(true)
-	{}
-		SLATE_ARGUMENT(UImguiContext*, InContext)
-		SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
-		SLATE_ARGUMENT(bool, BlockInput)
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs);
-	~SImguiWidgetBase();
-
-	UImguiContext* GetContext() const { return Context; }
-	UImguiInputAdapter* GetAdapter() const { return Adapter; }
-	void SetContext(UImguiContext* InContext);
-	void SetAdapter(UImguiInputAdapter* InAdapter);
-protected:
-	// ~Begin FGCObject API
-	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override;
-	// ~End FGCObject API
-	
-	// ~Begin SWidget API 
-	// receive key input 
-	virtual FReply OnKeyChar(const FGeometry& MyGeometry, const FCharacterEvent& InCharacterEvent) override;
-	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-	virtual FReply OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
-
-	// receive mouse input
-	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual FReply OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-
-	// Focus
-	virtual bool SupportsKeyboardFocus() const override;
-
-	// cursor
-	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
-	// ~End SWidget API 
-protected:
-	bool					bHasFocus = false;
-	bool					bBlockInput;
-private:
-	UImguiContext*			Context;
-	UImguiInputAdapter*		Adapter;
-};
-
 // imgui draw proxy widget, only do input forward and draw, always used for global context 
-class UEIMGUI_API SImguiWidgetRenderProxy : public SImguiWidgetBase, public IImguiViewport
+class UEIMGUI_API SImguiWidgetRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
 {
-	using Super = SImguiWidgetBase;
+	using Super = SLeafWidget;
 public:
 	SLATE_BEGIN_ARGS(SImguiWidgetRenderProxy)
             : _InContext(nullptr)
@@ -108,14 +49,40 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
-	const TArray<ImGuiID>& GetWndID() const { return WndID; }
-	TArray<ImGuiID>& GetWndID() { return WndID; }
-
-	ImGuiID GetTopWnd() const { return TopWndID; }
-	void SetTopWnd(ImGuiID InID) { TopWndID = InID; }
+	UImguiContext* GetContext() const { return Context; }
+	UImguiInputAdapter* GetAdapter() const { return Adapter; }
+	void SetContext(UImguiContext* InContext);
+	void SetAdapter(UImguiInputAdapter* InAdapter);
+	
+	ImGuiID GetPersistWndID() const { return PersistWndID; }
+	void SetPersistWndID(ImGuiID InID) { PersistWndID = InID; }
 protected:
+	// ~Begin FGCObject API
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	virtual FString GetReferencerName() const override;
+	// ~End FGCObject API
+	
 	// ~Begin SWidget API
+	// receive key input 
+	virtual FReply OnKeyChar(const FGeometry& MyGeometry, const FCharacterEvent& InCharacterEvent) override;
+	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+	virtual FReply OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+
+	// receive mouse input
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+
+	// Focus
+	virtual bool SupportsKeyboardFocus() const override;
+	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
+
+	// Cursor
+	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
+
+	// paint and size 
 	virtual int32 OnPaint(
 		const FPaintArgs& Args,
 		const FGeometry& AllottedGeometry,
@@ -125,15 +92,16 @@ protected:
 		const FWidgetStyle& InWidgetStyle,
 		bool bParentEnabled) const override;
 	virtual FVector2D ComputeDesiredSize(float) const override;
-	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
 	// ~End SWidget API
 
 	// ~Begin IImguiViewport API
 	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd; }
 	virtual void Show(TSharedPtr<SWindow> InParent) override { }
+	virtual bool IsPersist() override { return true; }
+	virtual ImGuiID GetPersistWindowID() override { return PersistWndID; }
 	virtual void Update() override {}
 	virtual FVector2D GetPos() override { return GetPaintSpaceGeometry().GetAbsolutePosition(); }
-	virtual void SetPos(FVector2D InPos) override {  }
+	virtual void SetPos(FVector2D InPos) override {}
 	virtual FVector2D GetSize() override { return GetPaintSpaceGeometry().GetAbsoluteSize(); }
 	virtual void SetSize(FVector2D InSize) override {}
 	virtual bool GetFocus() override { return bHasFocus; }
@@ -141,15 +109,24 @@ protected:
 	virtual bool GetMinimized() override { return CachedWnd.IsValid() ? CachedWnd->IsWindowMinimized() : false; }
 	virtual void SetTitle(const char* InTitle) override { CachedWnd->SetTitle(FText::FromString(FString(InTitle))); }
 	virtual void SetAlpha(float InAlpha) override { }
-	virtual void SetupViewport(ImGuiViewport* InViewport) override {  }
+	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
 	// ~End IImguiViewport API 
 protected:
+	// cached top side window 
 	mutable TSharedPtr<SWindow> CachedWnd;
-	ImGuiID				TopWndID;
-	TArray<ImGuiID>		WndID;
+
+	// imgui state  
+	UImguiContext*		Context;
+	UImguiInputAdapter*	Adapter;
+	ImGuiViewport*		BoundViewport;
+
+	// proxy setting s 
+	ImGuiID				PersistWndID;
 	EImguiSizingRule	HSizingRule;
 	EImguiSizingRule	VSizingRule;
 	bool				bAutoSetWidgetPos;
+	bool				bHasFocus;
+	bool				bBlockInput;
 };
 

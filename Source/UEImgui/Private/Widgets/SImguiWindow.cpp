@@ -2,6 +2,7 @@
 #include "imgui_internal.h"
 #include "ImguiWrap/ImguiHelp.h"
 #include "ImguiWrap/ImguiUEWrap.h"
+#include "Render/ImguiDrawer.h"
 #if WITH_EDITOR
 #include "Interfaces/IMainFrameModule.h"
 #endif
@@ -125,13 +126,26 @@ int32 SImguiWindow::OnPaint(
 	bool bParentEnabled) const
 {
 	if (!BoundViewport) return LayerId;
-	
-	return UEImguiDraw::MakeImgui(
-		OutDrawElements,
-		LayerId,
-		FSlateRenderTransform(-GetPositionInScreen()),
-		MyCullingRect,
-		BoundViewport->DrawData);
+
+	auto ScreenPos = GetPositionInScreen();
+
+	if (BoundViewport->DrawData->DisplaySize.x <= 0.0f || BoundViewport->DrawData->DisplaySize.y <= 0.0f)
+	{
+		return LayerId + 1;
+	}
+
+	auto RenderTargetSize = OutDrawElements.GetPaintWindow()->GetSizeInScreen();
+	auto Drawer = FImguiDrawer::AllocDrawer();
+	FMatrix OrthoMatrix(
+        FPlane(2.0f / RenderTargetSize.X,   0.0f,			0.0f,			0.0f),
+        FPlane(0.0f,			-2.0f / RenderTargetSize.Y,	0.0f,			0.0f),
+        FPlane(0.0f,			0.0f,			1.f / 5000.f,	0.0f),
+        FPlane(-1,			    1,				0.5f,			1.0f));
+	Drawer->SetSlateTransform(-ScreenPos, 1, OrthoMatrix);
+	Drawer->SetClipRect(FSlateRect(0,0,RenderTargetSize.X, RenderTargetSize.Y));
+	Drawer->SetDrawData(BoundViewport->DrawData);
+	FSlateDrawElement::MakeCustom(OutDrawElements, LayerId, Drawer);
+	return LayerId + 1;
 }
 
 void SImguiWindow::Show(TSharedPtr<SWindow> InParent)

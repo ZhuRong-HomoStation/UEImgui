@@ -86,5 +86,5 @@ private:
 	ImGuiViewport*						BoundViewport;
 	TWeakObjectPtr<UImguiContext>		BoundContext;
 	TWeakObjectPtr<UImguiInputAdapter>	BoundAdapter;
-	bool		bInFocus = false;
+	bool								bInFocus = false;
 };
