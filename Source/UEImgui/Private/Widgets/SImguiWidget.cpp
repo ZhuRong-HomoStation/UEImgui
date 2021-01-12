@@ -118,10 +118,13 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 		return LayerId + 1;
 	}
 
+	// get window
+	CachedWnd = StaticCastSharedRef<SWindow>(OutDrawElements.GetPaintWindow()->AsShared());
+	
 	// get vertex offset
-	FVector2D ImguiVertexOffset = Args.GetWindowToDesktopTransform() + AllottedGeometry.GetAbsolutePosition() - *(FVector2D*)&BoundViewport->Pos;
+	FVector2D ImguiVertexOffset = AllottedGeometry.GetAbsolutePosition() - *(FVector2D*)&BoundViewport->Pos;
 
-	auto Size = OutDrawElements.GetPaintWindow()->GetSizeInScreen();
+	auto Size = CachedWnd->GetSizeInScreen();
 	auto Drawer = FImguiDrawer::AllocDrawer();
 	FMatrix OrthoMatrix(
         FPlane(2.0f / Size.X,   0.0f,			0.0f,			0.0f),

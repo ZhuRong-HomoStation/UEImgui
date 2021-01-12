@@ -114,7 +114,7 @@ static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
 
 namespace UEImgui_Private
 {
-	static UImguiContext* GetActiveContext(UObject* WorldContextObject = nullptr)
+	static UImguiContext* GetActiveContext(UObject* WorldContextObject)
 	{
 		UWorld* FoundWorld = WorldContextObject ? WorldContextObject->GetWorld() : GWorld;
 		if (!FoundWorld) return nullptr;
