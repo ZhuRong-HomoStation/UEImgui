@@ -1,5 +1,4 @@
 ﻿#include "ImguiTextInputSystem.h"
-#include "imgui_internal.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 

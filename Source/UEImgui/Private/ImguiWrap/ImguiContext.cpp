@@ -275,7 +275,8 @@ void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 		// enable IME 
 		auto IME = FImguiTextInputSystem::GetRef();
 		IME->CurrentWindow = Viewport->GetWindow();
-		IME->InputPos = *(FVector2D*)&pos;
+		IME->InputPos.X = pos.x;
+		IME->InputPos.Y = pos.y + Context->IO.Fonts->Fonts[0]->FontSize;
 		IME->CurrentInputAdapter = DefaultAdapter;
 		IME->Enable();
 	}
