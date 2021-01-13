@@ -74,10 +74,21 @@ private:
 	TSharedPtr<IImguiViewport> _SafeFindViewport(ImGuiViewport* InViewport, bool bNeedShow = true);
 	TWeakPtr<IImguiViewport> _DispatchProxy(ImGuiViewport* InViewport, UImguiInputAdapter* InInputAdapter);
 private:
+	// main viewport of this context 
 	TSharedPtr<IImguiViewport>			MainViewPort;
+
+	// all draw callback   
 	TArray<FDrawGlobalImgui>			AllDrawCallBack;
+
+	// render proxy, steal render data form window dispatch 
 	TArray<TWeakPtr<IImguiViewport>>	AllRenderProxy;
+
+	// dispatched window, here keep reference to prevent GC 
 	TArray<TSharedPtr<IImguiViewport>>	AllDispatchedViewport;
-	TMap<ImGuiViewport*, TWeakPtr<IImguiViewport>>	ImViewportToUE;
+
+	// imgui context 
 	ImGuiContext*						Context;
+
+	// imgui viewport map to UE viewport, for fast and safe search 
+	TMap<ImGuiViewport*, TWeakPtr<IImguiViewport>>	ImViewportToUE;
 };
