@@ -99,6 +99,12 @@ void UImguiContext::ApplyContext()
 	FImguiWindowWrapper::CurContext = this;
 }
 
+void UImguiContext::NewFrame(float DeltaTime)
+{
+	ImGui::GetIO().DeltaTime = DeltaTime;
+	ImGui::NewFrame();
+}
+
 void UImguiContext::DrawGlobal()
 {
 	for (int32 i = 0; i < AllDrawCallBack.Num(); ++i)
@@ -112,6 +118,11 @@ void UImguiContext::DrawGlobal()
 			CurCallBack.Unbind();
 		}
 	}
+}
+
+void UImguiContext::Render()
+{
+	ImGui::Render();
 }
 
 void UImguiContext::UpdateViewport(UImguiInputAdapter* InAdapter)

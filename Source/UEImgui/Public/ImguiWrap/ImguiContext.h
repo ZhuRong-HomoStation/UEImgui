@@ -41,9 +41,9 @@ public:
 
 	// life time function
 	void ApplyContext();
-	void NewFrame() { ImGui::NewFrame(); }
+	void NewFrame(float DeltaTime);
 	void DrawGlobal();
-	void Render() { ImGui::Render(); }
+	void Render();
 	void UpdateViewport(UImguiInputAdapter* InAdapter);
 protected:
 	// ~Begin UObject API

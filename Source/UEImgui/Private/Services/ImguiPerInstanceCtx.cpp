@@ -89,7 +89,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 	InputAdapter->SaveTempData();
 	
 	// begin frame
-	GlobalContext->NewFrame();
+	GlobalContext->NewFrame(DeltaTime);
 
 	// draw global
 	GlobalContext->DrawGlobal();

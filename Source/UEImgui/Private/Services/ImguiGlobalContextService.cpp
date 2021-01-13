@@ -98,7 +98,7 @@ public:
 		InputAdapter->SaveTempData();
 		
 		// begin frame
-		Context->NewFrame();
+		Context->NewFrame(DeltaTime);
 
 		// draw global
 		Context->DrawGlobal();
