@@ -35,9 +35,9 @@ public:
 			, _InAdapter(nullptr)
 			, _HSizingRule(EImguiSizingRule::NoSizing)
 			, _VSizingRule(EImguiSizingRule::NoSizing)
+			, _ProxyWndName(nullptr)
 			, _AutoSetWidgetPos(true)
 			, _BlockInput(true)
-			, _ProxyWndName(nullptr)
 	{}
 	    SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)

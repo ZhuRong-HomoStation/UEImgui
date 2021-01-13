@@ -34,7 +34,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_Text]                   = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	colors[ImGuiCol_WindowBg]               = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
-	colors[ImGuiCol_ChildBg]                = ImVec4(0.02f, 0.02f, 0.02f, 1.00f);
+	colors[ImGuiCol_ChildBg]				= ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
 	colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
 	colors[ImGuiCol_Border]                 = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
 	colors[ImGuiCol_BorderShadow]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -81,7 +81,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	colors[ImGuiCol_DockingPreview]			= ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	colors[ImGuiCol_TabUnfocused]			= ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-	colors[ImGuiCol_TabUnfocused]			= ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+	colors[ImGuiCol_TabUnfocusedActive]		= ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 	
 	// other settings
 	CurStyle->ChildRounding = 0;

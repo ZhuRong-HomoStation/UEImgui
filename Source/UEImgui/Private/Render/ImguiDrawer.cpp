@@ -232,6 +232,9 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	// begin pass
 	FRHIRenderPassInfo PassInfo(*RT, ERenderTargetActions::Load_Store);
 	RHICmdList.BeginRenderPass(PassInfo, TEXT("DrawImguiMesh"));
+
+	// clean back ground
+	DrawClearQuad(RHICmdList, FLinearColor::Blue);
 	
 	// get shader
 	TShaderMapRef<FImguiShaderVs> Vs(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
