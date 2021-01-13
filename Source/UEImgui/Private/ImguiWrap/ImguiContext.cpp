@@ -1,6 +1,8 @@
 ﻿#include "ImguiWrap/ImguiContext.h"
 #include "imgui.h"
+#include "ImguiTextInputSystem.h"
 #include "imgui_internal.h"
+#include "GenericPlatform/ITextInputMethodSystem.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Widgets/SImguiWindow.h"
@@ -256,7 +258,15 @@ void UImguiContext::_OnChangedViewport(ImGuiViewport* viewport)
 
 void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 {
+	if (!ImViewportToUE.Contains(viewport)) return;
+	TSharedPtr<IImguiViewport> Viewport = _SafeFindViewport(viewport);
 	
+	auto IME = FImguiTextInputSystem::GetRef();
+	IME->CurrentWindow = Viewport->GetWindow();
+	IME->InputPos = *(FVector2D*)&pos;
+	
+	FSlateApplication::Get().GetTextInputMethodSystem()->RegisterContext(IME);
+	FSlateApplication::Get().GetTextInputMethodSystem()->ActivateContext(IME);
 }
 
 void UImguiContext::_SetupImguiContext(bool bEnableDocking)

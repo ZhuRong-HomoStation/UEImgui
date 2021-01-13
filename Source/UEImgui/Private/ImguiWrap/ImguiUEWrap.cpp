@@ -24,7 +24,6 @@ static void _HelpMarker(const char* desc)
 // detail
 FName CurrentDetail;
 TWeakPtr<SImguiWidgetRenderProxy> CurrentDetailWidget;
-TWeakPtr<SWidget> CurrentRenderWidget;
 
 void ImGui::StyleColorUE(ImGuiStyle* dst)
 {
@@ -131,49 +130,9 @@ void ImGui::EndDetail()
 	ImGui::End();
 }
 
-void ImGui::SetCurrentWidget(TWeakPtr<SWidget> InWidget)
-{
-	CurrentRenderWidget = InWidget;
-}
-
-TWeakPtr<SWidget> ImGui::GetCurrentWidget()
-{
-	return CurrentRenderWidget;
-}
-
 void ImGui::Text(const FString& InString)
 {
 	ImGui::Text(TCHAR_TO_UTF8(*InString));
-}
-
-void ImGui::UseInputSystem(const char* label, ImGuiInputTextFlags flags)
-{
-	const ImGuiID Id = GetCurrentWindow()->GetID(label);
-	if (GetActiveID() == Id)
-	{
-		auto InputSystem = FImguiTextInputSystem::Get();
-		InputSystem->NextWidget = ImGui::GetCurrentWidget();
-		ImGuiWindow* window = GetCurrentWindow();
-		ImGuiContext& g = *GImGui;
-		ImGuiIO& io = g.IO;
-		const ImGuiStyle& CurStyle = g.Style;
-		const ImGuiID id = window->GetID(label);
-		ImGuiInputTextState* state = GetInputTextState(id);
-
-		const bool is_multiline = (flags & ImGuiInputTextFlags_Multiline) != 0;
-		const ImVec2 label_size = CalcTextSize(label, NULL, true);
-		const ImVec2 frame_size = CalcItemSize(ImVec2(0, 0), CalcItemWidth(), (is_multiline ? g.FontSize * 8.0f : label_size.y) + CurStyle.FramePadding.y * 2.0f); // Arbitrary default of 8 lines high for multi-line
-		const ImVec2 total_size = ImVec2(frame_size.x + (label_size.x > 0.0f ? CurStyle.ItemInnerSpacing.x + label_size.x : 0.0f), frame_size.y);
-
-		InputSystem->ImguiInputState = state;
-		InputSystem->TargetContext = GImGui;
-		InputSystem->InputAreaBound.X = window->DC.CursorPos.x;
-		InputSystem->InputAreaBound.Y = window->DC.CursorPos.y;
-		InputSystem->InputAreaBound.Z = frame_size.x;
-		InputSystem->InputAreaBound.W = frame_size.y;
-		InputSystem->TextBeginPos.X = window->DC.CursorPos.x;
-		InputSystem->TextBeginPos.Y = window->DC.CursorPos.y;
-	}
 }
 
 struct InputTextCallback_UserData
@@ -209,7 +168,6 @@ bool ImGui::InputText(const char* label, std::string* str, ImGuiInputTextFlags f
 {	
 	IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 
-	UseInputSystem(label, flags);
 	flags |= ImGuiInputTextFlags_CallbackResize;
 
 	InputTextCallback_UserData cb_user_data;
@@ -224,7 +182,6 @@ bool ImGui::InputTextMultiline(const char* label, std::string* str, const ImVec2
 {
 	IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 
-	UseInputSystem(label, flags);
 	flags |= ImGuiInputTextFlags_CallbackResize;
 
 	InputTextCallback_UserData cb_user_data;
@@ -239,7 +196,6 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
 {
 	IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 
-	UseInputSystem(label, flags);
 	flags |= ImGuiInputTextFlags_CallbackResize;
 
 	InputTextCallback_UserData cb_user_data;

@@ -27,11 +27,6 @@ namespace ImGui
 	UEIMGUI_API void BeginDetail();				// Begin detail for detail customization 
 	UEIMGUI_API void EndDetail();				// End detail for detail customization
 
-	// =============IME=============
-	UEIMGUI_API void SetCurrentWidget(TWeakPtr<SWidget> InWidget);	// internal: setup widget that render current imgui 
-	UEIMGUI_API TWeakPtr<SWidget> GetCurrentWidget();				// internal: get widget that render current imgui
-	UEIMGUI_API void UseInputSystem(const char* label, ImGuiInputTextFlags flags = 0);
-
 	// =============Text=============
 	UEIMGUI_API void Text(const FString& InString);
 

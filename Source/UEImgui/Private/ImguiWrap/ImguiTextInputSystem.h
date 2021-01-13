@@ -18,10 +18,6 @@ public:
 	{
 		return &GetRef().Get();
 	}
-
-	void Reset();
-	void BeginListen();
-	void EndListen();
 protected:
 	// ~Begin ITextInputMethodContext Interface
 
@@ -43,17 +39,6 @@ protected:
 	virtual TSharedPtr<FGenericWindow> GetWindow() override;
 	// ~End ITextInputMethodContext Interface 
 public:
-	ImGuiInputTextState*	ImguiInputState;
-	ImGuiContext*			TargetContext;
-	FVector4				InputAreaBound;
-	FVector2D				TextBeginPos;
-	TWeakPtr<SWidget> 		NextWidget;
-protected:
-	bool					bHasRegistered = false;
-	bool					bIsComposing;
-	
-	TWeakPtr<SWidget>		CurrentWidget;
+	FVector2D				InputPos;
 	TWeakPtr<SWindow>		CurrentWindow;
-
-	ECaretPosition			CaretPosition;
 };
