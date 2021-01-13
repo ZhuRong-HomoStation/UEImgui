@@ -82,6 +82,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	colors[ImGuiCol_DockingPreview]			= ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	colors[ImGuiCol_TabUnfocused]			= ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+	colors[ImGuiCol_TabUnfocused]			= ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
 	
 	// other settings
 	CurStyle->ChildRounding = 0;

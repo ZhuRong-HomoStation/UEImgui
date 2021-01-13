@@ -270,6 +270,7 @@ void UImguiContext::_SetupImguiContext(bool bEnableDocking)
 		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		GetIO()->ConfigViewportsNoAutoMerge = true;
+		GetIO()->ConfigDockingTransparentPayload = true;
 	}
 	
 	// set backend flags

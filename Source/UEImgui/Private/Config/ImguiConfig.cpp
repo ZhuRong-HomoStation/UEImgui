@@ -58,7 +58,8 @@ UImguiConfig::UImguiConfig()
 	ImguiColors[ImGuiCol_ModalWindowDimBg]      = FLinearColor(0.80f, 0.80f, 0.80f, 0.35f);
 	ImguiColors[ImGuiCol_DockingPreview]		= FLinearColor(1.00f, 1.00f, 1.00f, 0.50f);
 	ImguiColors[ImGuiCol_TabUnfocused]			= FLinearColor(0.50f, 0.50f, 0.50f, 1.00f);
-
+	ImguiColors[ImGuiCol_TabUnfocused]			= FLinearColor(0.33f, 0.33f, 0.33f, 1.00f);
+	
 	// set up imgui style
 	ImguiStyle.Alpha                   = 1.0f;							// Global alpha applies to everything in ImGui
     ImguiStyle.WindowPadding           = FVector2D(8,8);			// Padding within a window
