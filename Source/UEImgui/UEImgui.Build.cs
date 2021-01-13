@@ -43,8 +43,5 @@ public class UEImgui : ModuleRules
 					"UnrealEd" ,
 				});
 		}
-		
-		//PrivateDefinitions.Add("ENABLE_LUA_BINDING");
-		//PrivateDependencyModuleNames.Add("slua_unreal");
 	}
 }
