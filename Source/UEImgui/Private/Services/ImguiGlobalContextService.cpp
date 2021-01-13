@@ -15,10 +15,14 @@
 #include "ILevelEditor.h"
 #include "ILevelViewport.h"
 #include "SEditorViewport.h"
-class FEditorGlobalContextGuard : public FTickableEditorObject
+class FEditorGlobalContextGuard
 {
-public:	
-	virtual void Tick(float DeltaTime) override
+public:
+    FEditorGlobalContextGuard()
+    {
+    	FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    }
+	void Tick(float DeltaTime)
 	{		
 		// create imgui context 
 		if (!Context)
@@ -105,7 +109,6 @@ public:
 		// update viewport 
 		Context->UpdateViewport(InputAdapter);
 	}
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FEditorGlobalContextGuard, STATGROUP_Tickables); }
 	
 	UImguiContext* Context = nullptr;
 	UImguiInputAdapterDeferred* InputAdapter = nullptr;
