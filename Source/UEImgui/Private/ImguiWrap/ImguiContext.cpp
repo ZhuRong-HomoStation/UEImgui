@@ -139,13 +139,19 @@ void UImguiContext::_CreateWindow(ImGuiViewport* viewport, UImguiInputAdapter* I
 	}
 
 	// create a real window
+	bool bIsToolTip = viewport->Flags & ImGuiViewportFlags_TopMost;
+	bool bIsPopUp = viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon;
+	bool bTakeFocusWhenShow = !(viewport->Flags & ImGuiViewportFlags_NoFocusOnAppearing);
 	TSharedPtr<SImguiWindow> UEWnd = SNew(SImguiWindow)
-	.Context(this)
-	.Adapter(InInputAdapter)
-	.Viewport(viewport)
-	.IsToolTip(viewport->Flags & ImGuiViewportFlags_TopMost)
-	.IsPopup(viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon)
-	.TakeFocusWhenShow(!(viewport->Flags & ImGuiViewportFlags_NoFocusOnAppearing));
+		.Context(this)
+		.Adapter(InInputAdapter)
+		.Viewport(viewport)
+		.IsToolTip(bIsToolTip)
+		.IsPopup(bIsPopUp)
+		.TakeFocusWhenShow(bTakeFocusWhenShow);
+	UEWnd->SetContext(this);
+	UEWnd->SetAdapter(InInputAdapter);
+	StaticCastSharedPtr<IImguiViewport>(UEWnd)->SetupViewport(viewport);
 
 	// add to array
 	AllDispatchedViewport.Add(UEWnd);

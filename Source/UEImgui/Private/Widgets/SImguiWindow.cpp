@@ -152,6 +152,7 @@ void SImguiWindow::Show(TSharedPtr<SWindow> InParent)
 	if (GetNativeWindow().IsValid())
 	{
 		ShowWindow();
+		MoveWindowTo(GetInitialDesiredPositionInScreen());		
 		return;
 	}
 	if (InParent.IsValid())
@@ -229,7 +230,8 @@ bool SImguiWindow::GetFocus()
 
 void SImguiWindow::SetFocus()
 {
-	FSlateApplication::Get().SetUserFocus(0, AsShared());
+	if (!GetNativeWindow()) return;
+	GetNativeWindow()->SetWindowFocus();
 }
 
 bool SImguiWindow::GetMinimized()
