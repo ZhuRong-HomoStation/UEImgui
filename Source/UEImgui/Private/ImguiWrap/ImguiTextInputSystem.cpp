@@ -1,6 +1,23 @@
 ﻿#include "ImguiTextInputSystem.h"
 #include "imgui_internal.h"
+#include "ImguiWrap/ImguiInputAdapter.h"
 #include "ImguiWrap/ImguiUEWrap.h"
+
+void FImguiTextInputSystem::Enable()
+{
+	if (bIsEnable) return;
+	FSlateApplication::Get().GetTextInputMethodSystem()->RegisterContext(AsShared());
+	FSlateApplication::Get().GetTextInputMethodSystem()->ActivateContext(AsShared());
+	bIsEnable = true;
+}
+
+void FImguiTextInputSystem::Disable()
+{
+	if (!bIsEnable) return;
+	FSlateApplication::Get().GetTextInputMethodSystem()->DeactivateContext(AsShared());
+	FSlateApplication::Get().GetTextInputMethodSystem()->UnregisterContext(AsShared());
+	bIsEnable = false;
+}
 
 bool FImguiTextInputSystem::IsComposing()
 {
@@ -46,6 +63,8 @@ void FImguiTextInputSystem::GetTextInRange(const uint32 InBeginIndex, const uint
 
 void FImguiTextInputSystem::SetTextInRange(const uint32 InBeginIndex, const uint32 InLength, const FString& InString)
 {
+	if (InString.IsEmpty() || (InString.Len() == 1 && InString[0] == TEXT(' ')) || CurrentInputAdapter == nullptr) return;
+	CurrentInputAdapter->AddInputIME(InString);
 }
 
 int32 FImguiTextInputSystem::GetCharacterIndexFromPoint(const FVector2D& InPoint)

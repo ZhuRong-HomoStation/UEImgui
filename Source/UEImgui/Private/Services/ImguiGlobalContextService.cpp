@@ -23,11 +23,17 @@ public:
 		// create imgui context 
 		if (!Context)
 		{
+			// create context 
 			Context = NewObject<UImguiContext>();
-			InputAdapter = NewObject<UImguiInputAdapterDeferred>();
 			Context->AddToRoot();
+
+			// create input adapter 
+			InputAdapter = NewObject<UImguiInputAdapterDeferred>();
 			InputAdapter->AddToRoot();
 			InputAdapter->SetContext(Context);
+			
+			// setup default adapter
+			Context->SetDefaultInputAdapter(InputAdapter);
 			return;
 		}
 

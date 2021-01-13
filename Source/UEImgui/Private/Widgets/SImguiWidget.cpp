@@ -135,7 +135,7 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	// setup drawer 
 	auto Drawer = FImguiDrawer::AllocDrawer();
 	Drawer->SetSlateTransform(ImguiVertexOffset, 1, OrthoMatrix);
-	Drawer->SetClipRect(FSlateRect(0,0,Size.X, Size.Y));
+	Drawer->SetClipRect(MyCullingRect);
 	Drawer->SetDrawData(BoundViewport->DrawData);
 
 	// add to draw list 

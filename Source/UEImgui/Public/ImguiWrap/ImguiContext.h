@@ -36,6 +36,8 @@ public:
 	ImGuiContext* GetContext() const { return Context; }
 	ImGuiIO* GetIO() const;
 	ImGuiStyle* GetStyle() const;
+	UImguiInputAdapter* GetDefaultInputAdapter() const { return DefaultAdapter; }
+	void SetDefaultInputAdapter(UImguiInputAdapter* InInputAdapter) { DefaultAdapter = InInputAdapter; }
 
 	// life time function
 	void ApplyContext();
@@ -88,6 +90,9 @@ private:
 
 	// imgui context 
 	ImGuiContext*						Context;
+
+	// default input adapter
+	UImguiInputAdapter*					DefaultAdapter;
 
 	// imgui viewport map to UE viewport, for fast and safe search 
 	TMap<ImGuiViewport*, TWeakPtr<IImguiViewport>>	ImViewportToUE;

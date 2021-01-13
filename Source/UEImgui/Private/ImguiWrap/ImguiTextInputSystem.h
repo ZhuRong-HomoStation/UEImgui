@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
 #include "GenericPlatform/ITextInputMethodSystem.h"
+#include "ImguiWrap/ImguiContext.h"
 
 struct ImGuiContext;
 struct ImGuiInputTextState;
 
-class FImguiTextInputSystem : public ITextInputMethodContext
+class FImguiTextInputSystem : public ITextInputMethodContext, public TSharedFromThis<FImguiTextInputSystem>
 {
 public:
 	static TSharedRef<FImguiTextInputSystem> GetRef()
@@ -18,6 +19,10 @@ public:
 	{
 		return &GetRef().Get();
 	}
+
+	bool IsEnable() { return bIsEnable; }
+	void Enable();
+	void Disable();
 protected:
 	// ~Begin ITextInputMethodContext Interface
 
@@ -41,4 +46,7 @@ protected:
 public:
 	FVector2D				InputPos;
 	TWeakPtr<SWindow>		CurrentWindow;
+	UImguiInputAdapter*		CurrentInputAdapter;
+private:
+	bool					bIsEnable = false;
 };

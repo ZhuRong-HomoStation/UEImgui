@@ -260,13 +260,25 @@ void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 {
 	if (!ImViewportToUE.Contains(viewport)) return;
 	TSharedPtr<IImguiViewport> Viewport = _SafeFindViewport(viewport);
-	
-	auto IME = FImguiTextInputSystem::GetRef();
-	IME->CurrentWindow = Viewport->GetWindow();
-	IME->InputPos = *(FVector2D*)&pos;
-	
-	FSlateApplication::Get().GetTextInputMethodSystem()->RegisterContext(IME);
-	FSlateApplication::Get().GetTextInputMethodSystem()->ActivateContext(IME);
+
+	if (pos.x == -1 && pos.y == -1)
+	{
+		// disable IME 
+		auto IME = FImguiTextInputSystem::GetRef();
+		IME->CurrentWindow = nullptr;
+		IME->InputPos = FVector2D::ZeroVector;
+		IME->CurrentInputAdapter = nullptr;
+		IME->Disable();
+	}
+	else
+	{
+		// enable IME 
+		auto IME = FImguiTextInputSystem::GetRef();
+		IME->CurrentWindow = Viewport->GetWindow();
+		IME->InputPos = *(FVector2D*)&pos;
+		IME->CurrentInputAdapter = DefaultAdapter;
+		IME->Enable();
+	}
 }
 
 void UImguiContext::_SetupImguiContext(bool bEnableDocking)

@@ -3961,7 +3961,9 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
 
     // Release focus when we click outside
     if (g.ActiveId == id && io.MouseClicked[0] && !init_state && !init_make_active) //-V560
+    {
         clear_active_id = true;
+    }
 
     // Lock the decision of whether we are going to take the path displaying the cursor or selection
     const bool render_cursor = (g.ActiveId == id) || (state && user_scroll_active);
@@ -4369,7 +4371,9 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
 
     // Release active ID at the end of the function (so e.g. pressing Return still does a final application of the value)
     if (clear_active_id && g.ActiveId == id)
+    {
         ClearActiveID();
+    }
 
     // Render frame
     if (!is_multiline)
@@ -4553,8 +4557,16 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
             // Notify OS of text input position for advanced IME (-1 x offset so that Windows IME can cover our cursor. Bit of an extra nicety.)
             if (!is_readonly)
             {
-                g.PlatformImePos = ImVec2(cursor_screen_pos.x - 1, cursor_screen_pos.y - g.FontSize);
-                g.PlatformImePosViewport = window->Viewport;
+                if (clear_active_id)
+                {
+                    g.PlatformImePos = ImVec2(-1, -1);
+                    g.PlatformImePosViewport = window->Viewport;
+                }
+                else
+                {     
+                    g.PlatformImePos = ImVec2(cursor_screen_pos.x - 1, cursor_screen_pos.y - g.FontSize);
+                    g.PlatformImePosViewport = window->Viewport;
+                }
             }
         }
     }

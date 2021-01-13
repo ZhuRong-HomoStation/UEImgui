@@ -224,6 +224,14 @@ FCursorReply UImguiInputAdapter::OnCursorQuery(const FPointerEvent& CursorEvent)
 	return FCursorReply::Cursor(EMouseCursor::Default);
 }
 
+void UImguiInputAdapter::AddInputIME(const FString& InStr)
+{
+	for (TCHAR Ch : InStr)
+	{
+		AddInputCharacter(Ch);
+	}
+}
+
 void UImguiInputAdapter::AddInputCharacter(TCHAR InChar)
 {
 	BoundContext->GetIO()->AddInputCharacter(static_cast<ImWchar>(InChar));

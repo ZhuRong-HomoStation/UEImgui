@@ -53,6 +53,7 @@ public:
 	bool CanReceiveKeyboardInput() const { return bReceiveKeyboardInput; }
 	bool CanReceiveGamePadInput() const { return bReceiveGamePadInput; }
 
+	void AddInputIME(const FString& InStr);
 protected:
 	// key 
 	virtual void AddInputCharacter(TCHAR InChar);

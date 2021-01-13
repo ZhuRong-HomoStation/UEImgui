@@ -13,6 +13,9 @@ void UImguiPerInstanceCtx::Initialize(FSubsystemCollectionBase& Collection)
 	InputAdapter = NewObject<UImguiInputAdapterDeferred>();
 	InputAdapter->SetContext(GlobalContext);
 
+	// setup default adapter
+	GlobalContext->SetDefaultInputAdapter(InputAdapter);
+	
 	// add adapter
 	FImguiGlobalInputHook::Get()->AddAdapter(InputAdapter);
 
