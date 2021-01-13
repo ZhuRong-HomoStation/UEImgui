@@ -9,6 +9,7 @@ class UImguiPerInstanceCtx : public UGameInstanceSubsystem
 	GENERATED_BODY()
 public:
 	UImguiContext* GetGlobalContext() const { return GlobalContext; }
+	UImguiInputAdapterDeferred* GetGlobalInputAdapter() const { return InputAdapter; }
 protected:
 	// ~Begin UGameInstanceSubsystem API
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

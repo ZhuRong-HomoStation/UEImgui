@@ -42,7 +42,7 @@ public:
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
 		SLATE_ARGUMENT(EImguiSizingRule, HSizingRule)
 		SLATE_ARGUMENT(EImguiSizingRule, VSizingRule)
-		SLATE_ARGUMENT(FString, ProxyWndName)
+		SLATE_ARGUMENT(const char*, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 		SLATE_ARGUMENT(bool, BlockInput)
 	SLATE_END_ARGS()
@@ -91,6 +91,7 @@ protected:
 		int32 LayerId,
 		const FWidgetStyle& InWidgetStyle,
 		bool bParentEnabled) const override;
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	virtual FVector2D ComputeDesiredSize(float) const override;
 	// ~End SWidget API
 

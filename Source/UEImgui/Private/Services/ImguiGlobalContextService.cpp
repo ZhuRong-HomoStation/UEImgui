@@ -113,62 +113,79 @@ static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
 #undef private 
 #endif
 
-namespace UEImgui_Private
-{
-	static UImguiContext* GetActiveContext(UObject* WorldContextObject)
-	{
-		UWorld* FoundWorld = WorldContextObject ? WorldContextObject->GetWorld() : GWorld;
-		if (!FoundWorld) return nullptr;
-		UGameInstance* GameInst = FoundWorld->GetGameInstance();
-		if (GameInst)
-		{
-			auto PerInsCtx = GameInst->GetSubsystem<UImguiPerInstanceCtx>();
-			if (!PerInsCtx) return nullptr;
-			return PerInsCtx->GetGlobalContext();
-		}
-		else
-		{
-#if WITH_EDITOR
-			return EngineGlobalCtxGuard()->Context;
-#else 
-			return nullptr;
-#endif 	
-		}
-	}
-	
-}
-
 bool UEImGui::TimeToDraw(UObject* WorldContextObject)
 {
-	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	return Ctx ? Ctx->IsInit() : false;
+}
+
+UImguiContext* UEImGui::GetGlobalContext(UObject* WorldContextObject)
+{
+	UWorld* FoundWorld = WorldContextObject ? WorldContextObject->GetWorld() : GWorld;
+	if (!FoundWorld) return nullptr;
+	UGameInstance* GameInst = FoundWorld->GetGameInstance();
+	if (GameInst)
+	{
+		auto PerInsCtx = GameInst->GetSubsystem<UImguiPerInstanceCtx>();
+		if (!PerInsCtx) return nullptr;
+		return PerInsCtx->GetGlobalContext();
+	}
+	else
+	{
+#if WITH_EDITOR
+		return EngineGlobalCtxGuard()->Context;
+#else 
+		return nullptr;
+#endif 	
+	}
+}
+
+UImguiInputAdapter* UEImGui::GetGlobalInputAdapter(UObject* WorldContextObject)
+{
+	UWorld* FoundWorld = WorldContextObject ? WorldContextObject->GetWorld() : GWorld;
+	if (!FoundWorld) return nullptr;
+	UGameInstance* GameInst = FoundWorld->GetGameInstance();
+	if (GameInst)
+	{
+		auto PerInsCtx = GameInst->GetSubsystem<UImguiPerInstanceCtx>();
+		if (!PerInsCtx) return nullptr;
+		return PerInsCtx->GetGlobalInputAdapter();
+	}
+	else
+	{
+#if WITH_EDITOR
+		return EngineGlobalCtxGuard()->InputAdapter;
+#else 
+		return nullptr;
+#endif 	
+	}
 }
 
 int32 UEImGui::AddGlobalWindow(const FDrawGlobalImgui& InGlobalContext, UObject* WorldContextObject)
 {
 	check(TimeToDraw());
-	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	return Ctx->AddGlobalWindow(InGlobalContext);
 }
 
 void UEImGui::RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject)
 {
 	check(TimeToDraw());
-	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveGlobalWindow(InIndex);
 }
 
 void UEImGui::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
 	check(TimeToDraw());
-	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->AddRenderProxy(InRenderProxy);
 }
 
 void UEImGui::RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
 	check(TimeToDraw());
-	UImguiContext* Ctx = UEImgui_Private::GetActiveContext(WorldContextObject);
+	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveRenderProxy(InRenderProxy);
 }
 

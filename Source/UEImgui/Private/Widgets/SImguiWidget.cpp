@@ -14,7 +14,7 @@ void SImguiWidgetRenderProxy::Construct(const FArguments& InArgs)
 	HSizingRule = InArgs._HSizingRule;
 	VSizingRule = InArgs._VSizingRule;
 	bAutoSetWidgetPos = InArgs._AutoSetWidgetPos;
-	PersistWndID = InArgs._ProxyWndName.IsEmpty() ? 0 : ImHashStr(TCHAR_TO_UTF8(*InArgs._ProxyWndName));
+	PersistWndID = InArgs._ProxyWndName ? ImHashStr(InArgs._ProxyWndName) : 0;
 	Context = InArgs._InContext;
 	Adapter = InArgs._InAdapter;
 	bBlockInput  = InArgs._BlockInput;
@@ -124,18 +124,53 @@ int32 SImguiWidgetRenderProxy::OnPaint(
 	// get vertex offset
 	FVector2D ImguiVertexOffset = AllottedGeometry.GetAbsolutePosition() - *(FVector2D*)&BoundViewport->Pos;
 
+	// build ortho matrix 
 	auto Size = OutDrawElements.GetPaintWindow()->GetSizeInScreen();
-	auto Drawer = FImguiDrawer::AllocDrawer();
 	FMatrix OrthoMatrix(
         FPlane(2.0f / Size.X,   0.0f,			0.0f,			0.0f),
         FPlane(0.0f,			-2.0f / Size.Y,	0.0f,			0.0f),
         FPlane(0.0f,			0.0f,			1.f / 5000.f,	0.0f),
         FPlane(-1,			    1,				0.5f,			1.0f));
+
+	// setup drawer 
+	auto Drawer = FImguiDrawer::AllocDrawer();
 	Drawer->SetSlateTransform(ImguiVertexOffset, 1, OrthoMatrix);
 	Drawer->SetClipRect(FSlateRect(0,0,Size.X, Size.Y));
 	Drawer->SetDrawData(BoundViewport->DrawData);
+
+	// add to draw list 
 	FSlateDrawElement::MakeCustom(OutDrawElements, LayerId, Drawer);
+
+	// draw next layer 
 	return LayerId + 1;
+}
+
+void SImguiWidgetRenderProxy::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime,
+	const float InDeltaTime)
+{
+	Super::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
+
+	// get context 
+	UImguiContext* UECtx = GetContext();
+	if (!UECtx) return;
+	ImGuiContext* Ctx = UECtx->GetContext();
+
+	// find window 
+	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
+	if (!Wnd) return;
+
+	// get size
+	FVector2D Size = AllottedGeometry.GetAbsoluteSize();
+	
+	// update imgui wnd size
+	if (HSizingRule == EImguiSizingRule::UESize)
+	{
+		Wnd->Size.x = Size.X;
+	}
+	if (VSizingRule == EImguiSizingRule::UESize)
+	{
+		Wnd->Size.y = Size.Y;
+	}
 }
 
 FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
@@ -148,6 +183,7 @@ FVector2D SImguiWidgetRenderProxy::ComputeDesiredSize(float) const
 	FVector2D NewDesiredSize(0);
 
 	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
+
 	// HSizing 
 	switch (HSizingRule)
 	{

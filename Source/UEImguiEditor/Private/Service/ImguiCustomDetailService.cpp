@@ -23,6 +23,4 @@ void UImguiCustomDetailService::Initialize(FSubsystemCollectionBase& Collection)
 
 void UImguiCustomDetailService::Deinitialize()
 {
-	// TODO: InputText 
-//	FSlateApplication::Get().GetTextInputMethodSystem()->ActivateContext()
 }
