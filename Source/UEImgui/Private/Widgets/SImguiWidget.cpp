@@ -161,6 +161,7 @@ void SImguiWidgetRenderProxy::Tick(const FGeometry& AllottedGeometry, const doub
 
 	// get size
 	FVector2D Size = AllottedGeometry.GetAbsoluteSize();
+	FVector2D Pos = AllottedGeometry.GetAbsolutePosition();
 	
 	// update imgui wnd size
 	if (HSizingRule == EImguiSizingRule::UESize)
@@ -170,6 +171,12 @@ void SImguiWidgetRenderProxy::Tick(const FGeometry& AllottedGeometry, const doub
 	if (VSizingRule == EImguiSizingRule::UESize)
 	{
 		Wnd->Size.y = Size.Y;
+	}
+
+	// update imgui pos
+	if (bAutoSetWidgetPos)
+	{
+		Wnd->Pos = *(ImVec2*)&Pos;
 	}
 }
 
