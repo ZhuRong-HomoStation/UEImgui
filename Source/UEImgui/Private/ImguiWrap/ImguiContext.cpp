@@ -65,6 +65,15 @@ void UImguiContext::ShutDown()
 	// clean reference
 	Context = nullptr;
 
+	// clean dispatched viewport
+	for (TSharedPtr<IImguiViewport>& Viewport : AllDispatchedViewport)
+	{
+		if (FSlateApplication::IsInitialized())
+		{
+			FSlateApplicationBase::Get().RequestDestroyWindow(StaticCastSharedPtr<SImguiWindow>(Viewport).ToSharedRef());
+		}
+	}
+
 	MainViewPort.Reset();
 	AllDrawCallBack.Reset();
 	AllRenderProxy.Reset();

@@ -77,6 +77,9 @@ FReply SImguiWindow::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointer
 
 FReply SImguiWindow::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
 {
+	// we not support it now 
+	return FReply::Unhandled();
+	
 	UImguiInputAdapter* Adapter = GetAdapter();
 	if (!Adapter) return FReply::Unhandled();
 	return Adapter->OnMouseButtonDoubleClick(InMouseEvent);
