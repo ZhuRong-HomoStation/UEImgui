@@ -13,6 +13,15 @@ void SImguiWindow::Construct(const FArguments& InArgs)
 	BoundContext = InArgs._Context;
 	BoundAdapter = InArgs._Adapter;
 	BoundViewport = InArgs._Viewport;
+
+	RequestDestroyWindowOverride.BindLambda([this](const TSharedRef<SWindow>&)
+	{
+		if (!BoundViewport)
+		{
+			FSlateApplicationBase::Get().RequestDestroyWindow(SharedThis(this));
+		}
+		BoundViewport->PlatformRequestClose = true;
+	});
 	
 	Super::Construct( Super::FArguments()
         .LayoutBorder(FMargin(0))

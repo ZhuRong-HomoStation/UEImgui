@@ -185,7 +185,7 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 		auto PinnedUEWidget = UEWidget->Pin();
 		if (FSlateApplication::IsInitialized())
 		{
-			static_cast<SImguiWindow*>(PinnedUEWidget.Get())->RequestDestroyWindow();
+			FSlateApplicationBase::Get().RequestDestroyWindow(StaticCastSharedPtr<SImguiWindow>(PinnedUEWidget).ToSharedRef());
 		}
 		AllDispatchedViewport.Remove(PinnedUEWidget);
 	}
