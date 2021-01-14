@@ -20,7 +20,6 @@ namespace UEImGui
 	 */
 	UEIMGUI_API bool TimeToDraw(UObject* WorldContextObject = nullptr);
 
-	
 	/**
 	 * @brief en. get global context, which depends on the GameInstance to which the object belongs
 	 *		  ch. 得到全局的ImguiContext, 取决于对象所属的GameInstance 
@@ -32,7 +31,6 @@ namespace UEImGui
 	 *         ch. 当前的ImguiContext
 	 */
 	UEIMGUI_API UImguiContext* GetGlobalContext(UObject* WorldContextObject = nullptr);
-
 	
 	/**
 	 * @brief en. get global input adapter, which depends on the GameInstance to which the object belongs 
@@ -75,8 +73,8 @@ namespace UEImGui
 	UEIMGUI_API void RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject = nullptr);
 
 	/**
-	 * @brief en. add render proxy, about render proxy, see also IImguiViewport and SImguiWidgetRenderProxy 
-	 *        ch. 添加一个渲染代理, 关于渲染代理, 参见IImguiViewport和SImguiWidgetRenderProxy
+	 * @brief en. add render proxy, about render proxy, see also IImguiViewport and SImguiRenderProxy 
+	 *        ch. 添加一个渲染代理, 关于渲染代理, 参见IImguiViewport和SImguiRenderProxy
 	 *
 	 * @param InRenderProxy en. the render proxy we want to add 
 	 *                      ch. 期望添加的渲染代理
@@ -87,8 +85,8 @@ namespace UEImGui
 	UEIMGUI_API void AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject = nullptr);
 	
 	/**
-	 * @brief en. remove render proxy, about render proxy, see also IImguiViewport and SImguiWidgetRenderProxy
-	 *        ch. 移除一个渲染代理, 关于渲染代理, 参见IImguiViewport和SImguiWidgetRenderProxy
+	 * @brief en. remove render proxy, about render proxy, see also IImguiViewport and SImguiRenderProxy
+	 *        ch. 移除一个渲染代理, 关于渲染代理, 参见IImguiViewport和SImguiRenderProxy
 	 * 
 	 * @param InRenderProxy en. the render proxy we want to remove 
 	 *                      ch. 期望移除的渲染代理

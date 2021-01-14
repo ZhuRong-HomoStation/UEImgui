@@ -23,7 +23,7 @@ static void _HelpMarker(const char* desc)
 
 // detail
 FName CurrentDetail;
-TWeakPtr<SImguiWidgetRenderProxy> CurrentDetailWidget;
+TWeakPtr<SImguiRenderProxy> CurrentDetailWidget;
 
 void ImGui::StyleColorUE(ImGuiStyle* dst)
 {
@@ -105,7 +105,7 @@ void ImGui::SetCurrentDetail(FName InDetailName)
 	CurrentDetail = InDetailName;
 }
 
-void ImGui::SetCurrentDetailWidget(TWeakPtr<SImguiWidgetRenderProxy> InDetailWidget)
+void ImGui::SetCurrentDetailWidget(TWeakPtr<SImguiRenderProxy> InDetailWidget)
 {
 	CurrentDetailWidget = InDetailWidget;
 }

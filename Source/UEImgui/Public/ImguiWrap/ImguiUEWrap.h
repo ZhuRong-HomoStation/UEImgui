@@ -4,7 +4,7 @@
 #include <string>
 
 struct ImDrawData;
-class SImguiWidgetRenderProxy;
+class SImguiRenderProxy;
 
 enum ImguiWindowFlagUE
 {
@@ -22,7 +22,7 @@ namespace ImGui
 
 	// =============Detail=============
 	UEIMGUI_API void SetCurrentDetail(FName InDetailName);			// internal: used by detail customization 
-	UEIMGUI_API void SetCurrentDetailWidget(TWeakPtr<SImguiWidgetRenderProxy> InDetailWidget);	// internal: used by detail customization
+	UEIMGUI_API void SetCurrentDetailWidget(TWeakPtr<SImguiRenderProxy> InDetailWidget);	// internal: used by detail customization
 	UEIMGUI_API FName GetCurrentDetail();		// Get current detail name 
 	UEIMGUI_API void BeginDetail();				// Begin detail for detail customization 
 	UEIMGUI_API void EndDetail();				// End detail for detail customization

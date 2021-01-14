@@ -59,7 +59,7 @@ public:
 			if (AllViewportClients.Num() == 0) return;
 			
 			// create proxy
-			TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
+			TSharedPtr<SImguiRenderProxy> Proxy = SNew(SImguiRenderProxy)
             .InContext(Context)
             .InAdapter(InputAdapter)
             .HSizingRule(EImguiSizingRule::UESize)
@@ -78,6 +78,11 @@ public:
 			// init context
 			Context->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 
+			// enable docking and viewport 
+			Context->EnableDocking(true);
+			Context->EnableViewport(true);
+			Context->EnableAutoMergeViewport(true);
+			
 			// set viewport manually 
 			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
 

@@ -56,7 +56,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		if (!ViewportClient) return;
 
 		// create proxy
-		TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
+		TSharedPtr<SImguiRenderProxy> Proxy = SNew(SImguiRenderProxy)
 		.InContext(GlobalContext)
 		.InAdapter(InputAdapter)
 		.HSizingRule(EImguiSizingRule::UESize)
@@ -68,6 +68,9 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 
 		// init context
 		GlobalContext->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
+		GlobalContext->EnableDocking(true);
+		GlobalContext->EnableViewport(true);
+		GlobalContext->EnableAutoMergeViewport(true);
 
 		// set viewport manually 
 		StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(GlobalContext->GetContext()->Viewports[0]);

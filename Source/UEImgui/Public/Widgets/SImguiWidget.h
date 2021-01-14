@@ -10,6 +10,9 @@ class UImguiInputAdapter;
 
 DECLARE_DELEGATE(FOnImguiDraw);
 
+/**
+ * @brief Imgui sizing rule, control the policy between UE widget size and Imgui widget size 
+ */
 enum class EImguiSizingRule
 {
 	// Desired size is zero, and we won't control imgui wnd size 
@@ -26,13 +29,14 @@ enum class EImguiSizingRule
 };
 
 /**
- * @brief Render proxy can steal render data that assigned by ProxyWndName or PersistWndID 
+ * @brief en. Render proxy can steal render data that assigned by ProxyWndName or PersistWndID
+ *        ch. Render Proxy 可以从渲染数据中"偷"出对应窗口的Viewport来自己渲染，这个窗口由初始化传入的ProxyWndName计算的PersistWndID决定
  */
-class UEIMGUI_API SImguiWidgetRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
+class UEIMGUI_API SImguiRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
 {
 	using Super = SLeafWidget;
 public:
-	SLATE_BEGIN_ARGS(SImguiWidgetRenderProxy)
+	SLATE_BEGIN_ARGS(SImguiRenderProxy)
             : _InContext(nullptr)
 			, _InAdapter(nullptr)
 			, _HSizingRule(EImguiSizingRule::NoSizing)
@@ -125,12 +129,27 @@ protected:
 	UImguiInputAdapter*	Adapter;
 	ImGuiViewport*		BoundViewport;
 
-	// proxy setting s 
+	// proxy settings 
 	ImGuiID				PersistWndID;
 	EImguiSizingRule	HSizingRule;
 	EImguiSizingRule	VSizingRule;
 	bool				bAutoSetWidgetPos;
 	bool				bHasFocus;
 	bool				bBlockInput;
+};
+
+/**
+ * @brief en. imgui widget, host a imgui context, and draw self as main viewport
+ *        ch. Imgui控件，主持一个imgui的Context，并且将自己作为主视口绘制 
+ */
+class UEIMGUI_API SImguiWidget : public SLeafWidget, public FGCObject, public IImguiViewport
+{
+	using Super = SLeafWidget;
+public:
+	SLATE_BEGIN_ARGS(SImguiWidget)
+            : _BlockInput(true)
+	{}
+	    SLATE_ARGUMENT(bool, BlockInput)
+	SLATE_END_ARGS()
 };
 

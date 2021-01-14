@@ -15,7 +15,7 @@ void UImguiContext::BeginDestroy()
 	ShutDown();
 }
 
-void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas, bool bEnableDocking)
+void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas)
 {
 	// create context 
 	Context = ImGui::CreateContext(InDefaultFontAtlas);
@@ -27,7 +27,7 @@ void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas*
 	}
 
 	// set up context 
-	_SetupImguiContext(bEnableDocking);
+	_SetupImguiContext();
 
 	// set up key map 
 	UImguiInputAdapter::CopyUnrealKeyMap(GetIO());
@@ -79,6 +79,41 @@ void UImguiContext::ShutDown()
 	AllRenderProxy.Reset();
 	AllDispatchedViewport.Reset();
 	ImViewportToUE.Reset();
+}
+
+void UImguiContext::EnableDocking(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DockingEnable;
+		}
+	}
+}
+
+void UImguiContext::EnableViewport(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_ViewportsEnable;
+		}
+	}
+}
+
+void UImguiContext::EnableAutoMergeViewport(bool bInIsEnable)
+{
+	GetIO()->ConfigViewportsNoAutoMerge = bInIsEnable;
 }
 
 void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)
@@ -308,19 +343,13 @@ void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 	}
 }
 
-void UImguiContext::_SetupImguiContext(bool bEnableDocking)
+void UImguiContext::_SetupImguiContext()
 {
 	// enable keyboard control
 	GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	// enable docking
-	if (bEnableDocking)
-	{
-		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		GetIO()->ConfigViewportsNoAutoMerge = true;
-		GetIO()->ConfigDockingTransparentPayload = true;
-	}
+	// enable transparent 
+	GetIO()->ConfigDockingTransparentPayload = true;
 	
 	// set backend flags
 	GetIO()->BackendFlags |= ImGuiBackendFlags_HasMouseCursors;

@@ -102,22 +102,25 @@ void UImguiResourceManager::_InitDefaultFont()
 {
 	DefaultFont = IM_NEW(ImFontAtlas);	
 
+	// get unreal default font 
+#if WITH_EDITOR
+	const FCompositeFont* CompositeFont = FCoreStyle::Get().
+    GetWidgetStyle<FTextBlockStyle>("NormalText").Font.GetCompositeFont();
+	FString FontPath = CompositeFont->DefaultTypeface.Fonts[0].Font.GetFontFilename();
+	FString FallbackPath = CompositeFont->FallbackTypeface.Typeface.Fonts[0].Font.GetFontFilename();
+		
+	// add font
+	DefaultFont->AddFontFromFileTTF(
+         TCHAR_TO_UTF8(*FontPath), 15.0f, nullptr, DefaultFont->GetGlyphRangesDefault());
+	ImFontConfig FontConfig = {};
+	FontConfig.MergeMode = true;
+	FontConfig.SizePixels = 15.0f;
+	DefaultFont->AddFontFromFileTTF(
+        TCHAR_TO_UTF8(*FallbackPath), 15.0f, &FontConfig, DefaultFont->GetGlyphRangesChineseFull());
+#else
 	if (UImguiConfig::Get()->FontPath.IsEmpty())
 	{
-		// get unreal default font 
-		const FCompositeFont* CompositeFont = FCoreStyle::Get().
-		GetWidgetStyle<FTextBlockStyle>("NormalText").Font.GetCompositeFont();
-		FString FontPath = CompositeFont->DefaultTypeface.Fonts[0].Font.GetFontFilename();
-		FString FallbackPath = CompositeFont->FallbackTypeface.Typeface.Fonts[0].Font.GetFontFilename();
-		
-		// add font
-		DefaultFont->AddFontFromFileTTF(
- 			TCHAR_TO_UTF8(*FontPath), 15.0f, nullptr, DefaultFont->GetGlyphRangesDefault());
-		ImFontConfig FontConfig = {};
-		FontConfig.MergeMode = true;
-		FontConfig.SizePixels = 15.0f;
-		DefaultFont->AddFontFromFileTTF(
-			TCHAR_TO_UTF8(*FallbackPath), 15.0f, &FontConfig, DefaultFont->GetGlyphRangesChineseFull());
+		DefaultFont->AddFontDefault();
 	}
 	else
 	{
@@ -129,6 +132,7 @@ void UImguiResourceManager::_InitDefaultFont()
 		DefaultFont->AddFontFromFileTTF(
             TCHAR_TO_UTF8(*UImguiConfig::Get()->FontPath), 15.0f, &FontConfig, DefaultFont->GetGlyphRangesChineseFull());
 	}
+#endif
 	
 	// get texture info 
 	unsigned char* Pixels;
