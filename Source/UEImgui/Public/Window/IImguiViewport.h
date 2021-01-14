@@ -4,6 +4,9 @@
 
 class UImguiInputAdapter;
 
+/**
+ * @brief Imgui viewport you can inherit it to customize your render proxy 
+ */
 struct IImguiViewport
 {
 	virtual ~IImguiViewport() {}

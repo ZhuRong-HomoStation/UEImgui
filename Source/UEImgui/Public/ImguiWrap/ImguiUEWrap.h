@@ -8,7 +8,7 @@ class SImguiWidgetRenderProxy;
 
 enum ImguiWindowFlagUE
 {
-	ImGuiWindowFlags_UEDetail = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize 
+	ImGuiWindowFlags_UEDetail = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking
 };
 
 // Unreal draw functions 

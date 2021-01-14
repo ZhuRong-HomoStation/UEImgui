@@ -25,7 +25,9 @@ enum class EImguiSizingRule
 	ImContentSize ,
 };
 
-// imgui draw proxy widget, only do input forward and draw, always used for global context 
+/**
+ * @brief Render proxy can steal render data that assigned by ProxyWndName or PersistWndID 
+ */
 class UEIMGUI_API SImguiWidgetRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
 {
 	using Super = SLeafWidget;
