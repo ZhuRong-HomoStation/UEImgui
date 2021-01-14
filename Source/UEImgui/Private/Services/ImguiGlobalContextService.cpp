@@ -64,7 +64,7 @@ public:
             .InAdapter(InputAdapter)
             .HSizingRule(EImguiSizingRule::UESize)
             .VSizingRule(EImguiSizingRule::UESize)
-            .BlockInput(false);
+            .BlockInput(true);
 			
 			// add to viewport
 			for (FLevelEditorViewportClient* Client : AllViewportClients)

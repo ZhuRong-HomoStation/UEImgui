@@ -24,14 +24,15 @@ bool FImguiGlobalInputHook::HandleKeyDownEvent(FSlateApplication& SlateApp, cons
 
 bool FImguiGlobalInputHook::HandleKeyUpEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)
 {
-	// for (UImguiInputAdapter* Adapter : TargetAdapters)
-	// {
-	// 	if (!Adapter->GetContext()) continue;
-	// 	if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
-	// 	{
-	// 		Adapter->OnKeyUp(InKeyEvent);
-	// 	}
-	// }
+	for (UImguiInputAdapter* Adapter : TargetAdapters)
+	{
+		if (!Adapter->GetContext()) continue;
+		// up event never block 
+		// if (Adapter->GetContext()->GetIO()->WantCaptureKeyboard)
+		{
+			Adapter->OnKeyUp(InKeyEvent);
+		}
+	}
 	return false;
 }
 
@@ -76,7 +77,8 @@ bool FImguiGlobalInputHook::HandleMouseButtonUpEvent(FSlateApplication& SlateApp
 	for (UImguiInputAdapter* Adapter : TargetAdapters)
 	{
 		if (!Adapter->GetContext()) continue;
-		if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
+		// up event never block 
+		// if (Adapter->GetContext()->GetIO()->WantCaptureMouse)
 		{
 			Adapter->OnMouseButtonUp(MouseEvent);
 		}

@@ -61,7 +61,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		.InAdapter(InputAdapter)
 		.HSizingRule(EImguiSizingRule::UESize)
 		.VSizingRule(EImguiSizingRule::UESize)
-		.BlockInput(false);
+		.BlockInput(true);
 		
 		// add to viewport
 		ViewportClient->AddViewportWidgetContent(Proxy->AsShared(), INT_MAX);
