@@ -45,6 +45,7 @@ public:
 			, _ProxyWndName(nullptr)
 			, _AutoSetWidgetPos(true)
 			, _BlockInput(true)
+			, _BlockWheel(false)
 	{}
 	    SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
@@ -53,6 +54,7 @@ public:
 		SLATE_ARGUMENT(const char*, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 		SLATE_ARGUMENT(bool, BlockInput)
+		SLATE_ARGUMENT(bool, BlockWheel)
 		SLATE_ATTRIBUTE(EVisibility, Visibility)
 	SLATE_END_ARGS()
 
@@ -140,4 +142,5 @@ protected:
 	bool				bAutoSetWidgetPos;
 	bool				bHasFocus;
 	bool				bBlockInput;
+	bool				bBlockWheel;
 };
