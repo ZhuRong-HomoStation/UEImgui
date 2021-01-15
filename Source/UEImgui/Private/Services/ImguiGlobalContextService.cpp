@@ -69,7 +69,7 @@ public:
 			// add to viewport
 			for (FLevelEditorViewportClient* Client : AllViewportClients)
 			{
-				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
+				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot(0)
                 [
                     Proxy->AsShared()
                 ];
@@ -81,7 +81,7 @@ public:
 			// enable docking and viewport 
 			Context->EnableDocking(true);
 			Context->EnableViewport(true);
-			Context->EnableAutoMergeViewport(true);
+			Context->EnableNoAutoMergeViewport(true);
 			
 			// set viewport manually 
 			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
