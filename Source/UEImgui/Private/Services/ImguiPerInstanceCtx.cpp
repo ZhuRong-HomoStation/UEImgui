@@ -56,18 +56,22 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		if (!ViewportClient) return;
 
 		// create proxy
-		TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
+		TSharedPtr<SImguiRenderProxy> Proxy = SNew(SImguiRenderProxy)
 		.InContext(GlobalContext)
 		.InAdapter(InputAdapter)
 		.HSizingRule(EImguiSizingRule::UESize)
 		.VSizingRule(EImguiSizingRule::UESize)
-		.BlockInput(false);
+		.BlockInput(true)
+		.Visibility(EVisibility::HitTestInvisible);
 		
 		// add to viewport
 		ViewportClient->AddViewportWidgetContent(Proxy->AsShared(), INT_MAX);
 
 		// init context
 		GlobalContext->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
+		GlobalContext->EnableDocking(true);
+		GlobalContext->EnableViewport(true);
+		GlobalContext->EnableNoAutoMergeViewport(true);
 
 		// set viewport manually 
 		StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(GlobalContext->GetContext()->Viewports[0]);
@@ -89,7 +93,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 	InputAdapter->SaveTempData();
 	
 	// begin frame
-	GlobalContext->NewFrame();
+	GlobalContext->NewFrame(DeltaTime);
 
 	// draw global
 	GlobalContext->DrawGlobal();

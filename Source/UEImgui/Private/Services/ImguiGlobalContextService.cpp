@@ -15,10 +15,14 @@
 #include "ILevelEditor.h"
 #include "ILevelViewport.h"
 #include "SEditorViewport.h"
-class FEditorGlobalContextGuard : public FTickableEditorObject
+class FEditorGlobalContextGuard
 {
-public:	
-	virtual void Tick(float DeltaTime) override
+public:
+    FEditorGlobalContextGuard()
+    {
+    	FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    }
+	void Tick(float DeltaTime)
 	{		
 		// create imgui context 
 		if (!Context)
@@ -55,25 +59,31 @@ public:
 			if (AllViewportClients.Num() == 0) return;
 			
 			// create proxy
-			TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
+			TSharedPtr<SImguiRenderProxy> Proxy = SNew(SImguiRenderProxy)
             .InContext(Context)
             .InAdapter(InputAdapter)
             .HSizingRule(EImguiSizingRule::UESize)
             .VSizingRule(EImguiSizingRule::UESize)
-            .BlockInput(false);
+            .BlockInput(true)
+			.Visibility(EVisibility::HitTestInvisible);
 			
 			// add to viewport
 			for (FLevelEditorViewportClient* Client : AllViewportClients)
 			{
 				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
                 [
-                    Proxy->AsShared()
+                	Proxy->AsShared()
                 ];
 			}
 
 			// init context
 			Context->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 
+			// enable docking and viewport 
+			Context->EnableDocking(true);
+			Context->EnableViewport(true);
+			Context->EnableNoAutoMergeViewport(true);
+			
 			// set viewport manually 
 			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
 
@@ -94,7 +104,7 @@ public:
 		InputAdapter->SaveTempData();
 		
 		// begin frame
-		Context->NewFrame();
+		Context->NewFrame(DeltaTime);
 
 		// draw global
 		Context->DrawGlobal();
@@ -105,7 +115,6 @@ public:
 		// update viewport 
 		Context->UpdateViewport(InputAdapter);
 	}
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FEditorGlobalContextGuard, STATGROUP_Tickables); }
 	
 	UImguiContext* Context = nullptr;
 	UImguiInputAdapterDeferred* InputAdapter = nullptr;

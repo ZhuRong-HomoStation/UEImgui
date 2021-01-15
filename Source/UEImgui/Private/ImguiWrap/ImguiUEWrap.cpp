@@ -21,9 +21,24 @@ static void _HelpMarker(const char* desc)
 	}
 }
 
+using ImPropertyDisplayFunction = bool(*)(FProperty*, void*);
+
+FORCEINLINE ImPropertyDisplayFunction _GetDisplayFunction(const FString& InCppType)
+{
+	static TMap<FString, ImPropertyDisplayFunction> FunctionMap;
+
+	// init function map
+	if (FunctionMap.Num() == 0)
+	{
+		
+	}
+
+	return FunctionMap[InCppType];
+}
+
 // detail
 FName CurrentDetail;
-TWeakPtr<SImguiWidgetRenderProxy> CurrentDetailWidget;
+TWeakPtr<SImguiRenderProxy> CurrentDetailWidget;
 
 void ImGui::StyleColorUE(ImGuiStyle* dst)
 {
@@ -43,7 +58,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_FrameBgActive]          = ImVec4(0.56f, 0.56f, 0.56f, 1.00f);
 	colors[ImGuiCol_TitleBg]                = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
 	colors[ImGuiCol_TitleBgActive]          = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
-	colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+	colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
 	colors[ImGuiCol_MenuBarBg]              = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
 	colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
 	colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
@@ -105,7 +120,7 @@ void ImGui::SetCurrentDetail(FName InDetailName)
 	CurrentDetail = InDetailName;
 }
 
-void ImGui::SetCurrentDetailWidget(TWeakPtr<SImguiWidgetRenderProxy> InDetailWidget)
+void ImGui::SetCurrentDetailWidget(TWeakPtr<SImguiRenderProxy> InDetailWidget)
 {
 	CurrentDetailWidget = InDetailWidget;
 }
@@ -203,6 +218,74 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
 	cb_user_data.ChainCallback = callback;
 	cb_user_data.ChainCallbackUserData = user_data;
 	return InputTextWithHint(label, hint, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
+}
+
+bool ImGui::UEEnum(const char* InLabel, UEnum* InEnumClass, int64* EnumSource)
+{
+	static std::string ComboString;
+
+	// build combo list 
+	if (ComboString.size() == 0)
+	{
+		int32 EnumNum = InEnumClass->NumEnums() - 1;
+		for (int32 i = 0; i < EnumNum; ++i)
+		{
+			FString Name = InEnumClass->GetDisplayNameTextByIndex(i).ToString();
+			ComboString += TCHAR_TO_UTF8(*Name);
+			ComboString += '\0';
+		}
+	}
+
+	int ComboIndex = InEnumClass->GetIndexByValue(*EnumSource);
+	bool bHasChanged = Combo(InLabel, &ComboIndex, ComboString.c_str());
+
+	*EnumSource = InEnumClass->GetValueByIndex(ComboIndex);
+	
+	return bHasChanged;
+}
+
+bool ImGui::UEStruct(UScriptStruct* InStruct, void* InValue)
+{
+	FString CppType;
+	for (TFieldIterator<FProperty> It(InStruct); It; ++It)
+	{
+		UEProperty(*It, InValue);
+	}
+	return true;
+}
+
+bool ImGui::UEObject(UClass* InClass, void* InValue)
+{
+	return true;
+}
+
+bool ImGui::UEProperty(FProperty* InProperty, void* InContainer)
+{
+	void* PropertyData = InProperty->ContainerPtrToValuePtr<void>(InContainer);
+
+	if (FStructProperty* StructProperty = CastField<FStructProperty>(InProperty))
+	{
+		return UEStruct(StructProperty->Struct, PropertyData);
+	}
+	else if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(InProperty))
+	{
+		return UEObject(ObjectProperty->PropertyClass, ObjectProperty->GetObjectPropertyValue(InContainer));
+	}
+	else if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(InProperty))
+	{
+		EnumProperty->GetClass()->GetId();
+		FNumericProperty* LocalUnderlyingProp = EnumProperty->GetUnderlyingProperty();
+		int64 Value = LocalUnderlyingProp->GetSignedIntPropertyValue(PropertyData);
+		bool bHasChanged = UEEnum(TCHAR_TO_UTF8(*EnumProperty->GetName()), EnumProperty->GetEnum(), &Value);
+		LocalUnderlyingProp->SetIntPropertyValue(PropertyData, Value);
+		return bHasChanged;
+	}
+	else
+	{
+		FString CppType = InProperty->GetCPPType();
+		ImPropertyDisplayFunction DisplayFunction = _GetDisplayFunction(CppType);
+		return DisplayFunction(InProperty, PropertyData);
+	}
 }
 
 bool ImGui::ShowUEStyleSelector(const char* Label)

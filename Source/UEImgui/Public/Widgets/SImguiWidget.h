@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
+#include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SWidget.h"
 #include "Window/IImguiViewport.h"
@@ -10,6 +11,9 @@ class UImguiInputAdapter;
 
 DECLARE_DELEGATE(FOnImguiDraw);
 
+/**
+ * @brief Imgui sizing rule, control the policy between UE widget size and Imgui widget size 
+ */
 enum class EImguiSizingRule
 {
 	// Desired size is zero, and we won't control imgui wnd size 
@@ -25,12 +29,15 @@ enum class EImguiSizingRule
 	ImContentSize ,
 };
 
-// imgui draw proxy widget, only do input forward and draw, always used for global context 
-class UEIMGUI_API SImguiWidgetRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
+/**
+ * @brief en. Render proxy can steal render data that assigned by ProxyWndName or PersistWndID
+ *        ch. Render Proxy 可以从渲染数据中"偷"出对应窗口的Viewport来自己渲染，这个窗口由初始化传入的ProxyWndName计算的PersistWndID决定
+ */
+class UEIMGUI_API SImguiRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
 {
 	using Super = SLeafWidget;
 public:
-	SLATE_BEGIN_ARGS(SImguiWidgetRenderProxy)
+	SLATE_BEGIN_ARGS(SImguiRenderProxy)
             : _InContext(nullptr)
 			, _InAdapter(nullptr)
 			, _HSizingRule(EImguiSizingRule::NoSizing)
@@ -46,6 +53,7 @@ public:
 		SLATE_ARGUMENT(const char*, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 		SLATE_ARGUMENT(bool, BlockInput)
+		SLATE_ATTRIBUTE(EVisibility, Visibility)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -113,17 +121,19 @@ protected:
 	virtual void SetAlpha(float InAlpha) override { }
 	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
-	// ~End IImguiViewport API 
+	// ~End IImguiViewport API
+private:
+	EVisibility _GetVisibility() const;
 protected:
 	// cached top side window 
 	mutable TWeakPtr<SWindow> CachedWnd;
 
-	// imgui state  
+	// imgui state 
 	UImguiContext*		Context;
 	UImguiInputAdapter*	Adapter;
 	ImGuiViewport*		BoundViewport;
 
-	// proxy setting s 
+	// proxy settings 
 	ImGuiID				PersistWndID;
 	EImguiSizingRule	HSizingRule;
 	EImguiSizingRule	VSizingRule;
@@ -131,4 +141,3 @@ protected:
 	bool				bHasFocus;
 	bool				bBlockInput;
 };
-

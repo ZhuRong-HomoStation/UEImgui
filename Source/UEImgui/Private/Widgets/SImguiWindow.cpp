@@ -13,6 +13,15 @@ void SImguiWindow::Construct(const FArguments& InArgs)
 	BoundContext = InArgs._Context;
 	BoundAdapter = InArgs._Adapter;
 	BoundViewport = InArgs._Viewport;
+
+	RequestDestroyWindowOverride.BindLambda([this](const TSharedRef<SWindow>&)
+	{
+		if (!BoundViewport)
+		{
+			FSlateApplicationBase::Get().RequestDestroyWindow(SharedThis(this));
+		}
+		BoundViewport->PlatformRequestClose = true;
+	});
 	
 	Super::Construct( Super::FArguments()
         .LayoutBorder(FMargin(0))
@@ -68,6 +77,9 @@ FReply SImguiWindow::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointer
 
 FReply SImguiWindow::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
 {
+	// we not support it now 
+	return FReply::Unhandled();
+	
 	UImguiInputAdapter* Adapter = GetAdapter();
 	if (!Adapter) return FReply::Unhandled();
 	return Adapter->OnMouseButtonDoubleClick(InMouseEvent);

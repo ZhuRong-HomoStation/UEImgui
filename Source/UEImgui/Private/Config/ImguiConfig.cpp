@@ -20,7 +20,7 @@ UImguiConfig::UImguiConfig()
 	ImguiColors[ImGuiCol_FrameBgActive]         = FLinearColor(0.56f, 0.56f, 0.56f, 1.00f);
 	ImguiColors[ImGuiCol_TitleBg]               = FLinearColor(0.13f, 0.13f, 0.13f, 1.00f);
 	ImguiColors[ImGuiCol_TitleBgActive]         = FLinearColor(0.33f, 0.33f, 0.33f, 1.00f);
-	ImguiColors[ImGuiCol_TitleBgCollapsed]      = FLinearColor(0.00f, 0.00f, 0.00f, 0.51f);
+	ImguiColors[ImGuiCol_TitleBgCollapsed]      = FLinearColor(0.13f, 0.13f, 0.13f, 1.00f);
 	ImguiColors[ImGuiCol_MenuBarBg]             = FLinearColor(0.14f, 0.14f, 0.14f, 1.00f);
 	ImguiColors[ImGuiCol_ScrollbarBg]           = FLinearColor(0.02f, 0.02f, 0.02f, 0.53f);
 	ImguiColors[ImGuiCol_ScrollbarGrab]         = FLinearColor(0.31f, 0.31f, 0.31f, 1.00f);

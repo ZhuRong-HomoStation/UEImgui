@@ -93,11 +93,11 @@ void FImguiDetailCustomization::_DrawMultObj(FName DetailName, const TArray<UObj
         ECategoryPriority::Important);
 
 	// set widget
-	TSharedPtr<SImguiWidgetRenderProxy> RenderProxy;
+	TSharedPtr<SImguiRenderProxy> RenderProxy;
 	CategoryBuilder.AddCustomRow(FText::FromString(TEXT("Imgui")), false)
     .WholeRowWidget
     [
-	    SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
+	    SAssignNew(RenderProxy, SImguiRenderProxy)
 	    .InContext(UEImGui::GetGlobalContext())
 	    .InAdapter(UEImGui::GetGlobalInputAdapter())
         .HSizingRule(EImguiSizingRule::UESize)
@@ -170,11 +170,11 @@ void FImguiDetailCustomization::_DrawSingleObj(FName DetailName, const TArray<UO
         ECategoryPriority::Important);
 
 	// set widget
-	TSharedPtr<SImguiWidgetRenderProxy> RenderProxy;
+	TSharedPtr<SImguiRenderProxy> RenderProxy;
 	CategoryBuilder.AddCustomRow(FText::FromString(TEXT("Imgui")), false)
     .WholeRowWidget
     [
-	    SAssignNew(RenderProxy, SImguiWidgetRenderProxy)
+	    SAssignNew(RenderProxy, SImguiRenderProxy)
 	    .InContext(UEImGui::GetGlobalContext())
 	    .InAdapter(UEImGui::GetGlobalInputAdapter())
 	    .HSizingRule(EImguiSizingRule::UESize)

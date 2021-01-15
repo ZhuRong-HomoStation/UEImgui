@@ -15,7 +15,7 @@ void UImguiContext::BeginDestroy()
 	ShutDown();
 }
 
-void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas, bool bEnableDocking)
+void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas)
 {
 	// create context 
 	Context = ImGui::CreateContext(InDefaultFontAtlas);
@@ -27,7 +27,7 @@ void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas*
 	}
 
 	// set up context 
-	_SetupImguiContext(bEnableDocking);
+	_SetupImguiContext();
 
 	// set up key map 
 	UImguiInputAdapter::CopyUnrealKeyMap(GetIO());
@@ -65,11 +65,70 @@ void UImguiContext::ShutDown()
 	// clean reference
 	Context = nullptr;
 
+	// clean dispatched viewport
+	for (TSharedPtr<IImguiViewport>& Viewport : AllDispatchedViewport)
+	{
+		if (FSlateApplication::IsInitialized())
+		{
+			FSlateApplicationBase::Get().RequestDestroyWindow(StaticCastSharedPtr<SImguiWindow>(Viewport).ToSharedRef());
+		}
+	}
+
 	MainViewPort.Reset();
 	AllDrawCallBack.Reset();
 	AllRenderProxy.Reset();
 	AllDispatchedViewport.Reset();
 	ImViewportToUE.Reset();
+}
+
+void UImguiContext::EnableDocking(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DockingEnable;
+		}
+	}
+}
+
+bool UImguiContext::EnableDocking()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_DockingEnable;
+}
+
+void UImguiContext::EnableViewport(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_ViewportsEnable;
+		}
+	}
+}
+
+bool UImguiContext::EnableViewport()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
+}
+
+void UImguiContext::EnableNoAutoMergeViewport(bool bInIsEnable)
+{
+	GetIO()->ConfigViewportsNoAutoMerge = bInIsEnable;
+}
+
+bool UImguiContext::EnableNoAutoMergeViewport()
+{
+	return GetIO()->ConfigViewportsNoAutoMerge;
 }
 
 void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)
@@ -99,6 +158,12 @@ void UImguiContext::ApplyContext()
 	FImguiWindowWrapper::CurContext = this;
 }
 
+void UImguiContext::NewFrame(float DeltaTime)
+{
+	ImGui::GetIO().DeltaTime = DeltaTime;
+	ImGui::NewFrame();
+}
+
 void UImguiContext::DrawGlobal()
 {
 	for (int32 i = 0; i < AllDrawCallBack.Num(); ++i)
@@ -112,6 +177,11 @@ void UImguiContext::DrawGlobal()
 			CurCallBack.Unbind();
 		}
 	}
+}
+
+void UImguiContext::Render()
+{
+	ImGui::Render();
 }
 
 void UImguiContext::UpdateViewport(UImguiInputAdapter* InAdapter)
@@ -174,7 +244,7 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 		auto PinnedUEWidget = UEWidget->Pin();
 		if (FSlateApplication::IsInitialized())
 		{
-			static_cast<SImguiWindow*>(PinnedUEWidget.Get())->RequestDestroyWindow();
+			FSlateApplicationBase::Get().RequestDestroyWindow(StaticCastSharedPtr<SImguiWindow>(PinnedUEWidget).ToSharedRef());
 		}
 		AllDispatchedViewport.Remove(PinnedUEWidget);
 	}
@@ -288,19 +358,13 @@ void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 	}
 }
 
-void UImguiContext::_SetupImguiContext(bool bEnableDocking)
+void UImguiContext::_SetupImguiContext()
 {
 	// enable keyboard control
 	GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	// enable docking
-	if (bEnableDocking)
-	{
-		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		GetIO()->ConfigViewportsNoAutoMerge = true;
-		GetIO()->ConfigDockingTransparentPayload = true;
-	}
+	// enable transparent 
+	GetIO()->ConfigDockingTransparentPayload = true;
 	
 	// set backend flags
 	GetIO()->BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
