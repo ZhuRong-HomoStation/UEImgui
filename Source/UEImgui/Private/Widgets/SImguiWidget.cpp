@@ -18,6 +18,7 @@ void SImguiRenderProxy::Construct(const FArguments& InArgs)
 	Context = InArgs._InContext;
 	Adapter = InArgs._InAdapter;
 	bBlockInput = InArgs._BlockInput;
+	bBlockWheel = InArgs._BlockWheel;
 
 	Visibility = InArgs._Visibility;
 }
@@ -102,7 +103,7 @@ FReply SImguiRenderProxy::OnMouseWheel(const FGeometry& MyGeometry, const FPoint
 	Super::OnMouseWheel(MyGeometry, MouseEvent);
 	if (!Adapter) return FReply::Unhandled();
 	FReply AdapterReply = Adapter->OnMouseWheel(MouseEvent);
-	return bBlockInput ? AdapterReply : FReply::Unhandled();
+	return bBlockInput && bBlockWheel ? AdapterReply : FReply::Unhandled();
 }
 
 FReply SImguiRenderProxy::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
