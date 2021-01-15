@@ -30,5 +30,11 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
+	],
+	"Plugins": [
+		{
+			"Name": "slua_unreal",
+			"Enabled": true
+		}
 	]
 }

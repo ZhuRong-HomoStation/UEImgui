@@ -3531,25 +3531,6 @@ IM_VEC_2_ARG(uv)
 UINT_ARG(col)
 DRAW_LIST_CALL_FUNCTION_NO_RET(PrimVtx, pos, uv, col)
 END_IMGUI_FUNC
-//    inline    void  AddBezierCurve(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness, int num_segments = 0) { AddBezierCubic(p1, p2, p3, p4, col, thickness, num_segments); }
-IMGUI_FUNCTION_DRAW_LIST(AddBezierCurve)
-IM_VEC_2_ARG(p1)
-IM_VEC_2_ARG(p2)
-IM_VEC_2_ARG(p3)
-IM_VEC_2_ARG(p4)
-UINT_ARG(col)
-NUMBER_ARG(thickness)
-OPTIONAL_INT_ARG(num_segments, 0)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddBezierCurve, p1, p2, p3, p4, col, thickness, num_segments)
-END_IMGUI_FUNC
-//    inline    void  PathBezierCurveTo(const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, int num_segments = 0) { PathBezierCubicCurveTo(p2, p3, p4, num_segments); }
-IMGUI_FUNCTION_DRAW_LIST(PathBezierCurveTo)
-IM_VEC_2_ARG(p2)
-IM_VEC_2_ARG(p3)
-IM_VEC_2_ARG(p4)
-OPTIONAL_INT_ARG(num_segments, 0)
-DRAW_LIST_CALL_FUNCTION_NO_RET(PathBezierCurveTo, p2, p3, p4, num_segments)
-END_IMGUI_FUNC
 //    IMGUI_API void  _ResetForNewFrame();
 IMGUI_FUNCTION_DRAW_LIST(_ResetForNewFrame)
 DRAW_LIST_CALL_FUNCTION_NO_RET(_ResetForNewFrame)
