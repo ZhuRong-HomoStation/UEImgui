@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
+#include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SWidget.h"
 #include "Window/IImguiViewport.h"
@@ -52,6 +53,7 @@ public:
 		SLATE_ARGUMENT(const char*, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 		SLATE_ARGUMENT(bool, BlockInput)
+		SLATE_ATTRIBUTE(EVisibility, Visibility)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -119,12 +121,14 @@ protected:
 	virtual void SetAlpha(float InAlpha) override { }
 	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
-	// ~End IImguiViewport API 
+	// ~End IImguiViewport API
+private:
+	EVisibility _GetVisibility() const;
 protected:
 	// cached top side window 
 	mutable TWeakPtr<SWindow> CachedWnd;
 
-	// imgui state  
+	// imgui state 
 	UImguiContext*		Context;
 	UImguiInputAdapter*	Adapter;
 	ImGuiViewport*		BoundViewport;
@@ -137,19 +141,3 @@ protected:
 	bool				bHasFocus;
 	bool				bBlockInput;
 };
-
-/**
- * @brief en. imgui widget, host a imgui context, and draw self as main viewport
- *        ch. Imgui控件，主持一个imgui的Context，并且将自己作为主视口绘制 
- */
-class UEIMGUI_API SImguiWidget : public SLeafWidget, public FGCObject, public IImguiViewport
-{
-	using Super = SLeafWidget;
-public:
-	SLATE_BEGIN_ARGS(SImguiWidget)
-            : _BlockInput(true)
-	{}
-	    SLATE_ARGUMENT(bool, BlockInput)
-	SLATE_END_ARGS()
-};
-

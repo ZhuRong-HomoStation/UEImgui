@@ -26,8 +26,11 @@ public:
 
 	// context config
 	void EnableDocking(bool bInEnable);
+	bool EnableDocking();
 	void EnableViewport(bool bInEnable);
-	void EnableAutoMergeViewport(bool bInIsEnable);
+	bool EnableViewport();
+	void EnableNoAutoMergeViewport(bool bInIsEnable);
+	bool EnableNoAutoMergeViewport();
 	
 	// global draw
 	int32 AddGlobalWindow(const FDrawGlobalImgui& InCallBack) { return AllDrawCallBack.Add(InCallBack); }

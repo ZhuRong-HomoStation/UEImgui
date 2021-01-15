@@ -96,6 +96,11 @@ void UImguiContext::EnableDocking(bool bInEnable)
 	}
 }
 
+bool UImguiContext::EnableDocking()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_DockingEnable;
+}
+
 void UImguiContext::EnableViewport(bool bInEnable)
 {
 	if (bInEnable)
@@ -111,9 +116,19 @@ void UImguiContext::EnableViewport(bool bInEnable)
 	}
 }
 
-void UImguiContext::EnableAutoMergeViewport(bool bInIsEnable)
+bool UImguiContext::EnableViewport()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
+}
+
+void UImguiContext::EnableNoAutoMergeViewport(bool bInIsEnable)
 {
 	GetIO()->ConfigViewportsNoAutoMerge = bInIsEnable;
+}
+
+bool UImguiContext::EnableNoAutoMergeViewport()
+{
+	return GetIO()->ConfigViewportsNoAutoMerge;
 }
 
 void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)

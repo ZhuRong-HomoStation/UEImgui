@@ -61,7 +61,8 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		.InAdapter(InputAdapter)
 		.HSizingRule(EImguiSizingRule::UESize)
 		.VSizingRule(EImguiSizingRule::UESize)
-		.BlockInput(true);
+		.BlockInput(true)
+		.Visibility(EVisibility::HitTestInvisible);
 		
 		// add to viewport
 		ViewportClient->AddViewportWidgetContent(Proxy->AsShared(), INT_MAX);
@@ -70,7 +71,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		GlobalContext->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 		GlobalContext->EnableDocking(true);
 		GlobalContext->EnableViewport(true);
-		GlobalContext->EnableAutoMergeViewport(true);
+		GlobalContext->EnableNoAutoMergeViewport(true);
 
 		// set viewport manually 
 		StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(GlobalContext->GetContext()->Viewports[0]);

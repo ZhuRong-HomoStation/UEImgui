@@ -24,5 +24,7 @@ public class Imgui : ModuleRules
 				"Slate",
 				"SlateCore",
 			});
+		
+		PublicDefinitions.Add("IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
 	}
 }

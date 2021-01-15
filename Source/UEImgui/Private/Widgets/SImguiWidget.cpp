@@ -17,7 +17,9 @@ void SImguiRenderProxy::Construct(const FArguments& InArgs)
 	PersistWndID = InArgs._ProxyWndName ? ImHashStr(InArgs._ProxyWndName) : 0;
 	Context = InArgs._InContext;
 	Adapter = InArgs._InAdapter;
-	bBlockInput  = InArgs._BlockInput;
+	bBlockInput = InArgs._BlockInput;
+
+	Visibility = InArgs._Visibility;
 }
 
 void SImguiRenderProxy::SetContext(UImguiContext* InContext)
@@ -83,6 +85,7 @@ FReply SImguiRenderProxy::OnMouseButtonUp(const FGeometry& MyGeometry, const FPo
 	if (!Adapter) return FReply::Unhandled();
 	FReply AdapterReply = Adapter->OnMouseButtonUp(MouseEvent);
 	return bBlockInput ? AdapterReply : FReply::Unhandled();
+	
 }
 
 FReply SImguiRenderProxy::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry,
@@ -99,6 +102,13 @@ FReply SImguiRenderProxy::OnMouseWheel(const FGeometry& MyGeometry, const FPoint
 	Super::OnMouseWheel(MyGeometry, MouseEvent);
 	if (!Adapter) return FReply::Unhandled();
 	FReply AdapterReply = Adapter->OnMouseWheel(MouseEvent);
+	return bBlockInput ? AdapterReply : FReply::Unhandled();
+}
+
+FReply SImguiRenderProxy::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (!GetAdapter()) return FReply::Unhandled();
+	FReply AdapterReply = Adapter->OnMouseMove(FVector2D::ZeroVector, MouseEvent);
 	return bBlockInput ? AdapterReply : FReply::Unhandled();
 }
 
@@ -190,7 +200,8 @@ FVector2D SImguiRenderProxy::ComputeDesiredSize(float) const
 	FVector2D NewDesiredSize(0);
 
 	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
-
+	if (!Wnd) return FVector2D::ZeroVector;
+	
 	// HSizing 
 	switch (HSizingRule)
 	{
@@ -218,11 +229,9 @@ FVector2D SImguiRenderProxy::ComputeDesiredSize(float) const
 	return NewDesiredSize;
 }
 
-FReply SImguiRenderProxy::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+EVisibility SImguiRenderProxy::_GetVisibility() const
 {
-	if (!GetAdapter()) return FReply::Unhandled();
-	FReply AdapterReply = Adapter->OnMouseMove(FVector2D::ZeroVector, MouseEvent);
-	return bBlockInput ? AdapterReply : FReply::Unhandled();
+	return Context && Context->GetIO() && Context->GetIO()->WantCaptureMouse ? EVisibility::Visible : EVisibility::SelfHitTestInvisible;
 }
 
 bool SImguiRenderProxy::SupportsKeyboardFocus() const

@@ -34,4 +34,40 @@ namespace ImGui
 	UEIMGUI_API bool InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 	UEIMGUI_API bool InputTextMultiline(const char* label, std::string* str, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 	UEIMGUI_API bool InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+
+	// =============UETypeInput=============
+	template<typename T>
+	FORCEINLINE bool UEEnum(const char* InLabel, T* InEnum);
+	template<typename T>
+	FORCEINLINE bool UEStruct(T* InStruct);
+	template<typename T>
+	FORCEINLINE bool UEObject(T* InObject);
+	UEIMGUI_API bool UEEnum(const char* InLabel ,UEnum* InEnumClass, int64* EnumSource);
+	UEIMGUI_API bool UEStruct(UScriptStruct* InStruct, void* InValue);
+	UEIMGUI_API bool UEObject(UClass* InClass, void* InValue);
+	UEIMGUI_API bool UEProperty(FProperty* InProperty, void* InContainer);
+}
+
+namespace ImGui
+{
+	template<typename T>
+	FORCEINLINE bool UEEnum(const char* InLabel, T* InEnum)
+	{
+		int64 Value = (int64)*InEnum;
+		bool bHasChanged = UEEnum(InLabel, StaticEnum<T>(), &Value);
+		*InEnum = (T)Value;
+		return bHasChanged;
+	}
+
+	template<typename T>
+    FORCEINLINE bool UEStruct(T* InStruct)
+	{
+		return UEStruct(StaticStruct<T>(), InStruct);
+	}
+
+	template <typename T>
+	FORCEINLINE bool UEObject(T* InObject)
+	{
+		return UEObject(StaticClass<T>(), InObject);
+	}
 }

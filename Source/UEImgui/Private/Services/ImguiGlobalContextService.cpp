@@ -64,14 +64,15 @@ public:
             .InAdapter(InputAdapter)
             .HSizingRule(EImguiSizingRule::UESize)
             .VSizingRule(EImguiSizingRule::UESize)
-            .BlockInput(true);
+            .BlockInput(true)
+			.Visibility(EVisibility::HitTestInvisible);
 			
 			// add to viewport
 			for (FLevelEditorViewportClient* Client : AllViewportClients)
 			{
-				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot(0)
+				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
                 [
-                    Proxy->AsShared()
+                	Proxy->AsShared()
                 ];
 			}
 
