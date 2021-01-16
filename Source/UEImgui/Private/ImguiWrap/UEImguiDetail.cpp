@@ -161,18 +161,6 @@ bool FUEImguiDetail::MakeDetail(FProperty* InProperty, void* InContainer)
 		}
 		break;
 	}
-
-	// ========================Object========================
-	case CASTCLASS_FObjectProperty:
-	case CASTCLASS_FWeakObjectProperty:
-	case CASTCLASS_FLazyObjectProperty:
-	case CASTCLASS_FSoftObjectProperty:
-		break;
-
-	// ========================Class========================
-	case CASTCLASS_FClassProperty:
-	case CASTCLASS_FSoftClassProperty:
-		break;
 		
 	// ========================Combo========================
 	case CASTCLASS_FEnumProperty:
@@ -192,17 +180,29 @@ bool FUEImguiDetail::MakeDetail(FProperty* InProperty, void* InContainer)
 		break;
 	}
 
+	// ========================Object========================
+	case CASTCLASS_FObjectProperty:
+	case CASTCLASS_FWeakObjectProperty:
+	case CASTCLASS_FLazyObjectProperty:
+	case CASTCLASS_FSoftObjectProperty:
+		// break;
+
+	// ========================Class========================
+	case CASTCLASS_FClassProperty:
+	case CASTCLASS_FSoftClassProperty:
+		// break;
+
 	// ========================Misc======================== 
 	case CASTCLASS_FArrayProperty:
 	case CASTCLASS_FMapProperty:
 	case CASTCLASS_FSetProperty:
-		break;
+		// break;
 
 	// ========================AActor========================
 	case CASTCLASS_AActor:
 	case CASTCLASS_APlayerController:
 	case CASTCLASS_APawn:
-		break;
+		// break;
 
 	// ========================Reflection[Unused]========================
 	case CASTCLASS_UField:

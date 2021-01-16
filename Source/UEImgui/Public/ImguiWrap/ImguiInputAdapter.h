@@ -47,7 +47,7 @@ public:
 	UImguiContext* GetContext() const { return BoundContext; }
 	void SetContext(UImguiContext* InContext) { BoundContext = InContext; }
 
-
+	// Config 
 	bool CanBlockInput() const { return bBlockInput; }
 	bool CanReceiveMouseInput() const { return bReceiveMouseInput; }
 	bool CanReceiveKeyboardInput() const { return bReceiveKeyboardInput; }
@@ -55,18 +55,17 @@ public:
 
 	void AddInputIME(const FString& InStr);
 protected:
-	// key 
+	// Key 
 	virtual void AddInputCharacter(TCHAR InChar);
 	virtual void SetKeyState(uint32 InKeyNum, bool InState);
 	virtual void SetCtrl(bool InState);
 	virtual void SetAlt(bool InState);
 	virtual void SetShift(bool InState);
 
-	// mouse 
+	// Mouse 
 	virtual void SetMouseBtnState(uint32 MouseBtnIndex, bool InState);
 	virtual void SetMouseWheel(float MouseWheel);
 	virtual void SetMousePos(FVector2D InMousePos);
-
 private:
 	UPROPERTY()
 	uint8			bBlockInput:1;

@@ -39,7 +39,7 @@ namespace ImGui
 	// =============UETypeInput=============
 	UEIMGUI_API bool UEColor(const char* InLabel, FColor* InColor, ImGuiColorEditFlags InFlags = 0);
 	UEIMGUI_API bool UEColor(const char* InLabel, FLinearColor* InColor, ImGuiColorEditFlags InFlags = 0);
-
+	
 	// =============UEDetail============= 
 	UEIMGUI_API bool UEEnum(const char* InLabel ,UEnum* InEnumClass, int64* EnumSource);
 	UEIMGUI_API bool UEStruct(UScriptStruct* InStruct, void* InValue);
