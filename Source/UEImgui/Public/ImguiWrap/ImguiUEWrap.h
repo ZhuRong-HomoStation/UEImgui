@@ -5,6 +5,7 @@
 
 struct ImDrawData;
 class SImguiRenderProxy;
+class FUEImguiDetail;
 
 enum ImguiWindowFlagUE
 {
@@ -36,16 +37,16 @@ namespace ImGui
 	UEIMGUI_API bool InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 
 	// =============UETypeInput=============
-	template<typename T>
-	FORCEINLINE bool UEEnum(const char* InLabel, T* InEnum);
-	template<typename T>
-	FORCEINLINE bool UEStruct(T* InStruct);
-	template<typename T>
-	FORCEINLINE bool UEObject(T* InObject);
+	UEIMGUI_API bool UEColor(const char* InLabel, FColor* InColor, ImGuiColorEditFlags InFlags = 0);
+	UEIMGUI_API bool UEColor(const char* InLabel, FLinearColor* InColor, ImGuiColorEditFlags InFlags = 0);
+
+	// =============UEDetail============= 
 	UEIMGUI_API bool UEEnum(const char* InLabel ,UEnum* InEnumClass, int64* EnumSource);
 	UEIMGUI_API bool UEStruct(UScriptStruct* InStruct, void* InValue);
 	UEIMGUI_API bool UEObject(UClass* InClass, void* InValue);
 	UEIMGUI_API bool UEProperty(FProperty* InProperty, void* InContainer);
+	UEIMGUI_API FUEImguiDetail& GlobalDetailMaker();
+
 }
 
 namespace ImGui
