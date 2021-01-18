@@ -20,6 +20,4 @@ private:
 	void _ShutDownMenu();
 
 	void _ExtendMenu(FMenuBuilder& InBuilder);
-private:
-	ImPlotContext*		ImPlotCtx;
 };

@@ -21,6 +21,6 @@ public class Imgui : ModuleRules
 				"Core",
 			});
 		
-		PublicDefinitions.Add("IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
+		// PublicDefinitions.Add("IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
 	}
 }

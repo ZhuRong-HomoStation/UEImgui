@@ -3,13 +3,14 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class ImPlot : ModuleRules
+public class ImNodeEditor : ModuleRules
 {
-	public ImPlot(ReadOnlyTargetRules Target) : base(Target)
+	public ImNodeEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
 		UnsafeTypeCastWarningLevel = WarningLevel.Off;
+		bUseUnity = false;
 		
 		PublicIncludePaths.AddRange(
 			new string[] 

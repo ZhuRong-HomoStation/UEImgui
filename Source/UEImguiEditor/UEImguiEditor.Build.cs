@@ -15,6 +15,7 @@ public class UEImguiEditor : ModuleRules
 				"Core",
 				"Imgui",
 				"ImPlot",
+				"ImNodeEditor" ,
 			});
 			
 		
@@ -30,8 +31,11 @@ public class UEImguiEditor : ModuleRules
 				"UEImgui",
 				"EditorSubsystem",
 				"UnrealEd",
+				"Projects" ,
 				"Imgui",
 				"ImPlot",
 			});
+		
+		PrivateDefinitions.Add("IMGUI_DEFINE_MATH_OPERATORS");
 	}
 }

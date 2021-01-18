@@ -34,6 +34,11 @@
 			"Name": "ImPlot",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "ImNodeEditor",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }

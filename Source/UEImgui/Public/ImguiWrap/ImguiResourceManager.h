@@ -38,6 +38,7 @@ public:
 	
 	// Resource action
 	ImTextureID AddResource(FName InResName, UTexture* SourceObj);
+	ImTextureID LoadResource(FString InPath, FName InName = NAME_None);
 	bool IsResourceExist(FName InResName);
 	bool IsResourceExist(ImTextureID InID);
 	FImguiResource* FindResource(FName InResName);

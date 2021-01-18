@@ -1,8 +1,13 @@
 ﻿#include "ImguiWrap/ImguiResourceManager.h"
+
+
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
 #include "imgui.h"
 #include "Logging.h"
 #include "Config/ImguiConfig.h"
 #include "ImguiWrap/ImguiContext.h"
+#include "Misc/FileHelper.h"
 #include "Slate/SlateTextureAtlasInterface.h"
 
 FImguiResource::FImguiResource(const FName& InName, UTexture* SourceObject)
@@ -45,6 +50,67 @@ ImTextureID UImguiResourceManager::AddResource(FName InResName, UTexture* Source
 	int32 GotId = CurrentResIdx++;
 	AllResource.Add(GotId, FImguiResource(InResName, (UTexture*)SourceObj));
 	NamedResourceMap.Add(InResName, GotId);
+
+	return reinterpret_cast<ImTextureID>((SIZE_T)GotId);
+}
+
+ImTextureID UImguiResourceManager::LoadResource(FString InPath, FName InName)
+{
+	FName ResourceName = InName == NAME_None ? FName(InPath) : InName;
+
+	// find resource 
+	auto FoundRes = NamedResourceMap.Find(ResourceName);
+	if (FoundRes)
+	{
+		UE_LOG(LogUEImgui, Warning, TEXT("UImguiResourceManager::AddResource : resource %s has exist!!!"), *ResourceName.ToString());
+		return reinterpret_cast<ImTextureID>((SIZE_T)*FoundRes);
+	}
+
+	// load texture
+	// read file 
+	TArray64<uint8>* Data = new TArray64<uint8>();
+	FFileHelper::LoadFileToArray(*Data, *InPath);
+	if (Data->Num() == 0) return NULL;
+
+	// get image format 
+	static const FName MODULE_IMAGE_WRAPPER("ImageWrapper");
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(MODULE_IMAGE_WRAPPER);
+	EImageFormat ImageFormat = ImageWrapperModule.DetectImageFormat(Data->GetData(), Data->Num());
+	if (ImageFormat == EImageFormat::Invalid) return NULL;
+
+	// decode image 
+	FIntPoint Size;
+	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(ImageFormat);
+	if (!ImageWrapper->SetCompressed(Data->GetData(), Data->Num())) return NULL;
+	Size.X = ImageWrapper->GetWidth();
+	Size.Y = ImageWrapper->GetHeight();
+	ImageWrapper->GetRaw(ERGBFormat::RGBA, 8, *Data);
+
+	// create texture 
+	UTexture2D* LoadedTexture = UTexture2D::CreateTransient(Size.X, Size.Y, EPixelFormat::PF_R8G8B8A8);
+	LoadedTexture->UpdateResource();
+
+	// set up region 
+	FUpdateTextureRegion2D* TextureRegion = new FUpdateTextureRegion2D(
+        0,
+        0,
+        0,
+        0,
+        Size.X,
+        Size.Y);
+
+	// cleanup data 
+	auto DataCleanup = [FileData=Data](uint8* Data, const FUpdateTextureRegion2D* UpdateRegion)
+	{
+		delete FileData;
+		delete UpdateRegion;
+	};
+	LoadedTexture->UpdateTextureRegions(0, 1u, TextureRegion, 4 * Size.X, 4, Data->GetData(), DataCleanup);
+
+	// add resource
+	int32 GotId = CurrentResIdx++;
+	AllResource.Add(GotId, FImguiResource(ResourceName, LoadedTexture));
+	NamedResourceMap.Add(ResourceName, GotId);
 
 	return reinterpret_cast<ImTextureID>((SIZE_T)GotId);
 }
