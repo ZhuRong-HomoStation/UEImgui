@@ -23,5 +23,6 @@ public class ImPlot : ModuleRules
 				"Core" ,
 				"Imgui" ,
 			});
+		
 	}
 }

@@ -31,7 +31,6 @@ public class UEImgui : ModuleRules
 				"Projects" ,
 				"RenderCore" ,
 				"RHI" ,
-				"ImageWrapper" ,
 			});
 
 		if (Target.Type == TargetType.Editor)

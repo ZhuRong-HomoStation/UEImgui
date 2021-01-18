@@ -59,8 +59,6 @@ public:
 	UPROPERTY()
 	float       GrabRounding;               
 	UPROPERTY()
-	float		LayoutAlign;
-	UPROPERTY()
 	float       LogSliderDeadzone;          
 	UPROPERTY()
 	float       TabRounding;                

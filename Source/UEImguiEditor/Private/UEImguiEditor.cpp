@@ -1,13 +1,11 @@
 #include "UEImguiEditor.h"
 #include "imgui.h"
 #include "implot.h"
-#include "implot_internal.h"
 #include "LevelEditor.h"
 #include "Logging.h"
 #include "Customize/ImguiDetailCustomization.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Modules/ModuleManager.h"
-#include "NodeEditorExample/ImBlueprintEditorExample.h"
 #include "Service/ImguiCustomDetailService.h"
 #include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SImguiWidget.h"
@@ -21,12 +19,15 @@ void FUEImguiEditor::StartupModule()
 {
 	_InitDetailExtension();
 	_InitMenu();
+
+	ImPlotCtx = ImPlot::CreateContext();
 }
 
 void FUEImguiEditor::ShutdownModule()
 {
 	_ShutDownDetailExtension();
 	_ShutDownMenu();
+	ImPlot::DestroyContext(ImPlotCtx);
 }
 
 void FUEImguiEditor::_InitDetailExtension()
@@ -81,36 +82,11 @@ void FUEImguiEditor::_InitMenu()
 		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open ImPlot Demo")), FText::GetEmpty(), FSlateIcon(),
                     FUIAction(FExecuteAction::CreateLambda([]
                     {
-                    	ImPlotContext* ImPlotCtx = ImPlot::CreateContext();
-    					ImPlotCtx->Style.AntiAliasedLines = true;
-                        UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([ImPlotCtx]
-                        {
-                            bool IsOpen = true;
-                        	ImPlot::SetCurrentContext(ImPlotCtx);
-                            ImPlot::ShowDemoWindow(&IsOpen);
-                        	if (!IsOpen)
-                        	{
-                        		ImPlot::DestroyContext(ImPlotCtx);
-                        	}
-                            return IsOpen;
-                        }));
-                    })));
-		
-		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open ImNodeEditor Demo")), FText::GetEmpty(), FSlateIcon(),
-                    FUIAction(FExecuteAction::CreateLambda([]
-                    {
-                    	ImNodeEditor_Example_Init();
                         UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
                         {
                             bool IsOpen = true;
-							ImGui::Begin("ImNodeEditor Example", &IsOpen);
-							ImNodeEditor_Example_Tick();
-							ImGui::End();
-                        	if (!IsOpen)
-                        	{
-                        		ImNodeEditor_Example_ShutDown();
-                        	}
-                        	return IsOpen;
+                            ImPlot::ShowDemoWindow(&IsOpen);
+                            return IsOpen;
                         }));
                     })));
 		
