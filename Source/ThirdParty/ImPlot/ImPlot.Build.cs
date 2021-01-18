@@ -3,24 +3,26 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class Imgui : ModuleRules
+public class ImPlot : ModuleRules
 {
-	public Imgui(ReadOnlyTargetRules Target) : base(Target)
+	public ImPlot(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		UnsafeTypeCastWarningLevel = WarningLevel.Off;
 		
 		PublicIncludePaths.AddRange(
 			new string[] 
 			{
-                Path.Combine(ModuleDirectory, "Public")
+				Path.Combine(ModuleDirectory, "Public")
 			});
 
-		PrivateDependencyModuleNames.AddRange(
+		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core" ,
+				"Imgui" ,
 			});
 		
-		PublicDefinitions.Add("IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
 	}
 }

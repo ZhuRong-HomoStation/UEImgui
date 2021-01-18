@@ -1,8 +1,8 @@
 #include "UEImguiEditor.h"
 #include "imgui.h"
+#include "implot.h"
 #include "LevelEditor.h"
 #include "Logging.h"
-#include "Commands/ImguiEditorCommand.h"
 #include "Customize/ImguiDetailCustomization.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Modules/ModuleManager.h"
@@ -18,15 +18,16 @@ class FLevelEditorModule;
 void FUEImguiEditor::StartupModule()
 {
 	_InitDetailExtension();
-	_InitCommand();
 	_InitMenu();
+
+	ImPlotCtx = ImPlot::CreateContext();
 }
 
 void FUEImguiEditor::ShutdownModule()
 {
 	_ShutDownDetailExtension();
-	_ShutDownCommand();
 	_ShutDownMenu();
+	ImPlot::DestroyContext(ImPlotCtx);
 }
 
 void FUEImguiEditor::_InitDetailExtension()
@@ -60,47 +61,6 @@ void FUEImguiEditor::_ShutDownDetailExtension()
 	}
 }
 
-void FUEImguiEditor::_InitCommand()
-{
-	FImguiEditorCommand::Register();
-	m_CmdList = MakeShareable(new FUICommandList);
-
-	// open imgui demo window 
-	m_CmdList->MapAction(
-		FImguiEditorCommand::Get().OpenImguiDemo,
-		FExecuteAction::CreateLambda([]
-		{
-			UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
-		        {
-		            bool IsOpen = true;
-		            ImGui::ShowDemoWindow(&IsOpen);
-		            return IsOpen;
-		        }));
-		}),
-		FCanExecuteAction());
-
-	// open style editor 
-	m_CmdList->MapAction(
-        FImguiEditorCommand::Get().OpenStyleEditor,
-        FExecuteAction::CreateLambda([]
-        {
-            UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
-                {
-                    bool IsOpen = true;
-            		ImGui::Begin("ImguiStyleEditor", &IsOpen);
-                    ImGui::ShowUEStyleEditor();
-            		ImGui::End();
-                    return IsOpen;
-                }));			
-        }),
-        FCanExecuteAction());
-}
-
-void FUEImguiEditor::_ShutDownCommand()
-{
-	FImguiEditorCommand::Unregister();
-}
-
 void FUEImguiEditor::_InitMenu()
 {
 	// Get level editor module 
@@ -108,8 +68,40 @@ void FUEImguiEditor::_InitMenu()
 
 	auto ExtendMenu = [](FMenuBuilder& InBuilder)
 	{
-		InBuilder.AddMenuEntry(FImguiEditorCommand::Get().OpenImguiDemo);
-		InBuilder.AddMenuEntry(FImguiEditorCommand::Get().OpenStyleEditor);
+		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open ImGui Demo")), FText::GetEmpty(), FSlateIcon(),
+			FUIAction(FExecuteAction::CreateLambda([]
+			{
+				UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+                {
+                    bool IsOpen = true;
+                    ImGui::ShowDemoWindow(&IsOpen);
+                    return IsOpen;
+                }));
+			})));
+
+		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open ImPlot Demo")), FText::GetEmpty(), FSlateIcon(),
+                    FUIAction(FExecuteAction::CreateLambda([]
+                    {
+                        UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+                        {
+                            bool IsOpen = true;
+                            ImPlot::ShowDemoWindow(&IsOpen);
+                            return IsOpen;
+                        }));
+                    })));
+		
+		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open Style Editor")), FText::GetEmpty(), FSlateIcon(),
+            FUIAction(FExecuteAction::CreateLambda([]
+            {
+            	UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+                 {
+                     bool IsOpen = true;
+                     ImGui::Begin("ImguiStyleEditor", &IsOpen);
+                     ImGui::ShowUEStyleEditor();
+                     ImGui::End();
+                     return IsOpen;
+                 }));	
+            })));
 	};
 	
 	auto ExtendMenuBar = [&](FMenuBarBuilder& InBuilder)
@@ -124,12 +116,16 @@ void FUEImguiEditor::_InitMenu()
 	MenuExtender->AddMenuBarExtension(
         "Help",
         EExtensionHook::After,
-        m_CmdList,
+        nullptr,
         FMenuBarExtensionDelegate::CreateLambda(ExtendMenuBar));
 	LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 }
 
 void FUEImguiEditor::_ShutDownMenu()
+{
+}
+
+void FUEImguiEditor::_ExtendMenu(FMenuBuilder& InBuilder)
 {
 }
 

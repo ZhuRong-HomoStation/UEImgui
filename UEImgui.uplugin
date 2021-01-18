@@ -29,6 +29,11 @@
 			"Name": "UEImguiEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "ImPlot",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }
