@@ -4,6 +4,7 @@
 #include "LevelEditor.h"
 #include "Logging.h"
 #include "Customize/ImguiDetailCustomization.h"
+#include "Extension/SmallWidgets.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Modules/ModuleManager.h"
 #include "Service/ImguiCustomDetailService.h"
@@ -89,6 +90,32 @@ void FUEImguiEditor::_InitMenu()
                             return IsOpen;
                         }));
                     })));
+
+		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open Small Widget Demo")), FText::GetEmpty(), FSlateIcon(),
+                    FUIAction(FExecuteAction::CreateLambda([]
+                    {
+                        UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+                        {
+                            bool IsOpen = true;
+                        	ImGui::Begin("Imgui Small Widget Demo", &IsOpen);
+							ImGui::DrawSmallWidgetDemo();
+							ImGui::End();
+                            return IsOpen;
+                        }));
+                    })));
+
+		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open Text Editor Demo")), FText::GetEmpty(), FSlateIcon(),
+                    FUIAction(FExecuteAction::CreateLambda([]
+                    {
+                        UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
+                        {
+                            bool IsOpen = true;
+                            ImGui::Begin("Imgui Text Editor Demo", &IsOpen, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNav);
+                            ImGui::DrawTextEditorDemo(&IsOpen);
+                            ImGui::End();
+                            return IsOpen;
+                        }));
+                    })));
 		
 		InBuilder.AddMenuEntry(FText::FromString(TEXT("Open Style Editor")), FText::GetEmpty(), FSlateIcon(),
             FUIAction(FExecuteAction::CreateLambda([]
@@ -125,9 +152,6 @@ void FUEImguiEditor::_ShutDownMenu()
 {
 }
 
-void FUEImguiEditor::_ExtendMenu(FMenuBuilder& InBuilder)
-{
-}
 
 #undef LOCTEXT_NAMESPACE
 	

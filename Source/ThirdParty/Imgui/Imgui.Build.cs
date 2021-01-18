@@ -22,5 +22,6 @@ public class Imgui : ModuleRules
 			});
 		
 		PublicDefinitions.Add("IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
+		PublicDefinitions.Add("IMGUI_DEFINE_MATH_OPERATORS");
 	}
 }
