@@ -272,6 +272,15 @@ FUEImguiDetail& ImGui::GlobalDetailMaker()
 	return DetailMaker;
 }
 
+bool ImGui::UEWorldView(
+	const char* InLabel,
+	TArray<AActor*> SelectedActors,
+	bool* DoubleClicked,
+	FActorFilter InFilterRule)
+{
+	return false;
+}
+
 bool ImGui::ShowUEStyleSelector(const char* Label)
 {
 	static int StyleIdx = 4;

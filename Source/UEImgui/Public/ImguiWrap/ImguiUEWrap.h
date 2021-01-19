@@ -7,6 +7,8 @@ struct ImDrawData;
 class SImguiRenderProxy;
 class FUEImguiDetail;
 
+DECLARE_DELEGATE_RetVal_OneParam(bool, FActorFilter, AActor*);
+
 enum ImguiWindowFlagUE
 {
 	ImGuiWindowFlags_UEDetail = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking
@@ -47,6 +49,14 @@ namespace ImGui
 	UEIMGUI_API bool UEProperty(FProperty* InProperty, void* InContainer);
 	UEIMGUI_API FUEImguiDetail& GlobalDetailMaker();
 
+	// =============Picker=============
+	UEIMGUI_API bool UEActorPicker(const char* InLabel, AActor** InOutActor, FActorFilter InFilterRule = FActorFilter());
+	UEIMGUI_API bool UEActorPicker(const char* InLabel, TSoftObjectPtr<AActor>* InOutActor, FActorFilter InFilterRule = FActorFilter());
+	UEIMGUI_API bool UEActorPicker(const char* InLabel, AActor** InOutActor, UClass* InFilterClass = AActor::StaticClass(), bool SameLevel = false);
+	UEIMGUI_API bool UEActorPicker(const char* InLabel, TSoftObjectPtr<AActor>** InOutActor, UClass* InFilterClass = AActor::StaticClass(), bool SameLevel = false);
+
+	// =============WorldView=============
+	UEIMGUI_API bool UEWorldView(const char* InLabel, TArray<AActor*> SelectedActors, bool* DoubleClicked, FActorFilter InFilterRule = FActorFilter());
 }
 
 namespace ImGui

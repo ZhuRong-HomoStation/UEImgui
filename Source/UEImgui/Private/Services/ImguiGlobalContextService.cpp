@@ -56,7 +56,6 @@ public:
 		{
 			// find viewport widget 
 			auto& AllViewportClients = GEditor->GetLevelViewportClients();
-			if (AllViewportClients.Num() == 0) return;
 			
 			// create proxy
 			TSharedPtr<SImguiRenderProxy> Proxy = SNew(SImguiRenderProxy)
@@ -68,12 +67,15 @@ public:
 			.Visibility(EVisibility::HitTestInvisible);
 			
 			// add to viewport
-			for (FLevelEditorViewportClient* Client : AllViewportClients)
+			if (AllViewportClients.Num() != 0)
 			{
-				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
-                [
-                	Proxy->AsShared()
-                ];
+				for (FLevelEditorViewportClient* Client : AllViewportClients)
+				{
+					Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
+	                [
+                		Proxy->AsShared()
+	                ];
+				}
 			}
 
 			// init context
