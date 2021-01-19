@@ -6,7 +6,7 @@
 #include "GenericPlatform/ITextInputMethodSystem.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiTextInputSystem.h"
-#include "ImguiWrap/UEImguiDetail.h"
+#include "Extension/UEImguiDetail.h"
 #include "Widgets/SImguiWidget.h"
 
 static void _HelpMarker(const char* desc)
