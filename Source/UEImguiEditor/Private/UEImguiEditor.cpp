@@ -97,6 +97,7 @@ void FUEImguiEditor::_InitMenu()
                         UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
                         {
                             bool IsOpen = true;
+                        	ImGui::SetNextWindowSize(ImVec2(500, 800), ImGuiCond_Appearing);
                         	ImGui::Begin("Imgui Small Widget Demo", &IsOpen);
 							ImGui::DrawSmallWidgetDemo();
 							ImGui::End();
@@ -123,6 +124,7 @@ void FUEImguiEditor::_InitMenu()
             	UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
                  {
                      bool IsOpen = true;
+                     ImGui::SetNextWindowSize(ImVec2(500, 800), ImGuiCond_Appearing);
                      ImGui::Begin("ImguiStyleEditor", &IsOpen);
                      ImGui::ShowUEStyleEditor();
                      ImGui::End();
