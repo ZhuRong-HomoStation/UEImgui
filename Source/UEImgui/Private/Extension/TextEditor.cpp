@@ -999,6 +999,7 @@ void TextEditor::Render()
 						}
 						ImVec2 cstart(textScreenPos.x + cx, lineStartScreenPos.y);
 						ImVec2 cend(textScreenPos.x + cx + width, lineStartScreenPos.y + mCharAdvance.y);
+						ImGui::GetPlatformIO().Platform_SetImeInputPos(ImGui::GetWindowViewport(), cstart);
 						drawList->AddRectFilled(cstart, cend, mPalette[(int)PaletteIndex::Cursor]);
 						if (elapsed > 800)
 							mStartTime = timeEnd;
@@ -1134,6 +1135,14 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 
 	if (mHandleMouseInputs)
 		HandleMouseInputs();
+
+	bool CurFocus = ImGui::IsWindowFocused();
+	if (!CurFocus && mLastFocus)
+	{
+		// Shut down IME 
+		ImGui::GetPlatformIO().Platform_SetImeInputPos(ImGui::GetWindowViewport(), ImVec2(-1, -1));
+	}
+	mLastFocus = CurFocus;
 
 	ColorizeInternal();
 	Render();

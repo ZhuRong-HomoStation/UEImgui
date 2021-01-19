@@ -384,6 +384,7 @@ private:
 	Coordinates mInteractiveStart, mInteractiveEnd;
 	std::string mLineBuffer;
 	uint64_t mStartTime;
-
+	bool mLastFocus;
+	
 	float mLastClick;
 };
