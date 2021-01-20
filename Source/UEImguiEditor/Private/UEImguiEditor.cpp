@@ -111,6 +111,7 @@ void FUEImguiEditor::_InitMenu()
                         UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([]
                         {
                             bool IsOpen = true;
+                        	ImGui::SetNextWindowSize(ImVec2(500, 800), ImGuiCond_Appearing);
                             ImGui::Begin("Imgui Text Editor Demo", &IsOpen, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNav);
                             ImGui::DrawTextEditorDemo(&IsOpen);
                             ImGui::End();
