@@ -13,7 +13,8 @@ public class UEImguiEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-				"Imgui"
+				"Imgui",
+				"ImPlot",
 			});
 			
 		
@@ -29,6 +30,8 @@ public class UEImguiEditor : ModuleRules
 				"UEImgui",
 				"EditorSubsystem",
 				"UnrealEd",
+				"Imgui",
+				"ImPlot",
 			});
 	}
 }
