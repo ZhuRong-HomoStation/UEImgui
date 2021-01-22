@@ -178,28 +178,28 @@ UImguiInputAdapter* UEImGui::GetGlobalInputAdapter(UObject* WorldContextObject)
 
 int32 UEImGui::AddGlobalWindow(const FDrawGlobalImgui& InGlobalContext, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	check(TimeToDraw(WorldContextObject));
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	return Ctx->AddGlobalWindow(InGlobalContext);
 }
 
 void UEImGui::RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	check(TimeToDraw(WorldContextObject));
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveGlobalWindow(InIndex);
 }
 
 void UEImGui::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	check(TimeToDraw(WorldContextObject));
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->AddRenderProxy(InRenderProxy);
 }
 
 void UEImGui::RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	check(TimeToDraw(WorldContextObject));
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveRenderProxy(InRenderProxy);
 }
