@@ -361,7 +361,8 @@ void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 void UImguiContext::_SetupImguiContext()
 {
 	// enable keyboard control
-	GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 	// enable transparent 
 	GetIO()->ConfigDockingTransparentPayload = true;

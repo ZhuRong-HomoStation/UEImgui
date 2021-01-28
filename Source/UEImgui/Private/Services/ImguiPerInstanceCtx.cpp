@@ -81,9 +81,6 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 
 	// update main viewport size
 	GlobalContext->UpdateSize();
-
-	// set up context info
-	GlobalContext->GetIO()->DeltaTime = DeltaTime;
 	
 	// apply context 
 	GlobalContext->ApplyContext();
