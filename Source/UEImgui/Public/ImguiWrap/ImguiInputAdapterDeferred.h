@@ -4,11 +4,13 @@
 #include "ImguiInputAdapter.h"
 #include "ImguiInputAdapterDeferred.generated.h"
 
-UCLASS()
+UCLASS(CustomConstructor)
 class UEIMGUI_API UImguiInputAdapterDeferred : public UImguiInputAdapter
 {
 	GENERATED_BODY()
 public:
+	UImguiInputAdapterDeferred(const FObjectInitializer& InInitializer);
+	
 	// ~Begin UImguiInputAdapter API 
 	virtual void AddInputCharacter(TCHAR InChar) override;
 	virtual void SetKeyState(uint32 InKeyNum, bool InState) override;
