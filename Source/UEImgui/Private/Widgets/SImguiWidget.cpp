@@ -242,19 +242,24 @@ bool SImguiRenderProxy::SupportsKeyboardFocus() const
 
 void SImguiRenderProxy::OnFocusLost(const FFocusEvent& InFocusEvent)
 {
-	if (!GetContext()) return;
-	// change context 
-	ImGuiContext* LastCtx = ImGui::GetCurrentContext();
-	ImGuiContext* Ctx = GetContext()->GetContext();
-	GetContext()->ApplyContext();
-	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
-	
-	// remove focus
-	if (Ctx->ActiveIdWindow && Ctx->ActiveIdWindow->RootWindow != Wnd)
-		ImGui::FocusWindow(nullptr);
-	
-	// resume context 
-	ImGui::SetCurrentContext(LastCtx);
+	// if (!GetContext()) return;
+	// // change context 
+	// ImGuiContext* LastCtx = ImGui::GetCurrentContext();
+	// ImGuiContext* Ctx = GetContext()->GetContext();
+	// GetContext()->ApplyContext();
+	// ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
+	//
+	// // remove focus
+	// if (Ctx->ActiveIdWindow && Ctx->ActiveIdWindow->RootWindow != Wnd)
+	// 	ImGui::FocusWindow(nullptr);
+	//
+	// // resume context 
+	// ImGui::SetCurrentContext(LastCtx);
+}
+
+FReply SImguiRenderProxy::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent)
+{
+	return FReply::Unhandled();
 }
 
 FCursorReply SImguiRenderProxy::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
