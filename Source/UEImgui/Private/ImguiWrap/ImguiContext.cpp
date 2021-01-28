@@ -236,7 +236,13 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 {
 	// find UE widget
 	auto UEWidget = ImViewportToUE.Find(viewport);
-	if (!UEWidget) return;
+	if (!UEWidget)
+	{
+		// disable platform data 
+		viewport->PlatformUserData = nullptr;
+		viewport->PlatformHandle = nullptr;
+		return;
+	}
 	
 	// process dispatched window case 
 	if (UEWidget->IsValid() && !UEWidget->Pin()->IsPersist())
@@ -253,7 +259,8 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 	ImViewportToUE.Remove(viewport);
 
 	// disable platform data 
-	viewport->PlatformUserData = viewport->PlatformHandle = nullptr;
+	viewport->PlatformUserData = nullptr;
+	viewport->PlatformHandle = nullptr;
 }
 
 void UImguiContext::_ShowWindow(ImGuiViewport* viewport)
