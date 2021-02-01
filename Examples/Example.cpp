@@ -1,7 +1,9 @@
 ﻿#include "Example.h"
+#include "Misc/MessageDialog.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Services/ImguiGlobalContextService.h"
+#include "Widgets/SImguiWidget.h"
 #include "Widgets/Docking/SDockTab.h"
 
 AImguiExampleActor::AImguiExampleActor()
@@ -11,34 +13,42 @@ AImguiExampleActor::AImguiExampleActor()
 
 void AImguiExampleActor::OpenImguiDemoGlobal()
 {
-	UImguiGlobalContextService::Get().AddGlobalWindow(TEXT("Dear ImGui Demo"), FDrawGlobalImgui::CreateLambda([]
-        {
-            bool IsOpen = true;
-            ImGui::ShowDemoWindow(&IsOpen);
-            return IsOpen;
-        }));
+	if (!bGlobalWndAdded)
+	{
+		bGlobalWndAdded = true;
+		UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([This=TWeakObjectPtr<AImguiExampleActor>(this)]
+	        {
+				AImguiExampleActor* Actor = This.Get();
+				if (!Actor) return false;
+	            ImGui::ShowDemoWindow(&Actor->bGlobalWndAdded);
+	            return Actor->bGlobalWndAdded;
+	        }));
+	}
 }
 
 void AImguiExampleActor::OpenImguiDemoDockGlobal()
 {
+	// Open Global Wnd
+	OpenImguiDemoGlobal();
+	
 	// create an global imgui widget
-	auto GlobalImguiWidget = SNew(SGlobalImguiWidget)
+	auto GlobalImguiWidget = SNew(SImguiRenderProxy)
     .HSizingRule(EImguiSizingRule::UESize)
     .VSizingRule(EImguiSizingRule::UESize)
-    .WndName(TEXT("Dear ImGui Demo"))
-    .OnDraw(FOnImguiDraw::CreateLambda([]
-    {
-        ImGui::ShowDemoWindow();
-    }));
+    .ProxyWndName("Dear ImGui Demo");
 
+	// register render proxy
+	UEImGui::AddRenderProxy(GlobalImguiWidget, this);
+	
 	// create a dock tab 
 	TSharedPtr<SDockTab> NewTab = SNew(SDockTab)
     .Label(FText::FromString(TEXT("Dear ImGui Demo")))
     .TabRole(ETabRole::NomadTab)
-    [
+	.OnTabClosed_Lambda([This=TWeakObjectPtr<AImguiExampleActor>(this)](TSharedRef<SDockTab>){ if (This.IsValid()) This->bGlobalWndAdded = false; })
+	[
 		GlobalImguiWidget
     ];
-
+ 
 	// register dock tab  	
 	static FName PlaceholderId(TEXT("StandaloneToolkit"));
 	static TSharedPtr<FTabManager::FSearchPreference> SearchPreference = MakeShareable(new FTabManager::FRequireClosedTab());
@@ -47,28 +57,13 @@ void AImguiExampleActor::OpenImguiDemoDockGlobal()
 
 void AImguiExampleActor::OpenImguiDemoStandAlone()
 {
-	// create an stand alone imgui widget
-	auto ImguiWidget = SNew(SImguiWidget)
-	.OnDraw(FOnImguiDraw::CreateLambda([]
-	{
-		ImGui::ShowDemoWindow();
-	}));
-
-	// create a window
-	auto NewWnd = SNew(SWindow)
-	.Title(FText::FromString(TEXT("StandAloneImguiWindow")))
-    .SizingRule(ESizingRule::UserSized)
-	[
-		ImguiWidget
-	];
-
-	// open window
-	FSlateApplication::Get().AddWindow(NewWnd);
+	// InProgress  
 }
 
 void AImguiExampleActor::OnGUI()
 {
 	ImGui::BeginDetail();
+
 	ImGui::Columns(2);
 
 	// simple functional 
@@ -102,24 +97,36 @@ void AImguiExampleActor::OnGUI()
 	ImGui::NextColumn();
 
 	// stand alone context 
-	ImGui::AlignTextToFramePadding();
-	ImGui::Text("Stand alone context: ");
-	ImGui::NextColumn();
-	if (ImGui::Button("Open Demo Window"))
-	{
-		OpenImguiDemoStandAlone();
-	}
-	ImGui::NextColumn();
+	// ImGui::AlignTextToFramePadding();
+	// ImGui::Text("Stand alone context: ");
+	// ImGui::NextColumn();
+	// if (ImGui::Button("Open Demo Window"))
+	// {
+	// 	OpenImguiDemoStandAlone();
+	// }
+	// ImGui::NextColumn();
 
 	// resume 
 	ImGui::Columns(1);
 
-	// use input system 
-	static char buf[1024];
-	ImGui::UseInputSystem("WDNMD");
-	ImGui::InputText("WDNMD", buf, 1024);
+	// enum 
+	ImGui::UEEnum("EnumExample" ,&EnumValue);
 
-	ImGui::EndDetail();
+	// struct
+	if (ImGui::Button("Open Struct Detail"))
+	{
+		UEImGui::AddGlobalWindow(FDrawGlobalImgui::CreateLambda([this]()
+		{
+			bool bOpen = true;
+			ImGui::SetNextWindowSize(ImVec2(600,800), ImGuiCond_Appearing);
+			ImGui::Begin("Example Struct Detail", &bOpen);
+			ImGui::UEStruct(&StructValue);
+			ImGui::End();
+			return bOpen;
+		}));
+	}
+
+	ImGui::End();
 }
 
 void UImguiDetailCustomizationExample::OnEditSingleObject(UObject* InObject)

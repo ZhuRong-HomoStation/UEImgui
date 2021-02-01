@@ -108,6 +108,7 @@ protected:
 	// ~End SWidget API
 
 	// ~Begin IImguiViewport API
+	virtual void SetupContext(UImguiContext* InCtx) override { SetContext(InCtx); }
 	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd.Pin(); }
 	virtual void Show(TSharedPtr<SWindow> InParent) override { }
 	virtual bool IsPersist() override { return true; }

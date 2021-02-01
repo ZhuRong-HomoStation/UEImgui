@@ -170,11 +170,8 @@ void SImguiRenderProxy::Tick(const FGeometry& AllottedGeometry, const double InC
 	ImGuiWindow* Wnd = (ImGuiWindow*)Ctx->WindowsById.GetVoidPtr(PersistWndID);
 	if (!Wnd) return;
 
-	// get size
-	FVector2D Size = AllottedGeometry.GetAbsoluteSize();
-	FVector2D Pos = AllottedGeometry.GetAbsolutePosition();
-	
 	// update imgui wnd size
+	FVector2D Size = AllottedGeometry.GetAbsoluteSize();
 	if (HSizingRule == EImguiSizingRule::UESize)
 	{
 		Wnd->Size.x = Size.X;
@@ -185,6 +182,7 @@ void SImguiRenderProxy::Tick(const FGeometry& AllottedGeometry, const double InC
 	}
 
 	// update imgui pos
+	FVector2D Pos = AllottedGeometry.GetAbsolutePosition();
 	if (bAutoSetWidgetPos)
 	{
 		Wnd->Pos = *(ImVec2*)&Pos;
@@ -265,6 +263,7 @@ FReply SImguiRenderProxy::OnFocusReceived(const FGeometry& MyGeometry, const FFo
 FCursorReply SImguiRenderProxy::OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const
 {
 	Super::OnCursorQuery(MyGeometry, CursorEvent);
+	if (!Adapter) return FCursorReply::Cursor(EMouseCursor::Default);
 	return Adapter->OnCursorQuery(CursorEvent);
 }
 
