@@ -14,9 +14,6 @@ public:
 		// register shader dictionary 
 		FString ShaderDir = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("UEImgui"))->GetBaseDir(),TEXT("Shaders"));
 		AddShaderSourceDirectoryMapping(TEXT("/Plugin/UEImgui"), ShaderDir);
-
-		// init call 
-		UEImGui::TimeToDraw();
 	}
 	virtual void ShutdownModule() override
 	{

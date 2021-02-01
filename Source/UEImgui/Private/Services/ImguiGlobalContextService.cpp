@@ -20,10 +20,15 @@ class FEditorGlobalContextGuard
 public:
     FEditorGlobalContextGuard()
     {
-    	FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    	FCoreDelegates::OnPostEngineInit.AddLambda([this]
+    	{
+    		FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    	});
     }
 	void Tick(float DeltaTime)
-	{		
+	{
+		if (!GEngine->IsInitialized()) return;
+    	
 		// create imgui context 
 		if (!Context)
 		{
@@ -121,11 +126,13 @@ public:
 	UImguiContext* Context = nullptr;
 	UImguiInputAdapterDeferred* InputAdapter = nullptr;
 };
+
+static FEditorGlobalContextGuard Ins;
 static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
 {
-	static FEditorGlobalContextGuard Ins;
 	return &Ins;
 }
+
 #undef protected
 #undef private 
 #endif
