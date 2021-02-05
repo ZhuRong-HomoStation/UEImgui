@@ -66,7 +66,8 @@ protected:
 		bool bParentEnabled) const override;
 	// ~Begin SWidget API
 
-	// ~Begin IImguiViewport API
+	// ~Begin IImguiViewport API 
+	virtual void SetupContext(UImguiContext* InCtx) override { SetContext(InCtx); }
 	virtual TSharedPtr<SWindow> GetWindow() override { return StaticCastSharedRef<SWindow>(AsShared()); }
 	virtual void Show(TSharedPtr<SWindow> InParent) override;
 	virtual void Update() override;

@@ -14,6 +14,7 @@ public class UEImguiEditor : ModuleRules
 			{
 				"Core",
 				"Imgui",
+				"UEImgui",
 				"ImPlot",
 			});
 			
@@ -27,10 +28,8 @@ public class UEImguiEditor : ModuleRules
 				"Slate",
 				"SlateCore",
 				"LevelEditor",
-				"UEImgui",
 				"EditorSubsystem",
 				"UnrealEd",
-				"Imgui",
 				"ImPlot",
 			});
 	}

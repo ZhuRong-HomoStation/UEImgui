@@ -1,12 +1,13 @@
 #include "Interfaces/IPluginManager.h"
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "Services/ImguiGlobalContextService.h"
 
 #define LOCTEXT_NAMESPACE "FUEImguiModule"
 
 class UEIMGUI_API FUEImguiModule : public IModuleInterface
 {
-	public:
+public:
 	// ~Begin IModuleInterface API 
 	virtual void StartupModule() override
 	{

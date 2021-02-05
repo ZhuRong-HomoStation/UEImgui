@@ -1,6 +1,7 @@
 #include "Services/ImguiGlobalContextService.h"
 #include "ImguiPerInstanceCtx.h"
 #include "imgui_internal.h"
+#include "Logging.h"
 #include "ImguiWrap/ImguiContext.h"
 #include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
@@ -20,10 +21,15 @@ class FEditorGlobalContextGuard
 public:
     FEditorGlobalContextGuard()
     {
-    	FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    	FCoreDelegates::OnPostEngineInit.AddLambda([this]
+    	{
+    		FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    	});
     }
 	void Tick(float DeltaTime)
-	{		
+	{
+		if (!GEngine->IsInitialized()) return;
+    	
 		// create imgui context 
 		if (!Context)
 		{
@@ -121,11 +127,13 @@ public:
 	UImguiContext* Context = nullptr;
 	UImguiInputAdapterDeferred* InputAdapter = nullptr;
 };
+
+static FEditorGlobalContextGuard Ins;
 static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
 {
-	static FEditorGlobalContextGuard Ins;
 	return &Ins;
 }
+
 #undef protected
 #undef private 
 #endif
@@ -180,28 +188,45 @@ UImguiInputAdapter* UEImGui::GetGlobalInputAdapter(UObject* WorldContextObject)
 
 int32 UEImGui::AddGlobalWindow(const FDrawGlobalImgui& InGlobalContext, UObject* WorldContextObject)
 {
-	check(TimeToDraw(WorldContextObject));
+	if (!TimeToDraw())
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, AddGlobalWindow failed!!!"));
+		return INDEX_NONE;
+	}
+		
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	return Ctx->AddGlobalWindow(InGlobalContext);
 }
 
 void UEImGui::RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject)
 {
-	check(TimeToDraw(WorldContextObject));
+	if (!TimeToDraw() || InIndex == INDEX_NONE)
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, RemoveGlobalWindow failed!!!"));
+		return;
+	}		
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveGlobalWindow(InIndex);
 }
 
 void UEImGui::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
-	check(TimeToDraw(WorldContextObject));
+	if (!TimeToDraw())
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, AddRenderProxy failed!!!"));
+		return;
+	}
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->AddRenderProxy(InRenderProxy);
 }
 
 void UEImGui::RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
-	check(TimeToDraw(WorldContextObject));
+	if (!TimeToDraw())
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, RemoveRenderProxy failed!!!"));
+		return;
+	}
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveRenderProxy(InRenderProxy);
 }

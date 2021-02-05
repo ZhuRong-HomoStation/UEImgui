@@ -3,6 +3,7 @@
 #include "imgui.h"
 
 class UImguiInputAdapter;
+class UImguiContext;
 
 /**
  * @brief Imgui viewport you can inherit it to customize your render proxy 
@@ -11,6 +12,9 @@ struct IImguiViewport
 {
 	virtual ~IImguiViewport() {}
 
+	// setup context
+	virtual void SetupContext(UImguiContext* InCtx) = 0;
+	
 	// get the window that the viewport belong to 
 	virtual TSharedPtr<SWindow> GetWindow() = 0;
 

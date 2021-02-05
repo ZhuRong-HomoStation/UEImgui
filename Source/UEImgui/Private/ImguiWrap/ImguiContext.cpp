@@ -134,6 +134,8 @@ bool UImguiContext::EnableNoAutoMergeViewport()
 void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)
 {
 	check(InRenderProxy.IsValid() && InRenderProxy.Pin()->IsPersist());
+	InRenderProxy.Pin()->SetupContext(this);
+	InRenderProxy.Pin()->SetupInputAdapter(DefaultAdapter);
 	AllRenderProxy.Add(InRenderProxy);
 }
 
