@@ -25,7 +25,23 @@ public:
     	{
     		FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
     	});
+
+    	FCoreDelegates::OnEnginePreExit.AddLambda([this]
+    	{
+    		SaveLayout();
+    	});
     }
+
+	void SaveLayout()
+    {
+	    // save layout 
+        FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
+        auto OldContext = ImGui::GetCurrentContext();
+        Context->ApplyContext();
+        ImGui::SaveIniSettingsToDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
+        ImGui::SetCurrentContext(OldContext);
+    }
+
 	void Tick(float DeltaTime)
 	{
 		if (!GEngine->IsInitialized()) return;
@@ -44,6 +60,7 @@ public:
 			
 			// setup default adapter
 			Context->SetDefaultInputAdapter(InputAdapter);
+			
 			return;
 		}
 
@@ -95,6 +112,13 @@ public:
 			// set viewport manually 
 			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
 
+			// load layout  
+			FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
+			auto OldContext = ImGui::GetCurrentContext();
+			Context->ApplyContext();
+			ImGui::LoadIniSettingsFromDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
+			ImGui::SetCurrentContext(OldContext);
+			
 			return;
 		}
 
@@ -122,6 +146,15 @@ public:
 
 		// update viewport 
 		Context->UpdateViewport(InputAdapter);
+
+    	// save layout
+    	static float AccumulateTime = 0.f;
+    	AccumulateTime += DeltaTime;
+    	if (AccumulateTime >= 30.f)
+    	{
+    		SaveLayout();
+    		AccumulateTime -= 30.f;
+    	}
 	}
 	
 	UImguiContext* Context = nullptr;
