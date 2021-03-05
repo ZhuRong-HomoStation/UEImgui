@@ -2,6 +2,7 @@
 #include "ImguiPerInstanceCtx.h"
 #include "imgui_internal.h"
 #include "Logging.h"
+#include "Config/ImguiConfig.h"
 #include "ImguiWrap/ImguiContext.h"
 #include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
@@ -28,7 +29,10 @@ public:
 
     	FCoreDelegates::OnEnginePreExit.AddLambda([this]
     	{
-    		SaveLayout();
+    		if (UImguiConfig::Get()->bSaveLayout)
+    		{
+    			SaveLayout();
+    		}
     	});
     }
 
@@ -112,12 +116,15 @@ public:
 			// set viewport manually 
 			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
 
-			// load layout  
-			FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
-			auto OldContext = ImGui::GetCurrentContext();
-			Context->ApplyContext();
-			ImGui::LoadIniSettingsFromDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
-			ImGui::SetCurrentContext(OldContext);
+			// load layout
+			if (UImguiConfig::Get()->bSaveLayout)
+			{
+				FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
+				auto OldContext = ImGui::GetCurrentContext();
+				Context->ApplyContext();
+				ImGui::LoadIniSettingsFromDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
+				ImGui::SetCurrentContext(OldContext);
+			}
 			
 			return;
 		}
@@ -148,12 +155,15 @@ public:
 		Context->UpdateViewport(InputAdapter);
 
     	// save layout
-    	static float AccumulateTime = 0.f;
-    	AccumulateTime += DeltaTime;
-    	if (AccumulateTime >= 30.f)
+    	if (UImguiConfig::Get()->bSaveLayout)
     	{
-    		SaveLayout();
-    		AccumulateTime -= 30.f;
+    		static float AccumulateTime = 0.f;
+    		AccumulateTime += DeltaTime;
+    		if (AccumulateTime >= 30.f)
+    		{
+    			SaveLayout();
+    			AccumulateTime -= 30.f;
+    		}
     	}
 	}
 	
