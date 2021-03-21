@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Rendering/RenderingCommon.h"
 #include "imgui.h"
+#include "RHIResources.h"
 
 class FImguiDrawer : public ICustomSlateElement
 {
