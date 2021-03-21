@@ -236,7 +236,6 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	// get shader
 	TShaderMapRef<FImguiShaderVs> Vs(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	TShaderMapRef<FImguiShaderPs> Ps(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
-	TShaderMapRef<FImguiShaderPsNoTex> PsNoTex(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 
 	// setup PSO
 	FGraphicsPipelineStateInitializer PSOInitializer;
@@ -248,26 +247,16 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 	PSOInitializer.BlendState = TStaticBlendState<CW_RGBA, BO_Add, BF_SourceAlpha, BF_InverseSourceAlpha>::GetRHI();
 	PSOInitializer.RasterizerState = TStaticRasterizerState<>::GetRHI();
 	PSOInitializer.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
-	FGraphicsPipelineStateInitializer PSOInitializerNoTex;
-	RHICmdList.ApplyCachedRenderTargets(PSOInitializerNoTex);
-	PSOInitializerNoTex.BoundShaderState.VertexDeclarationRHI = _GetMeshDeclaration();
-	PSOInitializerNoTex.BoundShaderState.VertexShaderRHI = Vs.GetVertexShader();
-	PSOInitializerNoTex.BoundShaderState.PixelShaderRHI = PsNoTex.GetPixelShader();
-	PSOInitializerNoTex.PrimitiveType = PT_TriangleList;
-	PSOInitializerNoTex.BlendState = TStaticBlendState<CW_RGBA, BO_Add, BF_SourceAlpha, BF_InverseSourceAlpha>::GetRHI();
-	PSOInitializerNoTex.RasterizerState = TStaticRasterizerState<>::GetRHI();
-	PSOInitializerNoTex.DepthStencilState = TStaticDepthStencilState<false, CF_Always, false, CF_Always>::GetRHI();
 
 	// init pso 
+	SetGraphicsPipelineState(RHICmdList, PSOInitializer);
+
+	// init texture 
 	FRHITexture2D* CurTexture = _GetTextureFromID(AllDrawElements[0].TextureID);
+	Ps->SetHasTexture(RHICmdList, Ps.GetPixelShader(), CurTexture != nullptr);
+	if (CurTexture)
 	{
-		SetGraphicsPipelineState(
-			RHICmdList,
-			CurTexture ? PSOInitializer : PSOInitializerNoTex);
-		if (CurTexture)
-		{
-			Ps->SetParameters(RHICmdList, Ps.GetPixelShader(), CurTexture);
-		}
+		Ps->SetParameters(RHICmdList, Ps.GetPixelShader(), CurTexture);
 	}
 	
 	// setup transform
@@ -294,14 +283,9 @@ void FImguiDrawer::DrawRenderThread(FRHICommandListImmediate& RHICmdList, const 
 		// change texture 
 		if (NewTexture != CurTexture)
 		{
-			// change PSO
-			if ((CurTexture == NULL) != (NewTexture == NULL))
-			{
-				SetGraphicsPipelineState(
-					RHICmdList,
-					NewTexture ? PSOInitializer : PSOInitializerNoTex);
-			}
-
+			// setup texture state
+			Ps->SetHasTexture(RHICmdList, Ps.GetPixelShader(), NewTexture != nullptr);
+			
 			// change texture
 			if (NewTexture) Ps->SetParameters(RHICmdList, Ps.GetPixelShader(), NewTexture);
 
