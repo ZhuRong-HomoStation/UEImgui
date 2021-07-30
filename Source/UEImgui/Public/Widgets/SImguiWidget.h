@@ -129,6 +129,7 @@ protected:
 	virtual void SetAlpha(float InAlpha) override { }
 	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
+	virtual float GetDpiScale() override;
 	// ~End IImguiViewport API
 private:
 	EVisibility _GetVisibility() const;

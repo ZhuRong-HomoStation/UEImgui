@@ -58,7 +58,7 @@ struct IImguiViewport
 	virtual void SetAlpha(float InAlpha) = 0;
 
 	// get viewport DPI Scale, in Unreal, we always return 1
-	virtual float GetDpiScale() { return 1.f; }
+	virtual float GetDpiScale() = 0;
 
 	// notify viewport changed, general, we needn't process it 
 	virtual void OnChangeViewport() {}

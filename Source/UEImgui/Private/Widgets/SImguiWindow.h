@@ -82,6 +82,7 @@ protected:
 	virtual void SetAlpha(float InAlpha) override;
 	virtual void SetupViewport(ImGuiViewport* InViewport) override;
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override;
+	virtual float GetDpiScale() override;
 	// ~End IImguiViewport API 
 private:
 	ImGuiViewport*						BoundViewport;

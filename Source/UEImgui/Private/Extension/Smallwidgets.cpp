@@ -293,7 +293,7 @@ bool ImGui::SelectableInput(const char* str_id, bool selected, ImGuiSelectableFl
 	{
 		ImVec2 pos_after = window->DC.CursorPos;
 		window->DC.CursorPos = pos_before;
-		ret = TempInputText(window->DC.LastItemRect, id, "##Input", buf, (int)buf_size, ImGuiInputTextFlags_None);
+		ret = TempInputText(g.LastItemData.Rect, id, "##Input", buf, (int)buf_size, ImGuiInputTextFlags_None);
 		window->DC.CursorPos = pos_after;
 	}
 	else
@@ -341,7 +341,7 @@ bool ImGui::SpinScaler(const char* label, ImGuiDataType data_type, void* data_pt
 		style.FramePadding.x = style.FramePadding.y;
 		ImGuiButtonFlags button_flags = ImGuiButtonFlags_Repeat | ImGuiButtonFlags_DontClosePopups;
 		if (flags & ImGuiInputTextFlags_ReadOnly)
-			button_flags |= ImGuiButtonFlags_Disabled;
+			button_flags |= ImGuiItemFlags_Disabled;
 		SameLine(0, style.ItemInnerSpacing.x);
 
 // start diffs
@@ -392,7 +392,7 @@ bool ImGui::SpinScaler(const char* label, ImGuiDataType data_type, void* data_pt
 			value_changed = DataTypeApplyOpFromText(buf, g.InputTextState.InitialTextA.Data, data_type, data_ptr, format);
 	}
 	if (value_changed)
-		MarkItemEdited(window->DC.LastItemId);
+		MarkItemEdited(g.LastItemData.ID);
 
 	return value_changed;
 }

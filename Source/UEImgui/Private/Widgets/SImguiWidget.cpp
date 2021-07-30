@@ -228,6 +228,12 @@ FVector2D SImguiRenderProxy::ComputeDesiredSize(float) const
 	return NewDesiredSize;
 }
 
+float SImguiRenderProxy::GetDpiScale()
+{
+	return CachedWnd.IsValid() ? CachedWnd.Pin()->GetDPIScaleFactor() : 1.0f;
+	return 1.0f;
+}
+
 EVisibility SImguiRenderProxy::_GetVisibility() const
 {
 	return Context && Context->GetIO() && Context->GetIO()->WantCaptureMouse ? EVisibility::Visible : EVisibility::SelfHitTestInvisible;

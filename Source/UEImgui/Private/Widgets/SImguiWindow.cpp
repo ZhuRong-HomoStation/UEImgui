@@ -267,3 +267,9 @@ void SImguiWindow::SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter)
 {
 	SetAdapter(ImguiInputAdapter);
 }
+
+float SImguiWindow::GetDpiScale()
+{
+	return GetDPIScaleFactor();
+	return 1.0f;
+}

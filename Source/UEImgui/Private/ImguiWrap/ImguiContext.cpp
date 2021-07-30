@@ -332,6 +332,7 @@ void UImguiContext::_SetWindowAlpha(ImGuiViewport* viewport, float alpha)
 
 float UImguiContext::_GetWindowDpiScale(ImGuiViewport* viewport)
 {
+	UE_LOG(LogTemp, Display, TEXT("DPI: %f"), _SafeFindViewport(viewport)->GetDpiScale());
 	return _SafeFindViewport(viewport)->GetDpiScale();
 }
 
