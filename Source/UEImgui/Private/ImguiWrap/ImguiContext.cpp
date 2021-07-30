@@ -121,6 +121,28 @@ bool UImguiContext::EnableViewport()
 	return GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
 }
 
+void UImguiContext::EnableDPIScale(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DpiEnableScaleFonts;
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DpiEnableScaleViewports;
+		}
+	}
+}
+
+bool UImguiContext::EnableDPIScale()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts;
+}
+
 void UImguiContext::EnableNoAutoMergeViewport(bool bInIsEnable)
 {
 	GetIO()->ConfigViewportsNoAutoMerge = bInIsEnable;

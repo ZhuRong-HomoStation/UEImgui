@@ -71,6 +71,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		GlobalContext->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 		GlobalContext->EnableDocking(true);
 		GlobalContext->EnableViewport(true);
+		GlobalContext->EnableDPIScale(true);
 		GlobalContext->EnableNoAutoMergeViewport(true);
 
 		// set viewport manually 

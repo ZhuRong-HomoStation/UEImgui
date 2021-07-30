@@ -111,6 +111,7 @@ public:
 			// enable docking and viewport 
 			Context->EnableDocking(true);
 			Context->EnableViewport(true);
+			Context->EnableDPIScale(true);
 			Context->EnableNoAutoMergeViewport(true);
 			
 			// set viewport manually 

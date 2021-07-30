@@ -29,6 +29,8 @@ public:
 	bool EnableDocking();
 	void EnableViewport(bool bInEnable);
 	bool EnableViewport();
+	void EnableDPIScale(bool bInEnable);
+	bool EnableDPIScale();
 	void EnableNoAutoMergeViewport(bool bInIsEnable);
 	bool EnableNoAutoMergeViewport();
 	
