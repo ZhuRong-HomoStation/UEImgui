@@ -3,6 +3,7 @@
 Texture2D		InTexture;
 SamplerState	InTextureSampler;
 float4x4		InTransform;
+int				InHasTexture;
 
 struct InputVS
 {
@@ -38,16 +39,14 @@ OutputPS ImguiShader_PS(OutputVS In)
 {
 	OutputPS Out;
 
-	Out.Color = In.Color * InTexture.Sample(InTextureSampler, In.UV);
-	
-	return Out;
-}
-
-OutputPS ImguiShader_PSNoTex(OutputVS In)
-{
-	OutputPS Out;
-
-	Out.Color = In.Color;
+	if (InHasTexture)
+	{
+		Out.Color = In.Color * InTexture.Sample(InTextureSampler, In.UV);
+	}
+	else
+	{
+		Out.Color = In.Color;		
+	}
 	
 	return Out;
 }

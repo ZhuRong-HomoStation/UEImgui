@@ -121,6 +121,28 @@ bool UImguiContext::EnableViewport()
 	return GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
 }
 
+void UImguiContext::EnableDPIScale(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DpiEnableScaleFonts;
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DpiEnableScaleViewports;
+		}
+	}
+}
+
+bool UImguiContext::EnableDPIScale()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts;
+}
+
 void UImguiContext::EnableNoAutoMergeViewport(bool bInIsEnable)
 {
 	GetIO()->ConfigViewportsNoAutoMerge = bInIsEnable;
@@ -397,6 +419,25 @@ void UImguiContext::_SetupImguiContext()
 	// setup monitor
 	FDisplayMetrics DisplayMetrics;
 	FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
+	
+	// no monitor when rdp
+	if (FPlatformMisc::IsRemoteSession())
+	{
+		ImGuiPlatformMonitor Monitor;
+		Monitor.DpiScale = 1.f;
+		
+		Monitor.MainPos.x = DisplayMetrics.VirtualDisplayRect.Left;
+		Monitor.MainPos.y = DisplayMetrics.VirtualDisplayRect.Top;
+		Monitor.MainSize.x = DisplayMetrics.VirtualDisplayRect.Right - DisplayMetrics.VirtualDisplayRect.Left;
+		Monitor.MainSize.y = DisplayMetrics.VirtualDisplayRect.Bottom - DisplayMetrics.VirtualDisplayRect.Top;
+
+		Monitor.WorkPos.x = DisplayMetrics.PrimaryDisplayWorkAreaRect.Left;
+		Monitor.WorkPos.y = DisplayMetrics.PrimaryDisplayWorkAreaRect.Top;
+		Monitor.WorkSize.x = DisplayMetrics.PrimaryDisplayWorkAreaRect.Right - DisplayMetrics.PrimaryDisplayWorkAreaRect.Left;
+		Monitor.WorkSize.y = DisplayMetrics.PrimaryDisplayWorkAreaRect.Bottom - DisplayMetrics.PrimaryDisplayWorkAreaRect.Top;
+		Context->PlatformIO.Monitors.push_back(Monitor);
+	}
+	
 	for (FMonitorInfo& Info : DisplayMetrics.MonitorInfo)
 	{
 		ImGuiPlatformMonitor Monitor;

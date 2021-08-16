@@ -28,7 +28,8 @@ void UImguiPerInstanceCtx::Deinitialize()
 	if (InputAdapter)
 	{
 		// remove adapter 
-		FImguiGlobalInputHook::Get()->RemoveAdapter(InputAdapter);
+		if (auto ImguiGlobalInputHook = FImguiGlobalInputHook::Get())
+			ImguiGlobalInputHook->RemoveAdapter(InputAdapter);
 		InputAdapter = nullptr;
 	}
 	
@@ -71,6 +72,7 @@ void UImguiPerInstanceCtx::Tick(float DeltaTime)
 		GlobalContext->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 		GlobalContext->EnableDocking(true);
 		GlobalContext->EnableViewport(true);
+		GlobalContext->EnableDPIScale(true);
 		GlobalContext->EnableNoAutoMergeViewport(true);
 
 		// set viewport manually 

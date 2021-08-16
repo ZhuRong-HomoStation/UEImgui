@@ -11,7 +11,7 @@ bool FUEImguiDetail::MakeDetail(UScriptStruct* InStruct, void* InValue)
 {
 	bool bHasChanged = false;
 	++DetailDepth;
-	if (ImGui::BeginTable("ImGuiDetail", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingPolicyStretch))
+	if (ImGui::BeginTable("ImGuiDetail", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchSame))
 	{
 		for (TFieldIterator<FProperty> It(InStruct); It; ++It)
 		{

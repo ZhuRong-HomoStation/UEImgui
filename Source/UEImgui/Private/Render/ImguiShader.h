@@ -49,6 +49,7 @@ public:
 	{
 		InTexture.Bind(Initializer.ParameterMap, TEXT("InTexture"));
 		InTextureSampler.Bind(Initializer.ParameterMap, TEXT("InTextureSampler"));
+		InHasTexture.Bind(Initializer.ParameterMap, TEXT("InHasTexture"));
 	}
 	
 	static bool ShouldCompilePermutation(
@@ -69,32 +70,15 @@ public:
 		SetTextureParameter(RHICmdList, ShaderRHI, InTexture, SourceTexture);
 		RHICmdList.SetShaderSampler(ShaderRHI, InTextureSampler.GetBaseIndex(), TStaticSamplerState<SF_Bilinear, AM_Wrap, AM_Wrap, AM_Wrap>::GetRHI());
 	}
+
+	template<typename TShaderRHIParamRef>
+    void SetHasTexture(FRHICommandListImmediate& RHICmdList, const TShaderRHIParamRef ShaderRHI, bool bHasTexture)
+	{
+		SetShaderValue(RHICmdList, ShaderRHI, InHasTexture, int(bHasTexture));
+	}
+
 private:
 	LAYOUT_FIELD(FShaderResourceParameter, InTexture)
 	LAYOUT_FIELD(FShaderResourceParameter, InTextureSampler)
-};
-
-class FImguiShaderPsNoTex : public FGlobalShader
-{
-	DECLARE_SHADER_TYPE(FImguiShaderPsNoTex, Global)
-public:
-	FImguiShaderPsNoTex()
-	{ }
-
-	FImguiShaderPsNoTex(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
-        : FGlobalShader(Initializer)
-	{
-	}
-	
-	static bool ShouldCompilePermutation(
-        const FGlobalShaderPermutationParameters& Parameters)
-	{
-		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
-	}
-	static void ModifyCompilationEnvironment(
-        const FGlobalShaderPermutationParameters& Parameters,
-        FShaderCompilerEnvironment& OutEnvironment)
-	{
-		FGlobalShader::ModifyCompilationEnvironment(Parameters,OutEnvironment);
-	}
+	LAYOUT_FIELD(FShaderParameter, InHasTexture);
 };

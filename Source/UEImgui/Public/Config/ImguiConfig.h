@@ -123,4 +123,8 @@ public:
 	// Font 
 	UPROPERTY(EditAnywhere, Config)
 	FString					FontPath;
+
+	// Save layout
+	UPROPERTY(EditAnywhere, Config)
+	bool					bSaveLayout = true;
 };

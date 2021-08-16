@@ -16,16 +16,20 @@ DECLARE_DELEGATE(FOnImguiDraw);
  */
 enum class EImguiSizingRule
 {
-	// Desired size is zero, and we won't control imgui wnd size 
+	// en. Desired size is zero, and we won't control imgui wnd size
+	// ch. Desired size 是0(不占用空间), 并且我们不会改变Imgui window的大小
 	NoSizing ,
 
-	// Desired size is zero, and we use UE Widget size as imgui wnd size 
+	// en. Desired size is zero, and we use UE Widget size as imgui wnd size
+	// ch. Desired size 是0(不占用空间), 并且我们会根据控件的大小来决定Imgui window的大小
 	UESize ,
 
-	// Desired is imgui wnd size
+	// en. Desired is imgui wnd size
+	// ch. Desired size 是imgui window的大小
 	ImSize ,
 
-	// Desired is imgui size, and we will use wnd content size
+	// en. Desired is imgui size, and we will use wnd content size
+	// ch. Desired size 是Imgui window内容的大小, 同时我们也会更新imgui window的大小以适应内容
 	ImContentSize ,
 };
 
@@ -125,6 +129,7 @@ protected:
 	virtual void SetAlpha(float InAlpha) override { }
 	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
+	virtual float GetDpiScale() override;
 	// ~End IImguiViewport API
 private:
 	EVisibility _GetVisibility() const;
