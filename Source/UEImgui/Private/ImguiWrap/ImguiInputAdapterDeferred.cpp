@@ -2,6 +2,19 @@
 #include "imgui_internal.h"
 #include "ImguiWrap/ImguiContext.h"
 
+UImguiInputAdapterDeferred::UImguiInputAdapterDeferred(const FObjectInitializer& InInitializer)
+	: Super(InInitializer)
+	, KeyCtrl(false)
+	, KeyShift(false)
+	, KeyAlt(false)
+	, MouseWheel(false)
+	, MousePos(0, 0)
+	, Cursor(0)
+{
+	FMemory::Memzero(KeysDown, sizeof(KeysDown));
+	FMemory::Memzero(MouseDown, sizeof(MouseDown));
+}
+
 void UImguiInputAdapterDeferred::AddInputCharacter(TCHAR InChar)
 {
 	if (InChar != 0)

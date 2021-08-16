@@ -25,6 +25,9 @@ public:
 	UTexture*	Source;
 };
 
+/**
+ * @brief mange global imgui texture(for all context) 
+ */
 UCLASS()
 class UEIMGUI_API UImguiResourceManager : public UObject
 {

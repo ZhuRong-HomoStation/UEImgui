@@ -6,6 +6,7 @@
 #include "GenericPlatform/ITextInputMethodSystem.h"
 #include "ImguiWrap/ImguiResourceManager.h"
 #include "ImguiWrap/ImguiTextInputSystem.h"
+#include "Extension/UEImguiDetail.h"
 #include "Widgets/SImguiWidget.h"
 
 static void _HelpMarker(const char* desc)
@@ -21,9 +22,11 @@ static void _HelpMarker(const char* desc)
 	}
 }
 
+using ImPropertyDisplayFunction = bool(*)(FProperty*, void*);
+
 // detail
 FName CurrentDetail;
-TWeakPtr<SImguiWidgetRenderProxy> CurrentDetailWidget;
+TWeakPtr<SImguiRenderProxy> CurrentDetailWidget;
 
 void ImGui::StyleColorUE(ImGuiStyle* dst)
 {
@@ -34,7 +37,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_Text]                   = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	colors[ImGuiCol_WindowBg]               = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
-	colors[ImGuiCol_ChildBg]                = ImVec4(0.02f, 0.02f, 0.02f, 1.00f);
+	colors[ImGuiCol_ChildBg]				= ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
 	colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
 	colors[ImGuiCol_Border]                 = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
 	colors[ImGuiCol_BorderShadow]           = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -43,7 +46,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_FrameBgActive]          = ImVec4(0.56f, 0.56f, 0.56f, 1.00f);
 	colors[ImGuiCol_TitleBg]                = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
 	colors[ImGuiCol_TitleBgActive]          = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
-	colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+	colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.13f, 0.13f, 0.13f, 1.00f);
 	colors[ImGuiCol_MenuBarBg]              = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
 	colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
 	colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
@@ -81,7 +84,7 @@ void ImGui::StyleColorUE(ImGuiStyle* dst)
 	colors[ImGuiCol_ModalWindowDimBg]       = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	colors[ImGuiCol_DockingPreview]			= ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
 	colors[ImGuiCol_TabUnfocused]			= ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-	colors[ImGuiCol_TabUnfocused]			= ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+	colors[ImGuiCol_TabUnfocusedActive]		= ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 	
 	// other settings
 	CurStyle->ChildRounding = 0;
@@ -105,7 +108,7 @@ void ImGui::SetCurrentDetail(FName InDetailName)
 	CurrentDetail = InDetailName;
 }
 
-void ImGui::SetCurrentDetailWidget(TWeakPtr<SImguiWidgetRenderProxy> InDetailWidget)
+void ImGui::SetCurrentDetailWidget(TWeakPtr<SImguiRenderProxy> InDetailWidget)
 {
 	CurrentDetailWidget = InDetailWidget;
 }
@@ -203,6 +206,70 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
 	cb_user_data.ChainCallback = callback;
 	cb_user_data.ChainCallbackUserData = user_data;
 	return InputTextWithHint(label, hint, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
+}
+
+bool ImGui::UEColor(const char* InLabel, FColor* InColor, ImGuiColorEditFlags InFlags)
+{
+	FLinearColor Color(InColor->R / 255.0f, InColor->G / 255.0f, InColor->B / 255.0f, InColor->A / 255.0f);
+	bool bHasChanged = ImGui::ColorEdit4(InLabel, (float*)&Color, InFlags);
+	InColor->R = (uint8)Color.R * 255.f;
+	InColor->G = (uint8)Color.G * 255.f;
+	InColor->B = (uint8)Color.B * 255.f;
+	InColor->A = (uint8)Color.A * 255.f;
+	return bHasChanged;
+}
+
+bool ImGui::UEColor(const char* InLabel, FLinearColor* InColor, ImGuiColorEditFlags InFlags)
+{
+	return ImGui::ColorEdit4(InLabel, (float*)&InColor, InFlags);
+}
+
+bool ImGui::UEEnum(const char* InLabel, UEnum* InEnumClass, int64* EnumSource)
+{
+	static std::string ComboString;
+	
+	// build combo list 
+	if (ComboString.size() == 0)
+	{
+		int32 EnumNum = InEnumClass->NumEnums() - 1;
+		for (int32 i = 0; i < EnumNum; ++i)
+		{
+			FString Name = InEnumClass->GetDisplayNameTextByIndex(i).ToString();
+			ComboString += TCHAR_TO_UTF8(*Name);
+			ComboString += '\0';
+		}
+	}
+
+	int ComboIndex = InEnumClass->GetIndexByValue(*EnumSource);
+	bool bHasChanged = Combo(InLabel, &ComboIndex, ComboString.c_str());
+
+	*EnumSource = InEnumClass->GetValueByIndex(ComboIndex);
+	
+	return bHasChanged;
+}
+
+bool ImGui::UEStruct(UScriptStruct* InStruct, void* InValue)
+{
+	FUEImguiDetail& Maker = GlobalDetailMaker();
+	return Maker.MakeDetail(InStruct, InValue);
+}
+
+bool ImGui::UEObject(UClass* InClass, void* InValue)
+{
+	FUEImguiDetail& Maker = GlobalDetailMaker();
+	return Maker.MakeDetail(InClass, InValue);
+}
+
+bool ImGui::UEProperty(FProperty* InProperty, void* InContainer)
+{
+	FUEImguiDetail& Maker = GlobalDetailMaker();
+	return Maker.MakeDetail(InProperty, InContainer);
+}
+
+FUEImguiDetail& ImGui::GlobalDetailMaker()
+{
+	static FUEImguiDetail DetailMaker;
+	return DetailMaker;
 }
 
 bool ImGui::ShowUEStyleSelector(const char* Label)

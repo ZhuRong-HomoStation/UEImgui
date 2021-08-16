@@ -1,6 +1,8 @@
 #include "Services/ImguiGlobalContextService.h"
 #include "ImguiPerInstanceCtx.h"
 #include "imgui_internal.h"
+#include "Logging.h"
+#include "Config/ImguiConfig.h"
 #include "ImguiWrap/ImguiContext.h"
 #include "ImguiWrap/ImguiGlobalInputHook.h"
 #include "ImguiWrap/ImguiInputAdapter.h"
@@ -15,19 +17,38 @@
 #include "ILevelEditor.h"
 #include "ILevelViewport.h"
 #include "SEditorViewport.h"
-class FEditorGlobalContextGuard : public FTickableEditorObject
+class FEditorGlobalContextGuard
 {
 public:
     FEditorGlobalContextGuard()
     {
     	FCoreDelegates::OnPostEngineInit.AddLambda([this]
     	{
-    		if(FSlateApplication::IsInitialized())
+			if(FSlateApplication::IsInitialized())
     		{
     			FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+			}
+    	});
+
+    	FCoreDelegates::OnEnginePreExit.AddLambda([this]
+    	{
+    		if (UImguiConfig::Get()->bSaveLayout)
+    		{
+    			SaveLayout();
     		}
     	});
     }
+
+	void SaveLayout()
+    {
+	    // save layout 
+        FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
+        auto OldContext = ImGui::GetCurrentContext();
+        Context->ApplyContext();
+        ImGui::SaveIniSettingsToDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
+        ImGui::SetCurrentContext(OldContext);
+    }
+
 	void Tick(float DeltaTime)
 	{
 		if (!GEngine->IsInitialized()) return;
@@ -46,6 +67,7 @@ public:
 			
 			// setup default adapter
 			Context->SetDefaultInputAdapter(InputAdapter);
+			
 			return;
 		}
 
@@ -64,31 +86,50 @@ public:
 		{
 			// find viewport widget 
 			auto& AllViewportClients = GEditor->GetLevelViewportClients();
-			if (AllViewportClients.Num() == 0) return;
 			
 			// create proxy
-			TSharedPtr<SImguiWidgetRenderProxy> Proxy = SNew(SImguiWidgetRenderProxy)
+			TSharedPtr<SImguiRenderProxy> Proxy = SNew(SImguiRenderProxy)
             .InContext(Context)
             .InAdapter(InputAdapter)
             .HSizingRule(EImguiSizingRule::UESize)
             .VSizingRule(EImguiSizingRule::UESize)
-            .BlockInput(false);
+            .BlockInput(true)
+			.Visibility(EVisibility::HitTestInvisible);
 			
 			// add to viewport
-			for (FLevelEditorViewportClient* Client : AllViewportClients)
+			if (AllViewportClients.Num() != 0)
 			{
-				Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
-                [
-                    Proxy->AsShared()
-                ];
+				for (FLevelEditorViewportClient* Client : AllViewportClients)
+				{
+					Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
+	                [
+                		Proxy->AsShared()
+	                ];
+				}
 			}
 
 			// init context
 			Context->Init(Proxy, UImguiResourceManager::Get().GetDefaultFont());
 
+			// enable docking and viewport 
+			Context->EnableDocking(true);
+			Context->EnableViewport(true);
+			Context->EnableDPIScale(true);
+			Context->EnableNoAutoMergeViewport(true);
+			
 			// set viewport manually 
 			StaticCastSharedPtr<IImguiViewport>(Proxy)->SetupViewport(Context->GetContext()->Viewports[0]);
 
+			// load layout
+			if (UImguiConfig::Get()->bSaveLayout)
+			{
+				FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
+				auto OldContext = ImGui::GetCurrentContext();
+				Context->ApplyContext();
+				ImGui::LoadIniSettingsFromDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
+				ImGui::SetCurrentContext(OldContext);
+			}
+			
 			return;
 		}
 
@@ -106,7 +147,7 @@ public:
 		InputAdapter->SaveTempData();
 		
 		// begin frame
-		Context->NewFrame();
+		Context->NewFrame(DeltaTime);
 
 		// draw global
 		Context->DrawGlobal();
@@ -116,17 +157,30 @@ public:
 
 		// update viewport 
 		Context->UpdateViewport(InputAdapter);
+
+    	// save layout
+    	if (UImguiConfig::Get()->bSaveLayout)
+    	{
+    		static float AccumulateTime = 0.f;
+    		AccumulateTime += DeltaTime;
+    		if (AccumulateTime >= 30.f)
+    		{
+    			SaveLayout();
+    			AccumulateTime -= 30.f;
+    		}
+    	}
 	}
-	virtual TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FEditorGlobalContextGuard, STATGROUP_Tickables); }
 	
 	UImguiContext* Context = nullptr;
 	UImguiInputAdapterDeferred* InputAdapter = nullptr;
 };
+
+static FEditorGlobalContextGuard Ins;
 static FEditorGlobalContextGuard* EngineGlobalCtxGuard()
 {
-	static FEditorGlobalContextGuard Ins;
 	return &Ins;
 }
+
 #undef protected
 #undef private 
 #endif
@@ -181,28 +235,45 @@ UImguiInputAdapter* UEImGui::GetGlobalInputAdapter(UObject* WorldContextObject)
 
 int32 UEImGui::AddGlobalWindow(const FDrawGlobalImgui& InGlobalContext, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	if (!TimeToDraw())
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, AddGlobalWindow failed!!!"));
+		return INDEX_NONE;
+	}
+		
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	return Ctx->AddGlobalWindow(InGlobalContext);
 }
 
 void UEImGui::RemoveGlobalWindow(int32 InIndex, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	if (!TimeToDraw() || InIndex == INDEX_NONE)
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, RemoveGlobalWindow failed!!!"));
+		return;
+	}		
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveGlobalWindow(InIndex);
 }
 
 void UEImGui::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	if (!TimeToDraw())
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, AddRenderProxy failed!!!"));
+		return;
+	}
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->AddRenderProxy(InRenderProxy);
 }
 
 void UEImGui::RemoveRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy, UObject* WorldContextObject)
 {
-	check(TimeToDraw());
+	if (!TimeToDraw())
+	{
+		UE_LOG(LogUEImgui, Error, TEXT("ImGui context invalid, RemoveRenderProxy failed!!!"));
+		return;
+	}
 	UImguiContext* Ctx = GetGlobalContext(WorldContextObject);
 	Ctx->RemoveRenderProxy(InRenderProxy);
 }

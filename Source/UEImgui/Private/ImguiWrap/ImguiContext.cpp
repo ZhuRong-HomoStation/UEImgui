@@ -15,7 +15,7 @@ void UImguiContext::BeginDestroy()
 	ShutDown();
 }
 
-void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas, bool bEnableDocking)
+void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas)
 {
 	// create context 
 	Context = ImGui::CreateContext(InDefaultFontAtlas);
@@ -27,7 +27,7 @@ void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas*
 	}
 
 	// set up context 
-	_SetupImguiContext(bEnableDocking);
+	_SetupImguiContext();
 
 	// set up key map 
 	UImguiInputAdapter::CopyUnrealKeyMap(GetIO());
@@ -65,6 +65,15 @@ void UImguiContext::ShutDown()
 	// clean reference
 	Context = nullptr;
 
+	// clean dispatched viewport
+	for (TSharedPtr<IImguiViewport>& Viewport : AllDispatchedViewport)
+	{
+		if (FSlateApplication::IsInitialized())
+		{
+			FSlateApplicationBase::Get().RequestDestroyWindow(StaticCastSharedPtr<SImguiWindow>(Viewport).ToSharedRef());
+		}
+	}
+
 	MainViewPort.Reset();
 	AllDrawCallBack.Reset();
 	AllRenderProxy.Reset();
@@ -72,9 +81,83 @@ void UImguiContext::ShutDown()
 	ImViewportToUE.Reset();
 }
 
+void UImguiContext::EnableDocking(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DockingEnable;
+		}
+	}
+}
+
+bool UImguiContext::EnableDocking()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_DockingEnable;
+}
+
+void UImguiContext::EnableViewport(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_ViewportsEnable;
+		}
+	}
+}
+
+bool UImguiContext::EnableViewport()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
+}
+
+void UImguiContext::EnableDPIScale(bool bInEnable)
+{
+	if (bInEnable)
+	{
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+		GetIO()->ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	}
+	else
+	{
+		if (GetIO()->ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts)
+		{
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DpiEnableScaleFonts;
+			GetIO()->ConfigFlags -= ImGuiConfigFlags_DpiEnableScaleViewports;
+		}
+	}
+}
+
+bool UImguiContext::EnableDPIScale()
+{
+	return GetIO()->ConfigFlags & ImGuiConfigFlags_DpiEnableScaleFonts;
+}
+
+void UImguiContext::EnableNoAutoMergeViewport(bool bInIsEnable)
+{
+	GetIO()->ConfigViewportsNoAutoMerge = bInIsEnable;
+}
+
+bool UImguiContext::EnableNoAutoMergeViewport()
+{
+	return GetIO()->ConfigViewportsNoAutoMerge;
+}
+
 void UImguiContext::AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy)
 {
 	check(InRenderProxy.IsValid() && InRenderProxy.Pin()->IsPersist());
+	InRenderProxy.Pin()->SetupContext(this);
+	InRenderProxy.Pin()->SetupInputAdapter(DefaultAdapter);
 	AllRenderProxy.Add(InRenderProxy);
 }
 
@@ -99,6 +182,12 @@ void UImguiContext::ApplyContext()
 	FImguiWindowWrapper::CurContext = this;
 }
 
+void UImguiContext::NewFrame(float DeltaTime)
+{
+	ImGui::GetIO().DeltaTime = DeltaTime;
+	ImGui::NewFrame();
+}
+
 void UImguiContext::DrawGlobal()
 {
 	for (int32 i = 0; i < AllDrawCallBack.Num(); ++i)
@@ -112,6 +201,11 @@ void UImguiContext::DrawGlobal()
 			CurCallBack.Unbind();
 		}
 	}
+}
+
+void UImguiContext::Render()
+{
+	ImGui::Render();
 }
 
 void UImguiContext::UpdateViewport(UImguiInputAdapter* InAdapter)
@@ -166,7 +260,13 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 {
 	// find UE widget
 	auto UEWidget = ImViewportToUE.Find(viewport);
-	if (!UEWidget) return;
+	if (!UEWidget)
+	{
+		// disable platform data 
+		viewport->PlatformUserData = nullptr;
+		viewport->PlatformHandle = nullptr;
+		return;
+	}
 	
 	// process dispatched window case 
 	if (UEWidget->IsValid() && !UEWidget->Pin()->IsPersist())
@@ -174,7 +274,7 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 		auto PinnedUEWidget = UEWidget->Pin();
 		if (FSlateApplication::IsInitialized())
 		{
-			static_cast<SImguiWindow*>(PinnedUEWidget.Get())->RequestDestroyWindow();
+			FSlateApplicationBase::Get().RequestDestroyWindow(StaticCastSharedPtr<SImguiWindow>(PinnedUEWidget).ToSharedRef());
 		}
 		AllDispatchedViewport.Remove(PinnedUEWidget);
 	}
@@ -183,7 +283,8 @@ void UImguiContext::_DestroyWindow(ImGuiViewport* viewport)
 	ImViewportToUE.Remove(viewport);
 
 	// disable platform data 
-	viewport->PlatformUserData = viewport->PlatformHandle = nullptr;
+	viewport->PlatformUserData = nullptr;
+	viewport->PlatformHandle = nullptr;
 }
 
 void UImguiContext::_ShowWindow(ImGuiViewport* viewport)
@@ -288,19 +389,14 @@ void UImguiContext::_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos)
 	}
 }
 
-void UImguiContext::_SetupImguiContext(bool bEnableDocking)
+void UImguiContext::_SetupImguiContext()
 {
 	// enable keyboard control
-	GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	// GetIO()->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-	// enable docking
-	if (bEnableDocking)
-	{
-		GetIO()->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		GetIO()->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		GetIO()->ConfigViewportsNoAutoMerge = true;
-		GetIO()->ConfigDockingTransparentPayload = true;
-	}
+	// enable transparent 
+	GetIO()->ConfigDockingTransparentPayload = true;
 	
 	// set backend flags
 	GetIO()->BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
@@ -323,12 +419,13 @@ void UImguiContext::_SetupImguiContext(bool bEnableDocking)
 	// setup monitor
 	FDisplayMetrics DisplayMetrics;
 	FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
-
+	
+	// no monitor when rdp
 	if (FPlatformMisc::IsRemoteSession())
 	{
 		ImGuiPlatformMonitor Monitor;
 		Monitor.DpiScale = 1.f;
-
+		
 		Monitor.MainPos.x = DisplayMetrics.VirtualDisplayRect.Left;
 		Monitor.MainPos.y = DisplayMetrics.VirtualDisplayRect.Top;
 		Monitor.MainSize.x = DisplayMetrics.VirtualDisplayRect.Right - DisplayMetrics.VirtualDisplayRect.Left;
@@ -340,7 +437,7 @@ void UImguiContext::_SetupImguiContext(bool bEnableDocking)
 		Monitor.WorkSize.y = DisplayMetrics.PrimaryDisplayWorkAreaRect.Bottom - DisplayMetrics.PrimaryDisplayWorkAreaRect.Top;
 		Context->PlatformIO.Monitors.push_back(Monitor);
 	}
-
+	
 	for (FMonitorInfo& Info : DisplayMetrics.MonitorInfo)
 	{
 		ImGuiPlatformMonitor Monitor;

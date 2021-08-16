@@ -108,7 +108,7 @@ public:
 		return Config;
 	}
 
-	// set tstyle
+	// set style
 	void SetStyle(ImGuiStyle* InStyle);
 
 public:
@@ -123,4 +123,8 @@ public:
 	// Font 
 	UPROPERTY(EditAnywhere, Config)
 	FString					FontPath;
+
+	// Save layout
+	UPROPERTY(EditAnywhere, Config)
+	bool					bSaveLayout = true;
 };

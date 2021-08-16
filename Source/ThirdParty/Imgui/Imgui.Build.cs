@@ -19,10 +19,9 @@ public class Imgui : ModuleRules
 			new string[]
 			{
 				"Core",
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
 			});
+		
+		PublicDefinitions.Add("IMGUI_DISABLE_OBSOLETE_FUNCTIONS");
+		PublicDefinitions.Add("IMGUI_DEFINE_MATH_OPERATORS");
 	}
 }

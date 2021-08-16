@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "imgui.h"
+#include "ImguiWrap/ImguiInputAdapterDeferred.h"
 #include "Services/ImguiGlobalContextService.h"
 #include "Widgets/SWidget.h"
 #include "Window/IImguiViewport.h"
@@ -10,34 +11,45 @@ class UImguiInputAdapter;
 
 DECLARE_DELEGATE(FOnImguiDraw);
 
+/**
+ * @brief Imgui sizing rule, control the policy between UE widget size and Imgui widget size 
+ */
 enum class EImguiSizingRule
 {
-	// Desired size is zero, and we won't control imgui wnd size 
+	// en. Desired size is zero, and we won't control imgui wnd size
+	// ch. Desired size 是0(不占用空间), 并且我们不会改变Imgui window的大小
 	NoSizing ,
 
-	// Desired size is zero, and we use UE Widget size as imgui wnd size 
+	// en. Desired size is zero, and we use UE Widget size as imgui wnd size
+	// ch. Desired size 是0(不占用空间), 并且我们会根据控件的大小来决定Imgui window的大小
 	UESize ,
 
-	// Desired is imgui wnd size
+	// en. Desired is imgui wnd size
+	// ch. Desired size 是imgui window的大小
 	ImSize ,
 
-	// Desired is imgui size, and we will use wnd content size
+	// en. Desired is imgui size, and we will use wnd content size
+	// ch. Desired size 是Imgui window内容的大小, 同时我们也会更新imgui window的大小以适应内容
 	ImContentSize ,
 };
 
-// imgui draw proxy widget, only do input forward and draw, always used for global context 
-class UEIMGUI_API SImguiWidgetRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
+/**
+ * @brief en. Render proxy can steal render data that assigned by ProxyWndName or PersistWndID
+ *        ch. Render Proxy 可以从渲染数据中"偷"出对应窗口的Viewport来自己渲染，这个窗口由初始化传入的ProxyWndName计算的PersistWndID决定
+ */
+class UEIMGUI_API SImguiRenderProxy : public SLeafWidget, public FGCObject, public IImguiViewport
 {
 	using Super = SLeafWidget;
 public:
-	SLATE_BEGIN_ARGS(SImguiWidgetRenderProxy)
+	SLATE_BEGIN_ARGS(SImguiRenderProxy)
             : _InContext(nullptr)
 			, _InAdapter(nullptr)
 			, _HSizingRule(EImguiSizingRule::NoSizing)
 			, _VSizingRule(EImguiSizingRule::NoSizing)
+			, _ProxyWndName(nullptr)
 			, _AutoSetWidgetPos(true)
 			, _BlockInput(true)
-			, _ProxyWndName(nullptr)
+			, _BlockWheel(false)
 	{}
 	    SLATE_ARGUMENT(UImguiContext*, InContext)
 	    SLATE_ARGUMENT(UImguiInputAdapter*, InAdapter)
@@ -46,6 +58,8 @@ public:
 		SLATE_ARGUMENT(const char*, ProxyWndName)
 	    SLATE_ARGUMENT(bool, AutoSetWidgetPos)
 		SLATE_ARGUMENT(bool, BlockInput)
+		SLATE_ARGUMENT(bool, BlockWheel)
+		SLATE_ATTRIBUTE(EVisibility, Visibility)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
@@ -79,7 +93,8 @@ protected:
 	// Focus
 	virtual bool SupportsKeyboardFocus() const override;
 	virtual void OnFocusLost(const FFocusEvent& InFocusEvent) override;
-
+	virtual FReply OnFocusReceived(const FGeometry& MyGeometry, const FFocusEvent& InFocusEvent) override;
+	
 	// Cursor
 	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
 
@@ -97,6 +112,7 @@ protected:
 	// ~End SWidget API
 
 	// ~Begin IImguiViewport API
+	virtual void SetupContext(UImguiContext* InCtx) override { SetContext(InCtx); }
 	virtual TSharedPtr<SWindow> GetWindow() override { return CachedWnd.Pin(); }
 	virtual void Show(TSharedPtr<SWindow> InParent) override { }
 	virtual bool IsPersist() override { return true; }
@@ -113,22 +129,25 @@ protected:
 	virtual void SetAlpha(float InAlpha) override { }
 	virtual void SetupViewport(ImGuiViewport* InViewport) override { BoundViewport = InViewport; }
 	virtual void SetupInputAdapter(UImguiInputAdapter* ImguiInputAdapter) override { SetAdapter(ImguiInputAdapter); }
-	// ~End IImguiViewport API 
+	virtual float GetDpiScale() override;
+	// ~End IImguiViewport API
+private:
+	EVisibility _GetVisibility() const;
 protected:
 	// cached top side window 
 	mutable TWeakPtr<SWindow> CachedWnd;
 
-	// imgui state  
+	// imgui state 
 	UImguiContext*		Context;
 	UImguiInputAdapter*	Adapter;
 	ImGuiViewport*		BoundViewport;
 
-	// proxy setting s 
+	// proxy settings 
 	ImGuiID				PersistWndID;
 	EImguiSizingRule	HSizingRule;
 	EImguiSizingRule	VSizingRule;
 	bool				bAutoSetWidgetPos;
 	bool				bHasFocus;
 	bool				bBlockInput;
+	bool				bBlockWheel;
 };
-

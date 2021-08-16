@@ -19,11 +19,21 @@ class UEIMGUI_API UImguiContext : public UObject
 	friend struct FImguiWindowWrapper;
 public:
 	// init and shutdown
-	void Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas = nullptr, bool bEnableDocking = true);
+	void Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas* InDefaultFontAtlas = nullptr);
 	bool IsInit() const { return Context != nullptr; }
 	void UpdateSize();
 	void ShutDown();
 
+	// context config
+	void EnableDocking(bool bInEnable);
+	bool EnableDocking();
+	void EnableViewport(bool bInEnable);
+	bool EnableViewport();
+	void EnableDPIScale(bool bInEnable);
+	bool EnableDPIScale();
+	void EnableNoAutoMergeViewport(bool bInIsEnable);
+	bool EnableNoAutoMergeViewport();
+	
 	// global draw
 	int32 AddGlobalWindow(const FDrawGlobalImgui& InCallBack) { return AllDrawCallBack.Add(InCallBack); }
 	void RemoveGlobalWindow(int32 InIndex) { AllDrawCallBack[InIndex].Unbind(); }
@@ -41,9 +51,9 @@ public:
 
 	// life time function
 	void ApplyContext();
-	void NewFrame() { ImGui::NewFrame(); }
+	void NewFrame(float DeltaTime);
 	void DrawGlobal();
-	void Render() { ImGui::Render(); }
+	void Render();
 	void UpdateViewport(UImguiInputAdapter* InAdapter);
 protected:
 	// ~Begin UObject API
@@ -69,7 +79,7 @@ private:
 	void	_SetImeInputPos(ImGuiViewport* viewport, ImVec2 pos);
 
 	// setup  
-	void _SetupImguiContext(bool bEnableDocking);
+	void _SetupImguiContext();
 	void _SetUpDefaultFont();
 
 	// help function 
