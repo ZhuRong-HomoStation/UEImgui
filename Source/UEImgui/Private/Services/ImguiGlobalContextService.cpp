@@ -17,9 +17,21 @@
 #include "SEditorViewport.h"
 class FEditorGlobalContextGuard : public FTickableEditorObject
 {
-public:	
-	virtual void Tick(float DeltaTime) override
-	{		
+public:
+    FEditorGlobalContextGuard()
+    {
+    	FCoreDelegates::OnPostEngineInit.AddLambda([this]
+    	{
+    		if(FSlateApplication::IsInitialized())
+    		{
+    			FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
+    		}
+    	});
+    }
+	void Tick(float DeltaTime)
+	{
+		if (!GEngine->IsInitialized()) return;
+    	
 		// create imgui context 
 		if (!Context)
 		{

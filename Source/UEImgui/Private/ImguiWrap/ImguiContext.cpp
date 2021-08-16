@@ -323,6 +323,24 @@ void UImguiContext::_SetupImguiContext(bool bEnableDocking)
 	// setup monitor
 	FDisplayMetrics DisplayMetrics;
 	FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
+
+	if (FPlatformMisc::IsRemoteSession())
+	{
+		ImGuiPlatformMonitor Monitor;
+		Monitor.DpiScale = 1.f;
+
+		Monitor.MainPos.x = DisplayMetrics.VirtualDisplayRect.Left;
+		Monitor.MainPos.y = DisplayMetrics.VirtualDisplayRect.Top;
+		Monitor.MainSize.x = DisplayMetrics.VirtualDisplayRect.Right - DisplayMetrics.VirtualDisplayRect.Left;
+		Monitor.MainSize.y = DisplayMetrics.VirtualDisplayRect.Bottom - DisplayMetrics.VirtualDisplayRect.Top;
+
+		Monitor.WorkPos.x = DisplayMetrics.PrimaryDisplayWorkAreaRect.Left;
+		Monitor.WorkPos.y = DisplayMetrics.PrimaryDisplayWorkAreaRect.Top;
+		Monitor.WorkSize.x = DisplayMetrics.PrimaryDisplayWorkAreaRect.Right - DisplayMetrics.PrimaryDisplayWorkAreaRect.Left;
+		Monitor.WorkSize.y = DisplayMetrics.PrimaryDisplayWorkAreaRect.Bottom - DisplayMetrics.PrimaryDisplayWorkAreaRect.Top;
+		Context->PlatformIO.Monitors.push_back(Monitor);
+	}
+
 	for (FMonitorInfo& Info : DisplayMetrics.MonitorInfo)
 	{
 		ImGuiPlatformMonitor Monitor;

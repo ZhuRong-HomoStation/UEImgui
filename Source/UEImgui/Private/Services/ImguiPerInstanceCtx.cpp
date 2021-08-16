@@ -28,7 +28,8 @@ void UImguiPerInstanceCtx::Deinitialize()
 	if (InputAdapter)
 	{
 		// remove adapter 
-		FImguiGlobalInputHook::Get()->RemoveAdapter(InputAdapter);
+		if (auto ImguiGlobalInputHook = FImguiGlobalInputHook::Get())
+			ImguiGlobalInputHook->RemoveAdapter(InputAdapter);
 		InputAdapter = nullptr;
 	}
 	
