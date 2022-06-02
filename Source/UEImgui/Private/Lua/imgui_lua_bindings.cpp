@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <imgui.h>
 #include <deque>
-#include "imgui_lua_binding.h"
+#include "Lua/imgui_lua_binding.h"
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
