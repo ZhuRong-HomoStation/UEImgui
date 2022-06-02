@@ -62,23 +62,23 @@ UImguiConfig::UImguiConfig()
 
 	// set up imgui style
 	ImguiStyle.Alpha                   = 1.0f;							// Global alpha applies to everything in ImGui
-    ImguiStyle.WindowPadding           = FVector2D(8,8);			// Padding within a window
+    ImguiStyle.WindowPadding           = FVector2f(8,8);			// Padding within a window
     ImguiStyle.WindowRounding          = 0.0f;							// Radius of window corners rounding. Set to 0.0f to have rectangular windows. Large values tend to lead to variety of artifacts and are not recommended.
     ImguiStyle.WindowBorderSize        = 1.0f;							// Thickness of border around windows. Generally set to 0.0f or 1.0f. Other values not well tested.
-    ImguiStyle.WindowMinSize           = FVector2D(32,32);		// Minimum window size
-    ImguiStyle.WindowTitleAlign        = FVector2D(0.0f,0.5f);	// Alignment for title bar text
+    ImguiStyle.WindowMinSize           = FVector2f(32,32);		// Minimum window size
+    ImguiStyle.WindowTitleAlign        = FVector2f(0.0f,0.5f);	// Alignment for title bar text
     ImguiStyle.WindowMenuButtonPosition= ImGuiDir_Left;					// Position of the collapsing/docking button in the title bar (left/right). Defaults to ImGuiDir_Left.
     ImguiStyle.ChildRounding           = 0.0f;          				// Radius of child window corners rounding. Set to 0.0f to have rectangular child windows
     ImguiStyle.ChildBorderSize         = 1.0f;          				// Thickness of border around child windows. Generally set to 0.0f or 1.0f. Other values not well tested.
     ImguiStyle.PopupRounding           = 0.0f;          				// Radius of popup window corners rounding. Set to 0.0f to have rectangular child windows
     ImguiStyle.PopupBorderSize         = 1.0f;          				// Thickness of border around popup or tooltip windows. Generally set to 0.0f or 1.0f. Other values not well tested.
-    ImguiStyle.FramePadding            = FVector2D(4,3);			// Padding within a framed rectangle (used by most widgets)
+    ImguiStyle.FramePadding            = FVector2f(4,3);			// Padding within a framed rectangle (used by most widgets)
     ImguiStyle.FrameRounding           = 0.0f;							// Radius of frame corners rounding. Set to 0.0f to have rectangular frames (used by most widgets).
     ImguiStyle.FrameBorderSize         = 0.0f;							// Thickness of border around frames. Generally set to 0.0f or 1.0f. Other values not well tested.
-    ImguiStyle.ItemSpacing             = FVector2D(8,4); 		// Horizontal and vertical spacing between widgets/lines
-    ImguiStyle.ItemInnerSpacing        = FVector2D(4,4); 		// Horizontal and vertical spacing between within elements of a composed widget (e.g. a slider and its label)
-    ImguiStyle.CellPadding             = FVector2D(4,2); 		// Padding within a table cell
-    ImguiStyle.TouchExtraPadding       = FVector2D(0,0); 		// Expand reactive bounding box for touch-based system where touch position is not accurate enough. Unfortunately we don't sort widgets so priority on overlap will always be given to the first widget. So don't grow this too much!
+    ImguiStyle.ItemSpacing             = FVector2f(8,4); 		// Horizontal and vertical spacing between widgets/lines
+    ImguiStyle.ItemInnerSpacing        = FVector2f(4,4); 		// Horizontal and vertical spacing between within elements of a composed widget (e.g. a slider and its label)
+    ImguiStyle.CellPadding             = FVector2f(4,2); 		// Padding within a table cell
+    ImguiStyle.TouchExtraPadding       = FVector2f(0,0); 		// Expand reactive bounding box for touch-based system where touch position is not accurate enough. Unfortunately we don't sort widgets so priority on overlap will always be given to the first widget. So don't grow this too much!
     ImguiStyle.IndentSpacing           = 21.0f;         				// Horizontal spacing when e.g. entering a tree node. Generally == (FontSize + FramePadding.x*2).
     ImguiStyle.ColumnsMinSpacing       = 6.0f;          				// Minimum horizontal spacing between two columns. Preferably > (FramePadding.x + 1).
     ImguiStyle.ScrollbarSize           = 14.0f;         				// Width of the vertical scrollbar, Height of the horizontal scrollbar
@@ -90,10 +90,10 @@ UImguiConfig::UImguiConfig()
     ImguiStyle.TabBorderSize           = 0.0f;          				// Thickness of border around tabs.
     ImguiStyle.TabMinWidthForCloseButton = 0.0f;        				// Minimum width for close button to appears on an unselected tab when hovered. Set to 0.0f to always show when hovering, set to FLT_MAX to never show close button unless selected.
     ImguiStyle.ColorButtonPosition     = ImGuiDir_Right;				// Side of the color button in the ColorEdit4 widget (left/right). Defaults to ImGuiDir_Right.
-    ImguiStyle.ButtonTextAlign         = FVector2D(0.5f,0.5f);	// Alignment of button text when button is larger than text.
-    ImguiStyle.SelectableTextAlign     = FVector2D(0.0f,0.0f);	// Alignment of selectable text. Defaults to (0.0f, 0.0f) (top-left aligned). It's generally important to keep this left-aligned if you want to lay multiple items on a same line.
-    ImguiStyle.DisplayWindowPadding    = FVector2D(19,19);    	// Window position are clamped to be visible within the display area or monitors by at least this amount. Only applies to regular windows.
-    ImguiStyle.DisplaySafeAreaPadding  = FVector2D(3,3);      	// If you cannot see the edge of your screen (e.g. on a TV) increase the safe area padding. Covers popups/tooltips as well regular windows.
+    ImguiStyle.ButtonTextAlign         = FVector2f(0.5f,0.5f);	// Alignment of button text when button is larger than text.
+    ImguiStyle.SelectableTextAlign     = FVector2f(0.0f,0.0f);	// Alignment of selectable text. Defaults to (0.0f, 0.0f) (top-left aligned). It's generally important to keep this left-aligned if you want to lay multiple items on a same line.
+    ImguiStyle.DisplayWindowPadding    = FVector2f(19,19);    	// Window position are clamped to be visible within the display area or monitors by at least this amount. Only applies to regular windows.
+    ImguiStyle.DisplaySafeAreaPadding  = FVector2f(3,3);      	// If you cannot see the edge of your screen (e.g. on a TV) increase the safe area padding. Covers popups/tooltips as well regular windows.
     ImguiStyle.MouseCursorScale        = 1.0f;     						// Scale software rendered mouse cursor (when io.MouseDrawCursor is enabled). May be removed later.
     ImguiStyle.AntiAliasedLines        = true;     						// Enable anti-aliased lines/borders. Disable if you are really tight on CPU/GPU.
     ImguiStyle.AntiAliasedLinesUseTex  = true;     						// Enable anti-aliased lines/borders using textures where possible. Require backend to render with bilinear filtering.
