@@ -15,7 +15,6 @@
 #include "LevelEditorViewport.h"
 #include "LevelEditor.h"
 #include "ILevelEditor.h"
-#include "ILevelViewport.h"
 #include "SEditorViewport.h"
 class FEditorGlobalContextGuard
 {

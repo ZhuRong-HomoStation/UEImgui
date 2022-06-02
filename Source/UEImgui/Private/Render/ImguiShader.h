@@ -19,7 +19,7 @@ public:
 
 	void SetParameters(FRHICommandList& RHICmdList, const FMatrix& TransformValue)
 	{
-		SetShaderValue(RHICmdList, RHICmdList.GetBoundVertexShader(), InTransform, TransformValue);
+		SetShaderValue(RHICmdList, RHICmdList.GetBoundVertexShader(), InTransform, FMatrix44f(TransformValue));
 	}
 
 	static bool ShouldCompilePermutation(
