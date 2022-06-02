@@ -24,7 +24,7 @@ public:
     {
     	FCoreDelegates::OnPostEngineInit.AddLambda([this]
     	{
-			if(FSlateApplication::IsInitialized())
+			if(FSlateApplication::IsInitialized() && GEditor)
     		{
     			FSlateApplication::Get().OnPreTick().AddRaw(this, &FEditorGlobalContextGuard::Tick);
 			}
@@ -32,7 +32,7 @@ public:
 
     	FCoreDelegates::OnEnginePreExit.AddLambda([this]
     	{
-    		if (UImguiConfig::Get()->bSaveLayout)
+    		if (UImguiConfig::Get()->bSaveLayout && GEditor && !IsRunningCommandlet())
     		{
     			SaveLayout();
     		}
@@ -48,7 +48,7 @@ public:
         ImGui::SaveIniSettingsToDisk(TCHAR_TO_UTF8(*LayoutSettingDir));
         ImGui::SetCurrentContext(OldContext);
     }
-
+	
 	void Tick(float DeltaTime)
 	{
 		if (!GEngine->IsInitialized()) return;
@@ -114,7 +114,7 @@ public:
 			// enable docking and viewport 
 			Context->EnableDocking(true);
 			Context->EnableViewport(true);
-			Context->EnableDPIScale(true);
+			Context->EnableDPIScale(UImguiConfig::Get()->bEnableDPIScale);
 			Context->EnableNoAutoMergeViewport(true);
 			
 			// set viewport manually 
