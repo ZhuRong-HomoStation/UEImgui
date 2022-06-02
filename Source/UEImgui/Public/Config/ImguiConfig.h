@@ -13,15 +13,15 @@ public:
 	UPROPERTY()
 	float       Alpha;        
 	UPROPERTY()              
-	FVector2D   WindowPadding;         
+	FVector2f   WindowPadding;         
 	UPROPERTY()     
 	float       WindowRounding;         
 	UPROPERTY()    
 	float       WindowBorderSize;           
 	UPROPERTY()
-	FVector2D   WindowMinSize;              
+	FVector2f   WindowMinSize;              
 	UPROPERTY()
-	FVector2D   WindowTitleAlign;           
+	FVector2f   WindowTitleAlign;           
 	// UPROPERTY()
 	ImGuiDir    WindowMenuButtonPosition = ImGuiDir_Left;   
 	UPROPERTY()
@@ -33,19 +33,19 @@ public:
 	UPROPERTY()
 	float       PopupBorderSize;            
 	UPROPERTY()
-	FVector2D   FramePadding;               
+	FVector2f   FramePadding;               
 	UPROPERTY()
 	float       FrameRounding;              
 	UPROPERTY()
 	float       FrameBorderSize;            
 	UPROPERTY()
-	FVector2D   ItemSpacing;                
+	FVector2f   ItemSpacing;                
 	UPROPERTY()
-	FVector2D   ItemInnerSpacing;           
+	FVector2f   ItemInnerSpacing;           
 	UPROPERTY()
-	FVector2D   CellPadding;                
+	FVector2f   CellPadding;                
 	UPROPERTY()
-	FVector2D   TouchExtraPadding;          
+	FVector2f   TouchExtraPadding;          
 	UPROPERTY()
 	float       IndentSpacing;              
 	UPROPERTY()
@@ -69,13 +69,13 @@ public:
 	// UPROPERTY()
 	ImGuiDir    ColorButtonPosition = ImGuiDir_Right;        
 	UPROPERTY()
-	FVector2D   ButtonTextAlign;            
+	FVector2f   ButtonTextAlign;            
 	UPROPERTY()
-	FVector2D   SelectableTextAlign;        
+	FVector2f   SelectableTextAlign;        
 	UPROPERTY()
-	FVector2D   DisplayWindowPadding;       
+	FVector2f   DisplayWindowPadding;       
 	UPROPERTY()
-	FVector2D   DisplaySafeAreaPadding;     
+	FVector2f   DisplaySafeAreaPadding;     
 	UPROPERTY()
 	float       MouseCursorScale;           
 	UPROPERTY()
