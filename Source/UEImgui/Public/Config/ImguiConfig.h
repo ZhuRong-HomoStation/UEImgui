@@ -127,4 +127,8 @@ public:
 	// Save layout
 	UPROPERTY(EditAnywhere, Config)
 	bool					bSaveLayout = true;
+
+	// DPI Scale
+	UPROPERTY(EditAnywhere, Config)
+	bool					bEnableDPIScale = false;
 };
