@@ -38,7 +38,7 @@ void UImguiContext::Init(TSharedPtr<IImguiViewport> InMainViewPort, ImFontAtlas*
 	ImMainViewPort->PlatformHandle = ImMainViewPort->PlatformHandleRaw = InMainViewPort.Get();
 
 	// setup main client size
-	auto MainViewPortSize = InMainViewPort->GetSize();
+	auto MainViewPortSize = FVector2f(InMainViewPort->GetSize());
 	GetIO()->DisplaySize = *(ImVec2*)&MainViewPortSize;
 
 	// add to search map
@@ -53,7 +53,7 @@ void UImguiContext::UpdateSize()
 	}
 
 	// setup main client size
-	auto MainViewPortSize = MainViewPort->GetSize();
+	auto MainViewPortSize = FVector2f(MainViewPort->GetSize());
 	GetIO()->DisplaySize = *(ImVec2*)&MainViewPortSize;
 }
 

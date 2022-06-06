@@ -9,7 +9,10 @@ class FImguiGlobalInputHook : public IInputProcessor, public FGCObject
 {
 public:
 	static TSharedPtr<FImguiGlobalInputHook> Get();
-	
+	virtual FString GetReferencerName() const override
+    {
+        return TEXT("FImguiGlobalInputHook");
+    }
 	void AddAdapter(UImguiInputAdapter* InInputAdapter);
 	void RemoveAdapter(UImguiInputAdapter* InInputAdapter);
 protected:
