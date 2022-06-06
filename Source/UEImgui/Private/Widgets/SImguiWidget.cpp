@@ -20,7 +20,7 @@ void SImguiRenderProxy::Construct(const FArguments& InArgs)
 	bBlockInput = InArgs._BlockInput;
 	bBlockWheel = InArgs._BlockWheel;
 
-	Visibility = InArgs._Visibility;
+	SetVisibility(InArgs._Visibility);
 }
 
 void SImguiRenderProxy::SetContext(UImguiContext* InContext)

@@ -102,7 +102,7 @@ public:
 				{
 					Client->GetEditorViewportWidget()->ViewportOverlay->AddSlot()
 	                [
-                		Proxy->AsShared()
+                		Proxy.ToSharedRef()
 	                ];
 				}
 			}
