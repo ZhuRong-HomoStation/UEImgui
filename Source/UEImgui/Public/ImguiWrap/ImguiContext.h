@@ -36,7 +36,7 @@ public:
 	
 	// global draw
 	int32 AddGlobalWindow(const FDrawGlobalImgui& InCallBack) { return AllDrawCallBack.Add(InCallBack); }
-	void RemoveGlobalWindow(int32 InIndex) { AllDrawCallBack[InIndex].Unbind(); }
+	void RemoveGlobalWindow(int32 InIndex) { AllDrawCallBack[InIndex].Unbind(); AllDrawCallBack.RemoveAt(InIndex);}
 
 	// proxy
 	void AddRenderProxy(TWeakPtr<IImguiViewport> InRenderProxy);
@@ -90,7 +90,7 @@ private:
 	TSharedPtr<IImguiViewport>			MainViewPort;
 
 	// all draw callback   
-	TArray<FDrawGlobalImgui>			AllDrawCallBack;
+	TSparseArray<FDrawGlobalImgui>			AllDrawCallBack;
 
 	// render proxy, steal render data form window dispatch 
 	TArray<TWeakPtr<IImguiViewport>>	AllRenderProxy;
