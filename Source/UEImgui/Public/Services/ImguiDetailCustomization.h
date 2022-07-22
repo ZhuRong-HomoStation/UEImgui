@@ -21,6 +21,16 @@ public:
 	 */
 	UFUNCTION()
 	virtual UClass* GetSupportClass() { return nullptr; }
+
+	/**
+	 * @brief en. return does we support the class
+	 *        ch. 返回我们是否支持某个类的定制
+	 * 
+	 * @return en. does we support customize of the class
+	 *         ch. 我们是否支持某个类的定制
+	 */
+	UFUNCTION()
+	virtual bool IsSupportClass(UClass* InClass) { return false; }
 	
 	/**
 	 * @brief en. return does we support customize when editing single object 
