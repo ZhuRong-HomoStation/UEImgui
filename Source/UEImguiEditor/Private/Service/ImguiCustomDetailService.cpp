@@ -8,7 +8,7 @@ TArray<UImguiDetailCustomization*> UImguiCustomDetailService::GetAllDetailCustom
 	for (UClass* Class : AllDetailCustomization)
 	{
 		UImguiDetailCustomization* CDO = (UImguiDetailCustomization*)Class->GetDefaultObject(true);
-		if (InClass->IsChildOf(CDO->GetSupportClass()))
+		if (InClass->IsChildOf(CDO->GetSupportClass()) || CDO->IsSupportClass(InClass))
 		{
 			AllCustomization.Add(CDO);
 		}
