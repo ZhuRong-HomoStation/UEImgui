@@ -1093,11 +1093,11 @@ void TextEditor::Render()
 				}
 				else
 				{
-					auto pi = mLanguageDefinition.mPreprocIdentifiers.find(id);
-					if (pi != mLanguageDefinition.mPreprocIdentifiers.end())
+					auto pi_ = mLanguageDefinition.mPreprocIdentifiers.find(id);
+					if (pi_ != mLanguageDefinition.mPreprocIdentifiers.end())
 					{
 						ImGui::BeginTooltip();
-						ImGui::TextUnformatted(pi->second.mDeclaration.c_str());
+						ImGui::TextUnformatted(pi_->second.mDeclaration.c_str());
 						ImGui::EndTooltip();
 					}
 				}

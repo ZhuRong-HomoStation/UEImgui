@@ -135,7 +135,7 @@ void ImGui::EndDetail()
 
 void ImGui::Text(const FString& InString)
 {
-	ImGui::Text(TCHAR_TO_UTF8(*InString));
+	ImGui::Text("%s", TCHAR_TO_UTF8(*InString));
 }
 
 struct InputTextCallback_UserData
