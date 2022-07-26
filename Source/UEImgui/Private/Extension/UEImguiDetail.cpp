@@ -1,4 +1,4 @@
-﻿#include "Extension/UEImguiDetail.h"
+#include "Extension/UEImguiDetail.h"
 #include "imgui.h"
 #include "ImguiWrap/ImguiUEWrap.h"
 
@@ -58,7 +58,7 @@ bool FUEImguiDetail::MakeDetail(FProperty* InProperty, void* InContainer)
 	ImGui::TableNextRow();
 	ImGui::TableSetColumnIndex(0);
 	ImGui::AlignTextToFramePadding();
-	ImGui::Text(PropertyName.c_str());
+	ImGui::Text("%s", PropertyName.c_str());
 	ImGui::TableSetColumnIndex(1);
 
 	// setup label
