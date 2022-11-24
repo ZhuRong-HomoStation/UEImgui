@@ -43,6 +43,7 @@ public:
 
 	void SaveLayout()
     {
+    	if (!Context || GIsBuildMachine || !GIsEditor) return;
 	    // save layout 
         FString LayoutSettingDir = FPaths::ProjectConfigDir() / TEXT("ImguiLayout_Engine.ini");
         auto OldContext = ImGui::GetCurrentContext();
