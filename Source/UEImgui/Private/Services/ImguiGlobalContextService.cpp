@@ -15,7 +15,9 @@
 #include "LevelEditorViewport.h"
 #include "LevelEditor.h"
 #include "ILevelEditor.h"
+#if ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION <= 23
 #include "ILevelViewport.h"
+#endif
 #include "SEditorViewport.h"
 class FEditorGlobalContextGuard
 {

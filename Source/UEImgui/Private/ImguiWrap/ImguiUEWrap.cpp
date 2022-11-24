@@ -122,8 +122,8 @@ void ImGui::BeginDetail()
 {
 	if (CurrentDetailWidget.IsValid())
 	{
-		FVector2D CurrentDetailSize = CurrentDetailWidget.Pin()->GetCachedGeometry().Size;
-		ImGui::SetNextWindowSizeConstraints({CurrentDetailSize.X, -1}, {CurrentDetailSize.X, -1});
+		auto CurrentDetailSize = CurrentDetailWidget.Pin()->GetCachedGeometry().Size;
+		ImGui::SetNextWindowSizeConstraints({(float)CurrentDetailSize.X, -1}, {(float)CurrentDetailSize.X, -1});
 	}
 	ImGui::Begin(TCHAR_TO_UTF8(*CurrentDetail.ToString()), nullptr, ImGuiWindowFlags_UEDetail);
 }

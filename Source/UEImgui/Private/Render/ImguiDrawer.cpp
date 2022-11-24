@@ -101,7 +101,11 @@ FVertexDeclarationRHIRef FImguiDrawer::_GetMeshDeclaration()
 
 void FImguiDrawer::_UpdateBufferSize(int32 InVtxNum, int32 InIdxNum)
 {
+#if ENGINE_MAJOR_VERSION == 5
+	FRHIResourceCreateInfo CreateInfo(TEXT("IMGUI_BUFFER"));
+#else
 	FRHIResourceCreateInfo CreateInfo;
+#endif
 	if (InVtxNum > NumVertices)
 	{
 		auto VtxBufSize = sizeof(ImDrawVert) * InVtxNum;

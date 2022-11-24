@@ -19,7 +19,11 @@ public:
 
 	void SetParameters(FRHICommandList& RHICmdList, const FMatrix& TransformValue)
 	{
+#if ENGINE_MAJOR_VERSION == 5
+		SetShaderValue(RHICmdList, RHICmdList.GetBoundVertexShader(), InTransform, FMatrix44f(TransformValue));
+#else
 		SetShaderValue(RHICmdList, RHICmdList.GetBoundVertexShader(), InTransform, TransformValue);
+#endif
 	}
 
 	static bool ShouldCompilePermutation(
