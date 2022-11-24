@@ -39,7 +39,7 @@
 	"Plugins": [
 		{
 			"Name": "slua_unreal",
-			"Enabled": true
+			"Enabled": false
 		}
 	]
 }
